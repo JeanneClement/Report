@@ -25,7 +25,7 @@ header-includes:
 
 
 bibliography: Biblio_master.bib
-geometry: left=1.7cm,right=2cm,top=1.5cm,bottom=1.7cm
+geometry: left=1.7cm,right=1.7cm,top=1.5cm,bottom=1.3cm
 fontsize : 10pt
 ---
 
@@ -96,8 +96,12 @@ J'aimerai adresser mes plus sincères remerciements à G. Vieilledent qui m'a en
 \section*{Introduction}
 
 J'ai effectué mon stage au sein de l'UMR AMAP (botAnique et Modélisation de l'Architecture des Plantes et des végétations), qui se trouve à Montpellier. Il s'agit d'une unité interdisciplinaire hébergée par le Cirad ou « Centre de Coopération Internationale en Recherche Agronomique pour le Développement» et qui mène des recherches sur les plantes et les végétations, dans le but de prévoir la réponse des écosystèmes aux forçages environnementaux.  
-Ce stage s'inscrit dans le cadre du projet BioSceneMada qui vise à fournir des scénarios d'évolution de la biodiversité sous l’eﬀet conjoint du changement climatique et de la déforestation à Madagascar. Pour ce faire, plusieurs jeux de données sur la biodiversité ont été collectés et regroupés pour diﬀérents groupes taxonomiques (mammifères, oiseaux, reptiles, amphibiens, arbres, plantes herbacées, invertébrés), parmi lesquels j'ai utilisé des inventaires forestiers répertoriant l'absence ou la présence d'espèces d'arbres sur différents sites de l'île ainsi que des variables bioclimatques afin d'ajuster un modèle joint de distribution des espèces permettent d’estimer la niche des espèces, de prédire leur distribution, tout en prenant en compte les intéractions entre espèces (@Warton2015). 
-Dans un premier temps j'ai implémenté un échantillonneur de Gibbs en C permettant d’estimer les paramètres d’un modèle joint de distribution des espèces comportant des variables latentes, puis j'ai appliqué ce modèle aﬁn d’obtenir une carte de biodiversité $\beta$ à Madagascar à partir de données d’inventaires forestiers et de variables climatiques et environnementales, ce qui m'a permis par la suite d’identiﬁer les zones refuges de la biodiversité sous l’eﬀet du changement climatique en considérant les scénarios du GIECC. Ces résultats seront utilisés pour des préconisations de gestion de la biodiversité dans le cadre du projet BioSceneMada.  
+
+Ce stage s'inscrit dans le cadre du projet BioSceneMada qui vise à fournir des scénarios d'évolution de la biodiversité sous l’eﬀet conjoint du changement climatique et de la déforestation à Madagascar. Pour ce faire, plusieurs jeux de données sur la biodiversité ont été collectés et regroupés pour diﬀérents groupes taxonomiques (mammifères, oiseaux, reptiles, amphibiens, arbres, plantes herbacées, invertébrés), parmi lesquels j'ai utilisé des inventaires forestiers répertoriant l'absence ou la présence d'espèces d'arbres sur différents sites de l'île ainsi que des variables bioclimatques afin d'ajuster un modèle joint de distribution des espèces permettent d’estimer la niche des espèces, de prédire leur distribution, tout en prenant en compte les intéractions entre espèces (@Warton2015).  
+Dans un premier temps j'ai implémenté différents échantillonneurs de Gibbs en C++ permettant d’estimer les paramètres de modèles joints de distribution des espèces (JSDM) comportant des variables latentes, à l'aide du package Rcpp. La construction du package R \url{https://ecology.ghislainv.fr/jSDM/} autour de l'une de ces fonctions ainsi que sa présentation à la conférence useR 2019 ont constitué une partie importante de mon stage. 
+L'ajustement d'un JSDM sur des données d’inventaires forestiers collectées à Madagascar
+ainsi que des variables climatiques et environnementales, m'a permis d’obtenir des carte reflétant la biodiversité sur l'île afin de par la suite identiﬁer des zones refuges de la biodiversité sous l’eﬀet du changement climatique en utilisant les variables bioclimatiques fournies par les scénarios du GIECC. 
+Ces résultats seront utilisés pour des préconisations de gestion de la biodiversité dans le cadre du projet BioSceneMada.  
 
 \newpage
 \pagestyle{headings}
@@ -135,7 +139,7 @@ $$W_i \sim \mathcal{N}(0,I_q) \ iid $$
 $$\alpha_i \sim \mathcal{N}(0,V_{\alpha}) \ iid \text{ et indépendant de } W_i$$ 
 
 Ce qui revient à un cas particulier de GLMM multivarié auquel on impose la contrainte $\Sigma = \Lambda\Lambda'$ avec 
-$$\begin{pmatrix}
+$$\Lambda := \begin{pmatrix}
 \lambda_{11} & \ldots & \lambda_{1q} \\
 \vdots & \vdots & \vdots \\
 \lambda_{J1} & \ldots & \lambda_{Jq}
@@ -145,118 +149,140 @@ On préferera ce dernier modèle, en effet il comporte potentiellement beaucoup 
 
 On peut choisir de modéliser l'abondance absolue plutôt que l'abondance relative en supprimant l'effet site aléatoire $\alpha_i$ du modèle. 
 
-### Modèle probit 
-Variables latentes :  En effet pour assurer l'identifiabilité du modèle les valeurs des lambdas sont contraintes à des valeurs strictements positives sur la diagonale et à $0$ au dessus de la diagonale. On considerera donc une distribution a priori normale tronquée à gauche par $0$ pour les lambdas diagonaux. 
-et et on suppose que 
-$V_{\alpha} \sim \mathcal {IG}(\text{shape}=0.5, \text{rate}=0.005)$.  On utilise une distribution a priori $\mathcal{N}(0,10^6)$ pour tous les betas. 
-D'une part on utilise un fonction de lien probit : $\mathrm{probit}: p \rightarrow \Phi^{-1}(p)$ où $\Phi$ correspond à la fonction de répartition d'une loi normale centrée réduite.
-D'après l'article @Albert1993, on a la proposition suivante :  
+# Méthodes d’inférence bayesienne selon la fonction de lien choisie 
 
-\begin{prop}[Modèle de régression probit en utilisant une variable latente] \qquad \qquad \qquad   
-Si $z_{i,j} = \alpha_i + \beta_{j,0}+X_i\beta_j+ W_i\lambda_j + \epsilon_{i,j}, \ \forall i,j \text{ avec }  \epsilon_{i,j} \sim \mathcal{N}(0,1) \ \mathrm{iid}$ et tel que :
+## Principe d’un échantillonneur de Gibbs
+
+Dans le cadre bayésien, l’algorithme de Gibbs permet d’obtenir une réalisation du paramètre $\theta=(\theta_),\ldots,\theta_m)$ suivant la loi *a posteriori* $\uppi(\theta \ | \ x)$ dès que l’on est capable d’exprimer les lois conditionnelles : $\uppi(\theta_i \ | \ \theta_1,\dots,\theta_{i-1},\theta_{i+1},\ldots,\theta_m, x)$ pour $i =1,\ldots,m$.  
+
+\vspace{0.2cm}
+
+L’**échantillonnage de Gibbs** consiste à : \medskip  
+
+- **Initialisation** : choix arbitraire de $\theta^{(0)}= (\theta_1^{(0)},\dots,\theta_m^{(0)})$.
+
+\vspace{0.2cm}
+
+- **Itération t** : Générer $\theta^{(t)}$ de la manière suivante :
+\vspace{0.2cm}
+
+    * $\theta_1^{(t)} \sim \uppi\left(\theta_1 \ | \theta_2^{(t-1)},\dots, \theta_m^{(t-1)}, x \right)$
+\vspace{0.1cm}
+
+    * $\theta_2^{(t)} \sim \uppi\left((\theta_2 \ | \ (\theta_1^{(t)}, \theta_3^{(t-1)},\ldots,\theta_m^{(t-1)},x\right)$
+    \vspace{0.1cm}
+    \vdots  
+    \vspace{0.1cm}
+
+    * $\theta_m^{(t)} \sim \uppi\left(\theta_m \ | \ \theta_1^{(t)}, \ldots, \theta_{m-1}^{(t)},x\right)$   
+
+Les itérations successives de cet algorithme génèrent les états d’une chaîne de
+Markov $\{\theta^{(t)}, t > 0\}$ à valeurs dans $\mathbb{R}^{m}$, on montre que cette chaîne admet une mesure invariante qui est la *loi a posteriori*.  
+Pour un nombre d’itérations suffisamment grand, le vecteur $\theta$ obtenu peut donc être considéré comme étant une réalisation de la loi *a posteriori* $\uppi(\theta \ | \ x)$. 
+\vspace{0.2cm} 
+
+Par conséquent l'implémentation d'un échantillonneur de Gibbs nécessite la connaissance des ditributions *a posteriori* de chacun des paramètres conditionnellement aux autres paramètres du modèle, qui se déduisent des formules de priors conjugués dans le cas du modèle probit mais ne sont pas explicitement exprimables dans le cas où on utilise une fonction de lien logit.
+
+## Modèle probit : échantillonneur de Gibbs et priors conjugués 
+
+D’une part, on utilise un fonction de lien $\mathrm{probit} : p \rightarrow \Phi^{-1}(p)$ où $\Phi$ correspond à la fonction de répartition d’une loi normale centrée réduite.  
+
+### Définition du modèle  
+
+D’après l’article @Albert1993, une modélisation possible est de supposer l’existence d’une variable latente sous-jacente liée à notre variable binaire observées en utilisant la proposition suivante :
+
+\begin{prop}[Modèle probit par l'intermédiaire une variable latente]  \qquad \qquad \qquad \qquad \qquad \qquad \qquad \qquad  \qquad \qquad \qquad  \qquad \qquad \qquad \qquad   
+
+Si $Z_{ij} = \alpha_i + \beta_{j0}+X_i\beta_j+ W_i\lambda_j + \epsilon_{ij}, \ \forall i,j \text{ avec }  \epsilon_{i,j} \sim \mathcal{N}(0,1) \ \mathrm{iid}$ et tel que :
 $$y_{i,j}=
 \begin{cases}
-1 & \text{ si } z_{i,j} > 0 \\
+1 & \text{ si } Z_{ij} > 0 \\
 0 &  \text{sinon.}
 \end{cases}$$
-
-Alors on a $y_{i,j}| z_{i,j} \sim \mathcal{B}ernoulli(\theta_{i,j})$ avec
-$\mathrm{probit(\theta_{i,j})} = \alpha_i + \beta_{j,0}+X_i\beta_j+ W_i\lambda_j$.
+Alors on a $y_{ij} \ |\ Z_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$ avec
+$\mathrm{probit(\theta_{ij})} = \alpha_i + \beta_{j,0}+X_i\beta_j+ W_i\lambda_j$.
 \end{prop}
-
 \begin{dem}   
 $$\begin{aligned}
-\mathbb{P}(y_{i,j}=1) & = \mathbb{P}(z_{i,j} > 0)\\
-& = \mathbb{P}(\alpha_i + \beta_{j,0}+X_i\beta_j+ W_i\lambda_j + \epsilon_{i,j} > 0)\\
-& = \mathbb{P}(\epsilon_{i,j} > - (\alpha_i + \beta_{j,0} + X_i\beta_j + W_i\lambda_j) \ ) \\
-& = \mathbb{P}(\epsilon_{i,j} \leq \alpha_i + \beta_{j,0} + X_i\beta_j + W_i\lambda_j) \\
-& = \Phi( \alpha_i + \beta_{j,0} + X_i\beta_j + W_i\lambda_j) \\
+\mathbb{P}(y_{ij}=1) & = \mathbb{P}(Z_{ij} > 0)\\
+& = \mathbb{P}(\alpha_i + \beta_{j0}+X_i\beta_j+ W_i\lambda_j + \epsilon_{ij} > 0)\\
+& = \mathbb{P}(\epsilon_{ij} > - (\alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j) \ ) \\
+& = \mathbb{P}(\epsilon_{ij} \leq \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j) \\
+& = \Phi( \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j) \\
 \end{aligned}$$
 De la même façon on a :   
 $$\begin{aligned}
-\mathbb{P}(y_{i,j}=0) & = \mathbb{P}(z_{i,j} \leq 0)\\
+\mathbb{P}(y_{ij}=0) & = \mathbb{P}(Z_{ij} \leq 0)\\
 & = 1 - \Phi( \alpha_i + \beta_{j,0} + X_i\beta_j + W_i\lambda_j) \\
 \end{aligned}$$
 \end{dem}
+On définit le modèle probit à l’aide d’une variable latente afin d’être en mesure d’uiliser les propriétés des priors conjugués pour échantillonner les paramètres du modèle selon leur distributions conditionnelles *a posteriori*. 
 
-    
-On définit le modèle porbit à l'aide d'une variable latente afin d'utiliser les propriétés des priors conjugués pour estimer les distributions conditionnelles a posteriori de chacun des paramètres du modèle. 
+### Priors utilisés 
 
-### Modèle de regression logistique 
+Afin d’utiliser une méthode d’inférence bayesienne on détermine une distribution *a priori* pour chacun des paramètres du modèle :
+$$\begin{array}{lll}
+V_{\alpha} & \sim & \mathcal {IG}(\text{shape}=0.5, \text{rate}=0.005) \text{ avec } \mathrm{rate}=\frac{1}{\mathrm{scale}}, \\
+\beta_{jk} & \sim & \mathcal{N}(0,10^6)  \text{ pour } j=1,\ldots,J \text{ et } k=1,\ldots,p, \\
+\lambda_{jl} & \sim & \begin{cases}
+\mathcal{N}(0,10) & \text{si } l < j \\
+\mathcal{N}(0,10) \text{ tronquée à gauche par } 0 & \text{si } l=j \\
+P \text{ tel que } \mathbb{P}(\lambda_{jl} = 0)=1  & \text{si } l>j
+\end{cases} \\
+\quad & \quad & \text{ pour } j=1,\ldots,J \text{ et } l=1,\ldots,q.
+\end{array}$$
+En effet pour assurer l’identifiabilité du modèle les valeurs de $\Lambda$ sont contraintes à des valeurs strictements positives sur la diagonale et nulles au dessus de celle-ci, $\Lambda$ est ainsi supposée être triangulaire inférieure d’après l’article @Warton2015.  
+La fonction *boral()* du package du même nom, permettant d'ajuster toutes sortes de modèles utilise ces distributions *a priori* pour le modèle qui nous intéresse. Dans l'article @Warton2015 l'ajustement de modèle joints de distributions des espèces est réalisé avec *boral()* qui fonctionne avec JAGS (Just Another Gibbs Sampler) un programme de simulation à partir de modèles hiérarchiques bayésiens utilisant des méthodes MCMC, implémenté en C++. Cependant la fonction *jSDM_probit_block()* du package jSDM que j'ai implémentée utilise une distribution *a priori* jointe pour les effets espèces fixes de la manière qui suit. 
 
-## Méthodes d'estimation utilisées
-### Echantillonneur de Gibbs 
+### Propositions sur les priors conjugués  
 
-**Echantilloneur de Gibbs** :
-Cet algorithme est utilisé pour obtenir un échantillon d'une variable aléatoire dont la distribution de probabilité est connue, par exemple $Z=(Z_1,Z_2,Z_3)$ distribué selon $\uppi_i(z_i)$ connue pour $i=1,2,3$. 
+**Effets espèces fixes**:  
 
-\vspace{0.2cm}
-
-- **Initialisation** : $z^{(0)}= 0_{\mathbb{R}^3}$.
-
-\vspace{0.2cm}
-
-- **Itération t** : Générer $z^{(t)}$ de la manière suivante :
-\vspace{0.2cm}
-  * $z_1^{(t)} \sim \uppi_1\left(z_1 \ | z_2^{(t-1)},z_3^{(t-1)}\right)$
-\vspace{0.1cm}
-  * $z_2^{(t)} \sim \uppi_2\left(z_2 \ | \ z_1^{(t)}, z_3^{(t-1)}\right)$
-\vspace{0.1cm}
-  * $z_3^{(t)} \sim \uppi_3\left(z_3 \ | \ z_1^{(t)}, z_2^{(t)}\right)$  
-
-\vspace{0.2cm}  
-
-Par conséquent l'implémentation d'un Gibbs sampler nécessite la connaissance des ditributions a posteriori de chacun des paramètres conditionnellement aux autres paramètres du modèle, qui se déduisent des formules de priors conjugués dans le cas du modèle probit mais ne sont pas explicitement exprimables dans le cas où on utilise une fonction de lien logit.   
-
-### Echantilloneur de Gibbs et priors conjugués pour le modèle probit
-
-On se ramène à un modèle de la forme $Z^* = X\beta + \epsilon$ pour estimer les distributions conditionnelles a posteriori des effet espèces $\beta_j$ et $\lambda_j$ pour chacune des espèces $j$ ainsi que celles des variables latentes $W_i$  et des effets sites aléatoires $\alpha_i$ pour chaque site $i$. 
-
-D'une part afin d'estimer simultanément les $\beta_j$ et $\lambda_j$ pour chacune des espèces $j$, on pose $Z^*_{i,j} = Z_{i,j}  - \alpha_i = \beta_{j,0} + X_i\beta_j+ W_i\lambda_j +\epsilon_{i,j}$, ce qui revient en écriture matricielle à : 
-$$\begin{array}{ccc} 
-Z^*_{j}:= &\begin{pmatrix} 
-Z^*_{1,j} \\
+On se ramène à un modèle de la forme $Z^* = X\beta + \epsilon$, en posant $Z^*_{i,j} = Z_{ij}  - \alpha_i = \beta_{j0} + X_i\beta_j+ W_i\lambda_j+\epsilon_{ij}$, afin d'estimer simultanément les $\beta_j$ et $\lambda_j$ pour chacune des espèces $j$,   ce qui revient en écriture matricielle à : 
+$$\begin{aligned} 
+Z^*_{j} = &\begin{pmatrix} 
+Z^*_{1j} \\
 \vdots \\
-Z^*_{I,j}
-\end{pmatrix}
-= & \underbrace{
+Z^*_{Ij}
+\end{pmatrix} =  \underbrace{
 \begin{pmatrix}
- 1 & X_{i,1} & \ldots & X_{i,p} & W_{i,1} & \ldots & W_{i,q}\\
+ 1 & X_{11} & \ldots & X_{1p} & W_{11} & \ldots & W_{1q}\\
  \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
- 1 & X_{I,1} & \ldots & X_{I,p} & W_{I,1} & \ldots & W_{I,q}\\
+ 1 & X_{I1} & \ldots & X_{Ip} & W_{I1} & \ldots & W_{Iq}\\
 \end{pmatrix}}_{D}
 \underbrace{
 \begin{pmatrix}
-\beta_{j,0} \\
-\beta_{j,1} \\
+\beta_{j0} \\
+\beta_{j1} \\
 \small{\vdots} \\
-\beta_{j,p} \\
-\lambda_{j,1} \\
+\beta_{jp} \\
+\lambda_{j1} \\
 \small{\vdots} \\
-\lambda_{j,q} 
-\end{pmatrix}}_{P}
+\lambda_{jq} 
+\end{pmatrix}}_{P_j}
 + \begin{pmatrix} 
-\epsilon_{1,j} \\
+\epsilon_{1j} \\
 \vdots \\
-\epsilon_{I,j}
+\epsilon_{Ij}
 \end{pmatrix} \\
-\quad = & DP + \epsilon_j
-\end{array}$$
+& =  DP_j + \epsilon_j \quad \text{ avec } \epsilon_j \sim \mathcal{N}_I(0_{\mathbb{R}^I},I_I).
+\end{aligned}$$
+On suppose que $P_j \sim \mathcal{N}_{p+q+1}(m,V)$ avec $m=0_{\mathbb{R}^{p+q+1}}$ et $V=diag(\underbrace{10^6,\ldots,10^6}_{\times p+1},\underbrace{10,\ldots,10}_{\times q})$, par exemple.  
+Bien que cette distribution *a priori* ne prennent pas en compte les contraintes sur $\Lambda$, elle permet l'échantillonage selon une loi normale multivariée des effets espèce fixes. On imposera les contraintes aux $\lambda_{jl}$ concernés après les avoir simulés. 
 
-Puis on applique la proposition suivante : 
+On applique la proposition suivante : 
 
 \begin{prop}
 $$\begin{cases} 
-Y \ | \ \beta &\sim \mathcal{N}_n ( X\beta, I_n) \\
-\beta  &\sim \mathcal{N}_p (m,V)
+Y \ | \ \beta \sim \mathcal{N}_n ( X\beta, I_n) \\
+\beta  \sim \mathcal{N}_p (m,V)
 \end{cases}
 \Rightarrow \begin{cases}
-\beta|Y &\sim \mathcal{N}_p (m^*,V^*) \text{ avec }  \\
-m^* &= (V^{-1} + X'X)^{-1}(V^{-1}m + X'Y)\\
-V^*&=(V^{-1} + X'X)^{-1} 
+\beta|Y \sim \mathcal{N}_p (m^*,V^*) \text{ avec }  \\
+m^* = (V^{-1} + X'X)^{-1}(V^{-1}m + X'Y)\\
+V^*=(V^{-1} + X'X)^{-1} 
 \end{cases}$$.
 \end{prop}
-
 \begin{dem}
 $$\begin{aligned}
 p(\beta \ | \ Y) & \propto  p(Y \ | \ \beta) \ p(\beta) \\
@@ -270,108 +296,180 @@ p(\beta \ | \ Y) & \propto  p(Y \ | \ \beta) \ p(\beta) \\
 & \propto \exp\left(-\frac{1}{2}\left(\beta - \underbrace{(V^{-1}+X'X)^{-1}(V^{-1}m + X'Y)}_{m^*}\right)'\underbrace{(V^{-1}+X'X)}_{{V^*}^{-1}}\left(\beta - (V^{-1}+X'X)^{-1}(V^{-1}m + X'Y)\right)\right)
 \end{aligned}$$
 \end{dem}
-
-On obtient donc : 
-
+On obtient : 
 $$\begin{cases} 
-Z^*_j \ | \ P \sim \mathcal{N}_{I} ( DP, I_{I}) \\
-P \sim \mathcal{N}_{p+q+1}(m,V)
+Z^*_j \ | \ P_j \sim \mathcal{N}_{I} ( DP_j, I_{I}) \\
+P_j \sim \mathcal{N}_{p+q+1}(m,V)
 \end{cases}
 \Rightarrow \begin{cases}
-P|Z^*_j &\sim \mathcal{N}_{p+q+1} (m^*,V^*) \text{ avec }  \\
-m^* &= (V^{-1} + D'D)^{-1}(V^{-1}m + D'Z^*_j)\\
-V^*&=(V^{-1} + D'D)^{-1} 
+P_j \ | \ Z^*_j  \sim \mathcal{N}_{p+q+1} (m^*,V^*) \text{ avec }  \\
+m^* = (V^{-1} + D'D)^{-1}(V^{-1}m + D'Z^*_j)\\
+V^*=(V^{-1} + D'D)^{-1} 
 \end{cases}$$.
 
-En ce qui concerne l'effet site aléatoire $(\alpha_i)_{i=1,\dots,I}$, on pose $Z^*_{i,j} = Z_{i,j} - DP = \alpha_i + \epsilon_{i,j}$, on a ainsi $Z^*_{i,j} \ | \ \alpha_i \ \sim \mathcal{N}(\alpha_i,1)$ puis on applique la proposition suivante : 
+**Prédicteurs non mesurés ( ou “variables latentes”) : **
+
+De la même façon, on pose : $Z^\star_{ij} = Z_{ij} - \alpha_i - \beta_{j0} - X_i\beta_j = W_i\lambda_j + \epsilon_{ij}$, afin d’estimer $W_i$ pour chaque site $i$.  
+En appliquant la proposition précédente, on obtient :
+
+$$\begin{cases} 
+Z^*_i := (Z^*_{i1},\ldots,Z^*_{iJ})' \ | \ W_i \sim \mathcal{N}_{J} ( \Lambda W_i', I_{J}) \\
+W_i' \sim \mathcal{N}_{q}(0_{\mathbb{R}^{q}},I_q)
+\end{cases}
+\Rightarrow \begin{cases}
+W_i' \ | \ Z^*_i \sim \mathcal{N}_{q} (m^*,V^*) \text{ avec }  \\
+m^* = (I_q + \Lambda'\Lambda)^{-1}(\Lambda'Z^*_i)\\
+V^* = (I_q + \Lambda'\Lambda)^{-1} 
+\end{cases}$$.
+
+**Effets site aléatoires et variance associée : **   
+
+En ce qui concerne l'effet site aléatoire $(\alpha_i)_{i=1,\dots,I}$, on pose $Z^*_{i,j} = Z_{ij} - D_iP_j = \alpha_i + \epsilon_{i,j}$, avec $D_i =(1,X_{i1},\ldots,X_{ip},W_{i1},\ldots,W_{iq})$. \smallskip   
+On a ainsi $Z^*_{ij} \ | \ \alpha_i \ \sim \mathcal{N}(\alpha_i,1)$ *iid* pour $j=1,\ldots,J$, puis on applique la proposition suivante : 
 \begin{prop}
 $$\begin{cases} 
-x \ | \ \theta & \sim \mathcal{N}(\theta, \ \sigma^2) \\
-\theta  & \sim \mathcal{N}(\mu_0,{\tau_0}^2) \\
-\sigma^2 & \text{ connu}
+x_i \ | \ \theta \sim \mathcal{N}(\theta, \ \sigma^2) \ iid \text{ pour } i=1,\ldots,n\\
+\theta \sim \mathcal{N}(\mu_0,{\tau_0}^2) \\
+\sigma^2 \text{ connu}
 \end{cases}
 \Rightarrow
 \begin{cases} 
-\theta | \ x &\sim \mathcal{N}(\mu_1,{\tau_1}^2) \text{ avec }\\
-\mu_1 &= \dfrac{{\tau_0}^2\mu_0 + x\sigma^2}{{\tau_0}^{-2}+\sigma^{-2}} \\
-{\tau_1}^{-2} &={\tau_0}^{-2}+\sigma^{-2}
+\theta | \ x_1, \ldots,x_n \sim \mathcal{N}(\mu_1,{\tau_1}^2) \text{ avec } \\
+\mu_1 = \dfrac{{\tau_0}^{-2}\mu_0 + \sigma^{-2}\sum_{i=1}^nx_i}{{\tau_0}^{-2}+n\sigma^{-2}} \\
+{\tau_1}^{-2} = {\tau_0}^{-2}+n\sigma^{-2}
 \end{cases}$$. 
 \end{prop}
-
 \begin{dem}
 $$\begin{aligned}
-p(\theta \ | \ x) & \propto  p(x \ | \ \theta) \ p(\theta) \\
-& \propto  \frac{1}{(2\pi\sigma^2)^{\frac{1}{2}}}\exp\left(-\frac{1}{2\sigma^2}(x-\theta)^2\right)\frac{1}{(2\pi{\tau_0}^2)^{\frac{1}{2}}}\exp\left(-\frac{1}{2{\tau_0}^2}(\theta-\mu_0)^2\right) \\
-& \propto \exp\left(-\frac{1}{2{\tau_0}^2}(\theta-\mu_0)^2-\frac{1}{2\sigma^2}(x-\theta)^2\right) \\
-& \propto \exp\left(-\frac{1}{2{\tau_0}^2}(\theta^2-2\mu_0\theta)-\frac{1}{2\sigma^2}(\theta^2-2x\theta)\right)\\
-& \propto \exp\left(-\frac{1}{2}\left(\theta^2 ({\tau_0}^{-2}+\sigma^{-2})-2\mu_0\theta{\tau_0}^{-2}-2x\theta\sigma^{-2}\right)\right)\\
-& \propto \exp\left(-\frac{1}{2({\tau_0}^{-2}+\sigma^{-2})^{-1}}\left(\theta^2 -2\theta \frac{\mu_0{\tau_0}^{-2}+ x\sigma^{-2}}{{\tau_0}^{-2}+\sigma^{-2}}\right)\right)\\
+p(\theta \ | \ x_1,\ldots,x_n) & \propto p(\theta) p(x_1,\ldots,x_n \ | \ \theta) \\
+& \propto  \frac{1}{(2\pi{\tau_0}^2)^{\frac{1}{2}}}\exp\left(-\frac{1}{2{\tau_0}^2}(\theta-\mu_0)^2\right) \prod\limits_{i=1}^n\frac{1}{(2\pi\sigma^2)^{\frac{1}{2}}}\exp\left(-\frac{1}{2\sigma^2}(x_i-\theta)^2\right) \\
+& \propto \exp\left(-\frac{1}{2{\tau_0}^2}(\theta-\mu_0)^2-\frac{1}{2\sigma^2}\sum\limits_{i=1}^n(x_i-\theta)^2\right) \\
+& \propto \exp\left(-\frac{1}{2{\tau_0}^2}(\theta^2-2\mu_0\theta)-\frac{1}{2\sigma^2}\sum\limits_{i=1}^n(\theta^2-2\theta x_i)\right)\\
+& \propto \exp\left(-\frac{1}{2}\left(\theta^2 ({\tau_0}^{-2}+n\sigma^{-2})-2\mu_0\theta{\tau_0}^{-2}-2\theta\sigma^{-2}\sum\limits_{i=1}^n x_i\right)\right)\\
+& \propto \exp\left(-\frac{1}{2({\tau_0}^{-2}+n\sigma^{-2})^{-1}}\left(\theta -\frac{\mu_0{\tau_0}^{-2}+ \sigma^{-2}\sum\limits_{i=1}^n x_i}{{\tau_0}^{-2}+n\sigma^{-2}}\right)^2\right)\\
 \end{aligned}$$
 \end{dem}
-
 On obtient ainsi : 
-
 $$\begin{cases} 
-Z^*_{i,j} \ | \ \alpha_i \sim \mathcal{N}(\alpha_i, \ 1) \text{, iid } \forall j=1,\ldots,J\\
+Z^*_{ij} \ | \ \alpha_i \sim \mathcal{N}(\alpha_i, \ 1) \text{, iid } \forall j=1,\ldots,J\\
 \alpha_i \sim \mathcal{N}(0,V_{\alpha}) \\
 \end{cases}
 \Rightarrow
 \begin{cases} 
-\alpha_i | \ x &\sim \mathcal{N}(\mu_1,{\tau_1}^2) \text{ avec }\\
-\mu_1 &= \dfrac{{\tau_0}^2\mu_0 + x\sigma^2}{{\tau_0}^{-2}+\sigma^{-2}} \\
-{\tau_1}^{-2} &={\tau_0}^{-2}+\sigma^{-2}
-\end{cases}$$. 
-
+\alpha_i | \ Z^*_{i1}, \ldots, Z^*_{iJ} \sim \mathcal{N}(\mu_1,{\tau_1}^2) \text{ avec } \\
+\mu_1 = \dfrac{ \sum_{j=1}^J Z^*_{ij}}{V_{\alpha}^{-1}+ J} \text{ et } {\tau_1}^{-2} = V_{\alpha}^{-1}+ J.
+\end{cases}$$
 Finalement pour estimer $V_{\alpha}$, la variance des effets site aléatoires $(\alpha_i)_{i=1,\dots,I}$, on utilise la proposition suivante :
 \begin{prop}
 Si $$\begin{cases} 
-x \ | \ \sigma^2 & \sim \mathcal{N}_n (\theta, \ \sigma^2I_n) \\
-\sigma^2  & \sim \mathcal{IG} (a,b) \\
-\theta & \text{ connu}
+x \ | \ \sigma^2 \sim \mathcal{N}_n (\theta, \ \sigma^2I_n) \\
+\sigma^2   \sim \mathcal{IG} (a,b) \\
+\theta \text{ connu}
 \end{cases} \Rightarrow 
 \begin{cases}
 \sigma^2|x \sim \mathcal{IG}(a',b') \text{ avec } \\
-a' = a + \frac{n}{2} \\ 
-b' = \frac{1}{2}\sum\limits_{i=1}^n(x_i-\theta)^2 + b. 
+a' = a + \frac{n}{2} \text { et } b' = \frac{1}{2}\sum\limits_{i=1}^n(x_i-\theta)^2 + b. 
 \end{cases}$$
 \end{prop}
-
 \begin{dem}
 $$\begin{aligned}
 p(\sigma^2 \ | \ x) & \propto  p(x \ | \ \sigma^2) \ p(\sigma^2) \\
 & \propto  \frac{1}{(2\pi\sigma^2)^{\frac{n}{2}}}\exp\left(-\frac{1}{2\sigma^2}(x-\theta)'(x-\theta)\right)\frac{b^a}{\Gamma(a)}{(\sigma^2)}^{-(a+1)}\exp\left(-\frac{b}{\sigma^2}\right) \\
-& \propto {(\sigma^2)}^{-\left(\underbrace{\frac{n}{2}+a}_{a'}+1\right)}\exp\left(-\frac{1}{\sigma^2}\underbrace{\left(b+\frac{1}{2}\sum\limits_{i=1}^n(x_i-\theta)^2\right)}_{b'}\right)
+& \propto {(\sigma^2)}^{-\left(\frac{n}{2}+a+1\right)}\exp\left(-\frac{1}{\sigma^2}\left(b+\frac{1}{2}\sum\limits_{i=1}^n(x_i-\theta)^2\right)\right)
 \end{aligned}$$
 \end{dem}
+On a donc : $$\begin{cases} 
+(\alpha_1,\ldots,\alpha_I)' \ | \ V_{\alpha} \sim \mathcal{N}_n (0_{\mathbb{R}^I}, V_\alpha I_n) \\
+V_\alpha \sim \mathcal{IG} (a,b) \\
+\end{cases} \Rightarrow 
+\begin{cases}
+V_\alpha \ | \ \alpha_1,\ldots,\alpha_I \sim \mathcal{IG}(a',b') \text{ avec } \\
+a' = a + \frac{I}{2} \text{ et } b' = b + \frac{1}{2}\sum\limits_{i=1}^I \alpha_i^2. 
+\end{cases}$$
 
-### Echantilloneur de Gibbs et algorithme de Metropolis adaptatif pour le modèle logit 
-D'autre part on considère une fonction de lien logit : $\mathrm{logit}: p \rightarrow \ln\left(\frac{p}{1-p}\right)$.
-Dans ce cas les distributions n'étant pas conjuguées, on ne peut appliquer les propositions précédentes par conséquent on approche les distributions a posteriori des paramètres à l'aide d'un algorithme de Metropolis adaptatif de la manière suivante : 
+### Echantilloneur de Gibbs 
 
-** Algorithme de Metropolis Hastings ** :  
-On l'utilise pour générer une variable aléatoire selon une estimation de sa distibution conditionnelle a posteriori.
+L’algorithme utilisé pour estimer les paramètres de ce modèle est donc le suivant :  
 
-- **Initialisation** : $z^{(0)}= 0_{\mathbb{R}^3}$.
+— Définir les constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ telles que $N_{Gibbs}$ correspond au nombre d’itérations effectuées par l’échantillonneur de Gibbs,  $N_{burn}$ au nombre d’itérations nécessaires pour le burn-in ou temps de chauffe et $N_{samp} = \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations, afin d’obtenir un échantillon de $N_{samp}$ valeurs distribuées selon la distribution a posteriori pour chacun des paramètres.
+
+— Initialiser tous les paramètres à $0$ par exemple, excepté les valeurs diagonales de $\Lambda$ initialisées à $1$ et $V_{\alpha}^{(0)}=1$.
+
+— Gibbs sampler : à chaque itération $t$ pour $t=1,\ldots,N_{Gibbs}$ on répète chacune de ces étapes : 
+
+  * Génerer la variable latente $Z^{(t)}=\left(Z_{ij}^{(t)}\right)_{i=1,\ldots,I}^{j=1,\ldots,J}$ telle que
+$$Z_{ij}^{(t)} \sim  \begin{cases} 
+\mathcal{N}\left(\alpha_i^{(t−1)} + \beta_{j0}^{(t−1)} + X_i\beta_j{(t−1)} + W_i^{(t−1)}\lambda_j^{(t−1)}, \ 1 \right) \text{ tronquée à droite par } 0 & \text{si } y_{ij } =0 \\ 
+\mathcal{N}\left(\alpha_i^{(t−1)} + \beta_{j0}^{(t−1)} + X_i\beta_j{(t−1)} + W_i^{(t−1)}\lambda_j^{(t−1)}, \ 1 \right) \text{ tronquée à gauche par } 0 &        \text{si } y_{ij} =1 
+\end{cases}$$
+,la variable latente est ainsi initialisée à la première itération en la générant selon ces lois normales centrées.
+
+  * Générer les effets espèces fixes $P_j^{(t)}=(\beta_{j0}^{(t)},\beta_{j1}^{(t)} \ldots, \beta_{jp}^{(t)},\lambda_{j1}^{(t)},\ldots, \lambda_{jq}^{(t)})'$ selon : 
+$$P_j^{(t)} \ | \ Z^{(t)}, W_1^{(t-1)}, \alpha_1^{(t-1)}, \ldots, W_I^{(t−1)}, \alpha_I^{(t-1)} \sim \mathcal{N}_{p+q+1}(m^\star,V^\star) \text{, avec }$$
+$$m^\star = (V^{-1} + {D^{(t)}}'D^{(t)})^{-1}(V^{-1}m + {D^{(t)}}'Z^\star_j) \text{ et } V^\star = \left(V^{-1}+{D^{(t)}}'D^{(t)}\right)^{-1},$$
+$$\text{où } Z_j^\star =(Z_{1j}^\star,\ldots,Z_{Ij}^\star)' \text{ tel que } Z^\star_{ij} = Z_{ij}^{(t)}-\alpha_i^{(t-1)}.$$
+Afin de contraindre les valeurs diagonales de $\Lambda =\left(\lambda_{jl}\right)_{j=1,\ldots,J}^{l=1,\ldots,q}$ à des valeurs positives et de rendre la
+matrice triangulaire inférieure, on modifie les valeurs des $P^{(t)}$ simulées aléatoirement selon les conditions suivantes :
+$$P_{jp+1+l}^{(t)} = \lambda_{jl}^{(t)} \leftarrow \begin{cases}
+0 & \text{si } l>j \\
+\lambda_{jl}^{(t-1)} & \text{si } l=j \text{ et } \lambda_{jl}^{(t)} < 0.
+\end{cases}$$ 
+On pose $P^{(t)}=\left( P_1^{(t)} | \ldots | P_J^{(t)} \right)$.
+
+  * Générer les prédicteurs non mesurés (ou “variables latentes”) $$W_i^{(t)} \ | \ Z^{(t)}, P^{(t)},  \alpha_i^{(t-1)} \sim \mathcal{N}_{q} \left((I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}({\Lambda^{(t)}}'Z_i^{\star \star}),(I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}\right),$$
+$$\text{où } Z_i^{\star \star} =(Z_{i1}^{\star \star},\ldots,Z_{iJ}^{\star \star}) \text{ tel que } Z_{ij}^{\star \star } = Z_{ij}^{(t)}-\alpha_i^{(t-1)} − \beta_{j0}^{(t)} - X_i\beta_j^{(t)}.$$ On pose $D_i^{(t)} = \left(1,X_{i1},\ldots,X_{ip},W_{i1}^{(t)}, \ldots, W_{iq}^{(t)} \right)$.
+
+  * Générer les effets sites aléatoires $\alpha_i^{(t)}$ pour $i=1,\ldots,I$ selon :
+$$ \alpha_i | \ Z^{(t)}, P^{(t)},W_i^{(t)} \sim \mathcal{N}\left(\dfrac{ \sum_{j=1}^J Z_{ij}^{(t)} - D_i^{(t)}P_j^{(t)}}{{V_{\alpha}^{(t-1)}}^{-1} + J} , \left( \frac{1}{V_{\alpha}^{(t-1)}}+ J \right)^{-1}  \right)$$
+
+  * Générer la variance des effets site aléatoires $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
+
+
+### Modèle logit : échantillonneur de Gibbs et algorithme de Metropolis adaptatif  
+
+D'autre part on considère une fonction de lien $\mathrm{logit}: p \rightarrow \ln\left(\frac{p}{1-p}\right)$.
+
+### Définition du modèle 
+
+Dans ce cas les distributions n'étant pas conjuguées, on ne peut appliquer les propositions précédentes par conséquent on approche les distributions a posteriori des paramètres à l'aide d'un algorithme de Metropolis adaptatif de la manière suivante :
+
+### Priors utilisés 
+
+
+Afin d’utiliser une méthode d’inférence bayesienne on détermine une distribution *a priori* pour chacun des paramètres du modèle :
+$$\begin{array}{lll}
+V_{\alpha} & \sim & \mathcal {IG}(\text{shape}=0.5, \text{rate}=0.005) \text{ avec } \mathrm{rate}=\frac{1}{\mathrm{scale}}, \\
+\beta_{jk} & \sim & \mathcal{N}(0,10^6)  \text{ pour } j=1,\ldots,J \text{ et } k=1,\ldots,p, \\
+\lambda_{jl} & \sim & \begin{cases}
+\mathcal{N}(0,10) & \text{si } l < j \\
+\mathcal{U}(0,10) & \text{si } l=j \\
+P \text{ tel que } \mathbb{P}(\lambda_{jl} = 0)=1  & \text{si } l>j
+\end{cases} \\
+\quad & \quad & \text{ pour } j=1,\ldots,J \text{ et } l=1,\ldots,q.
+\end{array}$$
+
+### Principe d'un algorithme de Metropolis adaptatif 
+
+** Algorithme de Metropolis adaptatif ** :  
+Cet algorithme appartient aux méthodes MCMC et permet de générer une chaîne de Markov dont la distribution stationnaire est celle voulue. On l'utilise pour échantillonner les paramètres selon leurs distributions conditionnelles *a posterirori* connue à une constante multiplicative près.
+
+- **Initialisation** : $\theta^{(0)}= (\theta_1^{(0)},\ldots,\theta_m^{(0)})$ fixés arbitrairement. 
 \vspace{0.2cm}
 - **Iteration t** : 
 \vspace{0.2cm}
 
-  * Générer $z^* \sim q(z^{(t-1)},.)$, comme densité instrumentale conditionnelle $q(z^{(t-1)},.)$ on utilise $\mathcal{N}(z^{(t-1)},1)$.
+  * Générer $\theta_i^* \sim q(\theta_i^{(t-1)},.)$, comme densité instrumentale conditionnelle $q(\theta_i^{(t-1)},.)$ symétrique, on utilise $\mathcal{N}(\theta_i^{(t-1)},{\sigma^2_{\theta_i}}^{(t)}$ par exemple.
   \vspace{0.1cm}
-  * Calculer la probabilité d'acceptation : $$\alpha = min\left(1,\frac{\uppi(z^*)}{\uppi(z^{(t-1)})}\right)$$.
-  * Retenir $${z}^{(t)} =  
+  * Calculer la probabilité d'acceptation : $$\alpha = min\left(1,\frac{\uppi(\theta_i^*)}{\uppi(\theta_i^{(t-1)})}\right)$$.
+  * Retenir $$\theta_i^{(t)} =  
   \begin{cases} 
-  z^* & \text{ avec probabilité } \alpha  \\
-  z^{(t-1)} & \text{ avec probabilité } 1-\alpha. \\
+  \theta_i^* & \text{ avec probabilité } \alpha  \\
+  \theta_i^{(t-1)} & \text{ avec probabilité } 1-\alpha. \\
   \end{cases}$$
 
-- Initialisation en utilisant les lois a priori définies pour chacun des paramètres :
+### Echantilloneur de Gibbs 
 
-  * Générer $\beta_j^{(0)}$ pour $j=1,\ldots,J$ avec $\beta_{j,k} \sim \mathcal{N}(\mu_{\beta_{j,k}},\sigma^2_{\beta_{j,k}})$,     où $\mu_{\beta_{j,k}}=0$ et $\sigma^2_{\beta_{j,k}}=1e+06$ pour $k=1,\ldots,p$.
-  * Générer $\beta_{j,0}^{(0)}$ pour $j=1,\ldots,J$ selon une $\mathcal{N}(0,1e+06)$.
-  * Générer $\lambda_j^{(0)}$ pour $j=1,\ldots,J$ avec  $\lambda_{j,l} \sim \mathcal{N}(0,\sigma^2_{\lambda_{j,l}})$ où $\sigma^2_{\lambda_{j,l}}=20$ pour $l=1,\ldots,q$. 
-  * Générer $W_i^{(0)}$ pour $i=1,\ldots,n$ selon une $\mathcal{N}(0,I_q)$.
-  * Générer $\alpha_i^{(0)}$ pour $i=1,\ldots,I$ selon une $\mathcal{N}(0,100)$ si effet fixe.
+- Initialisation 
 
 - Définition des constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ et $R_{opt}$ tels que  $N_{Gibbs}$ correspond au nombre d'itérations effectuées par l'algorithme,  $N_{burn}$ au nombre d'itérations nécessaires pour le burn-in ou temps de chauffe et $R_{opt}$ au ratio d'acceptation optimal. On définit $N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution a posteriori pour chacun des paramètres. 
 

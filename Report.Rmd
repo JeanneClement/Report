@@ -25,7 +25,7 @@ header-includes:
 
 
 bibliography: Biblio_master.bib
-geometry: left=1.7cm,right=1.7cm,top=1.5cm,bottom=1.3cm
+geometry: left=1.4cm,right=1.4cm,top=1.5cm,bottom=1.3cm
 fontsize : 10pt
 ---
 
@@ -399,7 +399,7 @@ $$Z_{ij}^{(t)} \sim  \begin{cases}
 \end{cases}$$
 , la variable latente est ainsi initialisée à la première itération en la générant selon ces lois normales centrées.
 \vspace{0.1cm}
-  \item[$\bullet$] Générer les \textbf{effets espèces fixes} $P_j^{(t)}=(\beta_{j0}^{(t)},\beta_{j1}^{(t)} \ldots, \beta_{jp}^{(t)},\lambda_{j1}^{(t)},\ldots, \lambda_{jq}^{(t)})'$ selon : 
+  \item[$\bullet$] Générer les \textbf{effets espèces fixes} $P_j^{(t)}=(\beta_{j0}^{(t)},\beta_{j1}^{(t)} \ldots, \beta_{jp}^{(t)},\lambda_{j1}^{(t)},\ldots, \lambda_{jq}^{(t)})'$ pour $j=1,\ldots,J$ selon : 
 $$P_j^{(t)} \ | \ Z^{(t)}, W_1^{(t-1)}, \alpha_1^{(t-1)}, \ldots, W_I^{(t−1)}, \alpha_I^{(t-1)} \sim \mathcal{N}_{p+q+1}(m^\star,V^\star) \text{, avec }$$
 $$m^\star = (V^{-1} + {D^{(t)}}'D^{(t)})^{-1}(V^{-1}m + {D^{(t)}}'Z^\star_j) \text{ et } V^\star = \left(V^{-1}+{D^{(t)}}'D^{(t)}\right)^{-1},$$
 $$\text{où } Z_j^\star =(Z_{1j}^\star,\ldots,Z_{Ij}^\star)' \text{ tel que } Z^\star_{ij} = Z_{ij}^{(t)}-\alpha_i^{(t-1)}.$$
@@ -468,13 +468,13 @@ On le qualifie d'adaptatif car la variance de la densité instrumentale conditio
   \item[$\bullet$] Générer $\theta_i^\star \sim q(\theta_i^{(t-1)},.)$, avec une densité instrumentale conditionnelle $q(\theta_i^{(t-1)},\theta_i^\star)$ symétrique, on choisira une loi $\mathcal{N}(\theta_i^{(t-1)},{\sigma^2_{i}})$ par exemple.
   
   \item[$\bullet$] Calculer la probabilité d'acceptation : 
-  $$\alpha =  min\left(1,\dfrac{\uppi\left(\theta_i^\star \ | \ \theta_1^{(t-1)},\dots,\theta_{i-1}^{(t-1)},\theta_{i+1}^{(t-1)},\ldots,\theta_m^{(t-1)}, x \right)}{\uppi\left(\theta_i^{(t-1)} \ | \ \theta_1^{(t-1)},\dots,\theta_{i-1}^{ (t-1)},\theta_{i+1}^{(t-1)},\ldots,\theta_m^{(t-1)},x\right)}\right)$$.
+  $$\gamma=  min\left(1,\dfrac{\uppi\left(\theta_i^\star \ | \ \theta_1^{(t-1)},\dots,\theta_{i-1}^{(t-1)},\theta_{i+1}^{(t-1)},\ldots,\theta_m^{(t-1)}, x \right)}{\uppi\left(\theta_i^{(t-1)} \ | \ \theta_1^{(t-1)},\dots,\theta_{i-1}^{ (t-1)},\theta_{i+1}^{(t-1)},\ldots,\theta_m^{(t-1)},x\right)}\right)$$.
   
   \item[$\bullet$] Retenir $$\theta_i^{(t)} =  
   \begin{cases} 
-  \theta_i^\star & \text{ avec probabilité } \alpha \\
+  \theta_i^\star & \text{ avec probabilité } \gamma \\
   &\text{ si on est dans ce cas le nombre d'acceptation devient : } n^A_{i} \leftarrow n^A_{i} +1 \\
-  \theta_i^{(t-1)} & \text{ avec probabilité } 1-\alpha. \\
+  \theta_i^{(t-1)} & \text{ avec probabilité } 1-\gamma. \\
   \end{cases}$$
   \end{itemize}
   
@@ -513,21 +513,24 @@ On répète ces étapes pour $i=1,\ldots,I$ et $j=1,\ldots,J$, et on pose $\thet
 
 On peut ainsi calculer la vraisemblance du modèle : $\mathrm{L}(\theta)= \sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\mathrm{L}(\theta_{ij})$.  
 
-D’après la formules de Bayes on a $$\mathrm{p}(\theta \ |  \ Y) \propto  \underbrace{\uppi(\theta)}_{\text{loi } a \ priori}\mathrm{L}(\theta).$$
-On utilise donc les relations suivantes pour approcher les densités conditionnelles a posteriori de chacun des paramètres :   
+D’après la formules de Bayes on a $$\mathrm{p}(\theta \ |  \ Y) \propto \uppi(\theta) \mathrm{L}(\theta).$$
+On utilise donc les relations suivantes pour approcher les densités conditionnelles a posteriori de chacun des paramètres avec $\uppi(.)$ les densités correspondants à leurs lois *a priori*.
 
 $$\begin{aligned}
-& p(\beta_{jk} \ |  \ \beta_{j0},\beta_{j1},\ldots,\beta_{jk-1},\beta_{jk+1},\ldots,\beta_{jp}, \lambda_j,\alpha_1,\ldots,\alpha_I, W_1,\ldots,W_I,Y) \propto  \underbrace{ \uppi(\beta_{jk})}_{\text{loi } a \ priori}\prod\limits_{1\leq i\leq I}  \mathrm{L}(\theta_{ij})\\
-&p(\lambda_{jl} \ |  \ \lambda_{j1},\ldots,\lambda_{jl-1},\lambda_{jl+1},\ldots,\lambda_{jq}, \beta_j,\beta_{j0},\alpha_1,\ldots,\alpha_I, W_1,\ldots,W_I,Y) \propto  \underbrace{\uppi(\lambda_{jl})}_{\text{loi } a \ priori} \prod\limits_{1\leq i \leq I}\mathrm{L}(\theta_{ij})\\
-&p(W_{il} \ |  \ W_{i1},\ldots,W_{il-1},W_{il+1},\ldots,W_{iq},\alpha_i,\beta_{10},\ldots,\beta_{J0},\beta_1,\ldots,\beta_J,\lambda_1,\ldots, \lambda_J,Y) \propto  \underbrace{\uppi(W_{il})}_{\text{loi } a \ priori} \prod\limits_{1\leq j\leq J}\mathrm{L}(\theta_{ij})\\
-&p(\alpha_i \ |  \ W_i,\beta_{10},\ldots,\beta_{J0},\beta_1,\ldots,\beta_J,\lambda_1,\ldots, \lambda_j,V_{\alpha},Y) \propto \underbrace{\uppi(\alpha_i \ | \ V_{\alpha})}_{\text{loi }a \ priori} \prod\limits_{1\leq j\leq J}\mathrm{L}(\theta_{ij})\\
+& p(\beta_{jk} \ |  \ \beta_{j0},\beta_{j1},\ldots,\beta_{jk-1},\beta_{jk+1},\ldots,\beta_{jp}, \lambda_j,\alpha_1,\ldots,\alpha_I, W_1,\ldots,W_I,Y) \propto \uppi(\beta_{jk})\prod\limits_{1\leq i\leq I}  \mathrm{L}(\theta_{ij})\\
+&p(\lambda_{jl} \ |  \ \lambda_{j1},\ldots,\lambda_{jl-1},\lambda_{jl+1},\ldots,\lambda_{jq}, \beta_j,\beta_{j0},\alpha_1,\ldots,\alpha_I, W_1,\ldots,W_I,Y) \propto  \uppi(\lambda_{jl}) \prod\limits_{1\leq i \leq I}\mathrm{L}(\theta_{ij})\\
+&p(W_{il} \ |  \ W_{i1},\ldots,W_{il-1},W_{il+1},\ldots,W_{iq},\alpha_i,\beta_{10},\ldots,\beta_{J0},\beta_1,\ldots,\beta_J,\lambda_1,\ldots, \lambda_J,Y) \propto \uppi(W_{il}) \prod\limits_{1\leq j\leq J}\mathrm{L}(\theta_{ij})\\
+&p(\alpha_i \ |  \ W_i,\beta_{10},\ldots,\beta_{J0},\beta_1,\ldots,\beta_J,\lambda_1,\ldots, \lambda_j,V_{\alpha},Y) \propto \uppi(\alpha_i \ | \ V_{\alpha}) \prod\limits_{1\leq j\leq J}\mathrm{L}(\theta_{ij})\\
+& \text{, pour $i=1,\ldots,I$, $j=1,\ldots,J$, $k=1,\ldots,p$ et $l=1,\ldots,q$. 
+}
 \end{aligned}$$
 
 \newpage
 L’algorithme utilisé pour estimer les paramètres du modèle logit est donc le suivant :
 
 \begin{itemize}
-\item Définition des constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ et $R_{opt}$ tels que  $N_{Gibbs}$ correspond au nombre d'itérations effectuées par l'algorithme,  $N_{burn}$ au nombre d'itérations nécessaires pour le burn-in ou temps de chauffe, $N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution a posteriori pour chacun des paramètres. 
+\item Définition des constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ et $R_{opt}$ tels que  $N_{Gibbs}$ correspond au nombre d'itérations effectuées par l'algorithme,  $N_{burn}$ au nombre d'itérations nécessaires pour le burn-in ou temps de chauffe,   
+$N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution a posteriori pour chacun des paramètres.   
 On fixe $R_{opt}$ le ratio d'acceptation optimal utilisé dans les algorithmes de Metropolis adaptatifs implémentés pour chacun des paramètres du modèle. 
 
 \item Initialiser tous les paramètres à $0$ par exemple, excepté les valeurs diagonales de $\Lambda$ initialisées à $1$ et $V_{\alpha}^{(0)}=1$. Le nombre d'acceptation de chaque paramètre est intialisé à $0$ et les variances de leur densités instrumententales conditionnelles prennent la valeur $1$.
@@ -535,24 +538,25 @@ On fixe $R_{opt}$ le ratio d'acceptation optimal utilisé dans les algorithmes d
   \begin{itemize}
 \vspace{0.1cm}
 \item[$\bullet$] Générer les \textbf{effets sites aléatoires} $\alpha_i^{(t)}$ pour $i=1,\ldots,I$ selon un algorithme de Metropolis adaptatif simulant $\alpha_i^\star \sim \mathcal{N}(\alpha_i^{(t-1)},\sigma_{\alpha_i}^2)$ puis calculant le taux d'acceptation de la manière suivante :  
-$$min\left(1,\dfrac{\uppi(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}{\uppi(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}\right).$$
+$$\gamma =min\left(1, \ \dfrac{\uppi\left(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)}\right)\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, X_i,y_{ij},n_i\right)}{\uppi\left(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)}\right)\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, X_i,y_{ij},n_i\right)}\right).$$
 
 \item[$\bullet$] Générer la \textbf{variance des effets site aléatoires} $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
 
-\item[$\bullet$] Générer les \textbf{prédicteurs non mesurés} (ou “variables latentes”) $W_i^{(t)}$ pour $i=1,\ldots,I$ selon un algorithme de Metropolis adaptatif  simulant $W_{il}^\star \sim \mathcal{N}(W_{il}^{(t-1)}, \sigma_{W_{il}}^2)$ puis calculant le taux d'acceptation de la manière suivante :
+\item[$\bullet$] Générer les \textbf{prédicteurs non mesurés} (ou “variables latentes”) $W_{il}^{(t)}$ pour $i=1,\ldots,I$ et $l=1,\ldots,q$ selon un algorithme de Metropolis adaptatif  simulant $W_{il}^\star \sim \mathcal{N}(W_{il}^{(t-1)}, \sigma_{W_{il}}^2)$ puis calculant le taux d'acceptation de la manière suivante :
 
-$$min\left(1,\dfrac{\uppi(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}{\uppi(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}\right).$$
+$$\gamma = min\left(1,\ \dfrac{\uppi\left(W_{il}^\star\right)\prod\limits_{1\leq j\leq J}f\left(W_{il}^\star, \alpha_i^{(t)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)},X_i,y_{ij},n_i\right)} {\uppi\left(W_{il}^{(t-1)}\right)\prod\limits_{1\leq j\leq J}f\left(W_{il}^{(t-1)}, \alpha_i^{(t)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, X_i,y_{ij},n_i\right)}\right).$$
 
-\item[$\bullet$] Générer les \textbf{effets espèces fixes} $\beta_{jk}^{(t)}$ pour $j=1,\ldots,J$ et $k=1,\ldots,p$ selon un algorithme de Metropolis adaptatif  simulant $\beta_{jk}^\star \sim \mathcal{N}(\beta_{jk}^{(t-1)}, \sigma_{\beta_{jk}}^2)$ puis calculant le taux d'acceptation de la manière suivante :
+\item[$\bullet$] Générer les \textbf{effets espèces fixes} $\beta_{jk}^{(t)}$ pour $j=1,\ldots,J$ et $k=0,\ldots,p$ selon un algorithme de Metropolis adaptatif  simulant $\beta_{jk}^\star \sim \mathcal{N}(\beta_{jk}^{(t-1)}, \sigma_{\beta_{jk}}^2)$ puis calculant le taux d'acceptation de la manière suivante :
 
-$$min\left(1,\dfrac{\uppi(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}{\uppi(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}\right).$$
+$$\gamma = min\left(1,\dfrac{\uppi\left(\beta_{jk}^\star\right)\prod\limits_{1\leq i\leq I}f\left(\beta_{j0}^{(t)},\small{\ldots},\beta_{jk-1}^{(t)},\beta_{jk}^\star,\beta_{jk+1}^{(t-1)},\small{\ldots}, \beta_{jp}^{(t-1)},\lambda_j^{(t-1)}, \alpha_1^{(t)},W_1^{(t)},\small{\ldots},\alpha_I^{(t)},  W_I^{(t)},X_i,y_{ij},n_i\right)} {\uppi\left(\beta_{jk}^{(t-1)}\right)\prod\limits_{1\leq i\leq I}f\left(\beta_{j0}^{(t)},\small{\ldots},\beta_{jk-1}^{(t)},\beta_{jk}^{(t-1)},\beta_{jk+1}^{(t-1)},\small{\ldots}, \beta_{jp}^{(t-1)},\lambda_j^{(t-1)}, \alpha_1^{(t)},W_1^{(t)}, \small{\ldots},\alpha_I^{(t)},  W_I^{(t)},X_i,y_{ij},n_i\right)}\right).$$
   
-\item[$\bullet$] Générer les \textbf{effets espèces fixes liés aux prédicteurs non mesurés} $\lambda_{jl}^{(t)}$ pour $j=1,\ldots,J$ et $l=1,\ldots,q$ selon un algorithme de Metropolis adaptatif simulant $\lambda_{jl}^\star \sim \mathcal{N}(\lambda_{jl}^{(t-1)},\sigma_{\lambda_{jl}}^2)$ puis en calculant le taux d'acceptation de la manière suivante : 
-
-$$min\left(1,\dfrac{\uppi(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}{\uppi(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}\right).$$
+\item[$\bullet$] Générer les \textbf{effets espèces fixes liés aux prédicteurs non mesurés} $\lambda_{jl}^{(t)}$ pour $j=1,\ldots,J$ et $l=1,\ldots,q$ selon un algorithme de Metropolis adaptatif pour $l \geq j$, simulant $\lambda_{jl}^\star \sim \mathcal{N}(\lambda_{jl}^{(t-1)},\sigma_{\lambda_{jl}}^2)$ puis calculant le taux d'acceptation de la manière suivante : 
+$$\gamma = min\left(1,\dfrac{\uppi\left(\lambda_{jl}^\star\right)\prod\limits_{1\leq i\leq I}f\left(\lambda_{j1}^{(t)},\small{\ldots},\lambda_{jl-1}^{(t)},\lambda_{jl}^\star,\lambda_{jl+1}^{(t-1)},\small{\ldots}, \lambda_{jq}^{(t-1)},\beta_{j0}^{(t)},\beta_j^{(t)}, \alpha_1^{(t)},W_1^{(t)},\small{\ldots},\alpha_I^{(t)},  W_I^{(t)},X_i,y_{ij},n_i\right)} {\uppi\left(\lambda_{jl}^{(t-1)}\right)\prod\limits_{1\leq i\leq I}f\left(\lambda_{j1}^{(t)},\small{\ldots},\lambda_{jl-1}^{(t)},\lambda_{jl}^{(t-1)},\lambda_{jl+1}^{(t-1)},\small{\ldots}, \lambda_{jq}^{(t-1)},\beta_{j0}^{(t)},\beta_j^{(t)}, \alpha_1^{(t)},W_1^{(t)},\small{\ldots},\alpha_I^{(t)},  W_I^{(t)},X_i,y_{ij},n_i\right)}\right).$$
+Dans le cas $l>j$, on pose $\lambda_{jl}^{(t)} = 0$. 
 \end{itemize}
 \end{itemize}
 
+\newpage 
 ## Evaluation de la fiabilité de ces méthodes sur des données simulées 
 
 \newpage

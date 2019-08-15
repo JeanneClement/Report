@@ -157,24 +157,19 @@ Dans le cadre bayésien, l’algorithme de Gibbs permet d’obtenir une réalisa
 
 \vspace{0.2cm}
 
-L’**échantillonnage de Gibbs** consiste à : \medskip  
-
-- **Initialisation** : choix arbitraire de $\theta^{(0)}= (\theta_1^{(0)},\dots,\theta_m^{(0)})$.
-
+L’**échantillonnage de Gibbs** consiste à : 
+\begin{itemize}
+\item \textbf{Initialisation} : choix arbitraire de $\theta^{(0)}= (\theta_1^{(0)},\dots,\theta_m^{(0)})$.
 \vspace{0.2cm}
-
-- **Itération t** : Générer $\theta^{(t)}$ de la manière suivante :
+\item \textbf{Itération $t$} : Générer $\theta^{(t)}$ de la manière suivante :
 \vspace{0.2cm}
-
-    * $\theta_1^{(t)} \sim \uppi\left(\theta_1 \ | \theta_2^{(t-1)},\dots, \theta_m^{(t-1)}, x \right)$
+  \begin{itemize}
+  \item[$\bullet$] $\theta_1^{(t)} \sim \uppi\left(\theta_1 \ | \theta_2^{(t-1)},\dots, \theta_m^{(t-1)}, x \right)$
 \vspace{0.1cm}
-
-    * $\theta_2^{(t)} \sim \uppi\left((\theta_2 \ | \ (\theta_1^{(t)}, \theta_3^{(t-1)},\ldots,\theta_m^{(t-1)},x\right)$
-    \vspace{0.1cm}
-    \vdots  
-    \vspace{0.1cm}
-
-    * $\theta_m^{(t)} \sim \uppi\left(\theta_m \ | \ \theta_1^{(t)}, \ldots, \theta_{m-1}^{(t)},x\right)$   
+  \item[$\bullet$] $\theta_2^{(t)} \sim \uppi\left((\theta_2 \ | \ (\theta_1^{(t)}, \theta_3^{(t-1)},\ldots,\theta_m^{(t-1)},x\right)$
+  \item[$\bullet$] $\theta_m^{(t)} \sim \uppi\left(\theta_m \ | \ \theta_1^{(t)}, \ldots, \theta_{m-1}^{(t)},x\right)$
+\end{itemize}
+\end{itemize}
 
 Les itérations successives de cet algorithme génèrent les états d’une chaîne de
 Markov $\{\theta^{(t)}, t > 0\}$ à valeurs dans $\mathbb{R}^{m}$, on montre que cette chaîne admet une mesure invariante qui est la *loi a posteriori*.  
@@ -187,7 +182,7 @@ Par conséquent l'implémentation d'un échantillonneur de Gibbs nécessite la c
 
 D’une part, on utilise un fonction de lien $\mathrm{probit} : p \rightarrow \Phi^{-1}(p)$ où $\Phi$ correspond à la fonction de répartition d’une loi normale centrée réduite.  
 
-### Définition du modèle  
+### Définition du modèle probit
 
 D’après l’article @Albert1993, une modélisation possible est de supposer l’existence d’une variable latente sous-jacente liée à notre variable binaire observées en utilisant la proposition suivante :
 
@@ -387,24 +382,24 @@ V_\alpha \ | \ \alpha_1,\ldots,\alpha_I \sim \mathcal{IG}(a',b') \text{ avec } \
 a' = a + \frac{I}{2} \text{ et } b' = b + \frac{1}{2}\sum\limits_{i=1}^I \alpha_i^2. 
 \end{cases}$$
 
+\newpage
 ### Echantilloneur de Gibbs 
-
-L’algorithme utilisé pour estimer les paramètres de ce modèle est donc le suivant :  
-
-— Définir les constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ telles que $N_{Gibbs}$ correspond au nombre d’itérations effectuées par l’échantillonneur de Gibbs,  $N_{burn}$ au nombre d’itérations nécessaires pour le burn-in ou temps de chauffe et $N_{samp} = \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations, afin d’obtenir un échantillon de $N_{samp}$ valeurs distribuées selon la distribution a posteriori pour chacun des paramètres.
-
-— Initialiser tous les paramètres à $0$ par exemple, excepté les valeurs diagonales de $\Lambda$ initialisées à $1$ et $V_{\alpha}^{(0)}=1$.
-
-— Gibbs sampler : à chaque itération $t$ pour $t=1,\ldots,N_{Gibbs}$ on répète chacune de ces étapes : 
-
-  * Génerer la variable latente $Z^{(t)}=\left(Z_{ij}^{(t)}\right)_{i=1,\ldots,I}^{j=1,\ldots,J}$ telle que
+L’algorithme utilisé pour estimer les paramètres du modèle logit est donc le suivant :
+\begin{itemize}
+\item Définir les constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ telles que $N_{Gibbs}$ correspond au nombre d’itérations effectuées par l’échantillonneur de Gibbs,  $N_{burn}$ au nombre d’itérations nécessaires pour le burn-in ou temps de chauffe et $N_{samp} = \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations, afin d’obtenir un échantillon de $N_{samp}$ valeurs distribuées selon la distribution a posteriori pour chacun des paramètres.
+\vspace{0.2cm}
+\item Initialiser tous les paramètres à $0$ par exemple, excepté les valeurs diagonales de $\Lambda$ initialisées à $1$ et $V_{\alpha}^{(0)}=1$.
+\vspace{0.2cm}
+\item Gibbs sampler : à chaque itération $t$ pour $t=1,\ldots,N_{Gibbs}$ on répète chacune de ces étapes :
+  \begin{itemize}
+  \item[$\bullet$] Génerer la \textbf{variable latente} $Z^{(t)}=\left(Z_{ij}^{(t)}\right)_{i=1,\ldots,I}^{j=1,\ldots,J}$ telle que
 $$Z_{ij}^{(t)} \sim  \begin{cases} 
 \mathcal{N}\left(\alpha_i^{(t−1)} + \beta_{j0}^{(t−1)} + X_i\beta_j{(t−1)} + W_i^{(t−1)}\lambda_j^{(t−1)}, \ 1 \right) \text{ tronquée à droite par } 0 & \text{si } y_{ij } =0 \\ 
-\mathcal{N}\left(\alpha_i^{(t−1)} + \beta_{j0}^{(t−1)} + X_i\beta_j{(t−1)} + W_i^{(t−1)}\lambda_j^{(t−1)}, \ 1 \right) \text{ tronquée à gauche par } 0 &        \text{si } y_{ij} =1 
+\mathcal{N}\left(\alpha_i^{(t−1)} + \beta_{j0}^{(t−1)} + X_i\beta_j{(t−1)} + W_i^{(t−1)}\lambda_j^{(t−1)}, \ 1 \right) \text{ tronquée à gauche par } 0 &        \text{si } y_{ij} =1
 \end{cases}$$
-,la variable latente est ainsi initialisée à la première itération en la générant selon ces lois normales centrées.
-
-  * Générer les effets espèces fixes $P_j^{(t)}=(\beta_{j0}^{(t)},\beta_{j1}^{(t)} \ldots, \beta_{jp}^{(t)},\lambda_{j1}^{(t)},\ldots, \lambda_{jq}^{(t)})'$ selon : 
+, la variable latente est ainsi initialisée à la première itération en la générant selon ces lois normales centrées.
+\vspace{0.1cm}
+  \item[$\bullet$] Générer les \textbf{effets espèces fixes} $P_j^{(t)}=(\beta_{j0}^{(t)},\beta_{j1}^{(t)} \ldots, \beta_{jp}^{(t)},\lambda_{j1}^{(t)},\ldots, \lambda_{jq}^{(t)})'$ selon : 
 $$P_j^{(t)} \ | \ Z^{(t)}, W_1^{(t-1)}, \alpha_1^{(t-1)}, \ldots, W_I^{(t−1)}, \alpha_I^{(t-1)} \sim \mathcal{N}_{p+q+1}(m^\star,V^\star) \text{, avec }$$
 $$m^\star = (V^{-1} + {D^{(t)}}'D^{(t)})^{-1}(V^{-1}m + {D^{(t)}}'Z^\star_j) \text{ et } V^\star = \left(V^{-1}+{D^{(t)}}'D^{(t)}\right)^{-1},$$
 $$\text{où } Z_j^\star =(Z_{1j}^\star,\ldots,Z_{Ij}^\star)' \text{ tel que } Z^\star_{ij} = Z_{ij}^{(t)}-\alpha_i^{(t-1)}.$$
@@ -414,124 +409,149 @@ $$P_{jp+1+l}^{(t)} = \lambda_{jl}^{(t)} \leftarrow \begin{cases}
 0 & \text{si } l>j \\
 \lambda_{jl}^{(t-1)} & \text{si } l=j \text{ et } \lambda_{jl}^{(t)} < 0.
 \end{cases}$$ 
-On pose $P^{(t)}=\left( P_1^{(t)} | \ldots | P_J^{(t)} \right)$.
+On pose $P^{(t)}=\left( P_1^{(t)} | \ldots | P_J^{(t)} \right)$.  
+\vspace{0.1cm}
 
-  * Générer les prédicteurs non mesurés (ou “variables latentes”) $$W_i^{(t)} \ | \ Z^{(t)}, P^{(t)},  \alpha_i^{(t-1)} \sim \mathcal{N}_{q} \left((I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}({\Lambda^{(t)}}'Z_i^{\star \star}),(I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}\right),$$
+  \item[$\bullet$] Générer les \textbf{prédicteurs non mesurés} (ou “variables latentes”) $W_i^{(t)}$ pour $i=1,\ldots,I$ selon : $$W_i^{(t)} \ | \ Z^{(t)}, P^{(t)},  \alpha_i^{(t-1)} \sim \mathcal{N}_{q} \left((I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}({\Lambda^{(t)}}'Z_i^{\star \star}),(I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}\right),$$
 $$\text{où } Z_i^{\star \star} =(Z_{i1}^{\star \star},\ldots,Z_{iJ}^{\star \star}) \text{ tel que } Z_{ij}^{\star \star } = Z_{ij}^{(t)}-\alpha_i^{(t-1)} − \beta_{j0}^{(t)} - X_i\beta_j^{(t)}.$$ On pose $D_i^{(t)} = \left(1,X_{i1},\ldots,X_{ip},W_{i1}^{(t)}, \ldots, W_{iq}^{(t)} \right)$.
 
-  * Générer les effets sites aléatoires $\alpha_i^{(t)}$ pour $i=1,\ldots,I$ selon :
+  \item[$\bullet$] Générer les \textbf{effets sites aléatoires} $\alpha_i^{(t)}$ pour $i=1,\ldots,I$ selon :
 $$ \alpha_i | \ Z^{(t)}, P^{(t)},W_i^{(t)} \sim \mathcal{N}\left(\dfrac{ \sum_{j=1}^J Z_{ij}^{(t)} - D_i^{(t)}P_j^{(t)}}{{V_{\alpha}^{(t-1)}}^{-1} + J} , \left( \frac{1}{V_{\alpha}^{(t-1)}}+ J \right)^{-1}  \right)$$
 
-  * Générer la variance des effets site aléatoires $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
+  \item[$\bullet$] Générer la \textbf{variance des effets site aléatoires} $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
+  \end{itemize}
+\end{itemize}
 
+\newpage 
+## Modèle logit : échantillonneur de Gibbs et algorithme de Metropolis adaptatif  
 
-### Modèle logit : échantillonneur de Gibbs et algorithme de Metropolis adaptatif  
+D'autre part on considère une fonction de lien $\mathrm{logit}: p \rightarrow\ln\left(\frac{p}{1-p}\right)=\mathrm{F}^{-1}(p)$, avec $\mathrm{F}:x\rightarrow \frac{1}{1+e^{-x}}$ la fonction de répartition appelée sigmoïde d’une loi logistique standard. 
+ 
+### Définition du modèle logit
+De la même façon que pour le modèle probit, d’après @Givord2016 on peut définir le modèle logit par l’intermediaire d’une variable latente : $Z_{ij}= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j + \epsilon_{ij}$ pour $i=1,\ldots,I$ et $j=1,\ldots,J$, avec $\epsilon_{ij} \sim \mathrm{logistique}(0,1)$ *iid* et telle que : 
+$$y_{i,j}=
+\begin{cases}
+1 & \text{ si } Z_{ij} > 0 \\
+0 &  \text{sinon.}
+\end{cases}$$ 
+Cependant dans ce cas les distributions *a priori* de la variable latente et des paramètres n’étant pas conjuguées, on n’est pas en mesure d’utiliser les propriétés des priors conjugués donc la modélisation à l’aide d’une variable latente ne présente pas d’intérêt.    
 
-D'autre part on considère une fonction de lien $\mathrm{logit}: p \rightarrow \ln\left(\frac{p}{1-p}\right)$.
+Dans ce cas on suppose que $$y_{ij} \ | \theta_{ij} \sim \mathcal{B}(n_i,\theta_{ij})$$, avec
+$\mathrm{probit(\theta_{ij})} = \alpha_i + \beta_{j,0}+X_i\beta_j+ W_i\lambda_j$ et $n_i$ le nombre de visites du site $i$.    
 
-### Définition du modèle 
-
-Dans ce cas les distributions n'étant pas conjuguées, on ne peut appliquer les propositions précédentes par conséquent on approche les distributions a posteriori des paramètres à l'aide d'un algorithme de Metropolis adaptatif de la manière suivante :
+Par conséquent on échantillonnera les paramètres de ce modèle selon une estimation de leurs distributions conditionnelles *a posteriori* à l’aide d’un algorithme de Metropolis adaptatif.  
 
 ### Priors utilisés 
+On détermine une distribution *a priori* pour chacun des paramètres du modèle :  
 
-
-Afin d’utiliser une méthode d’inférence bayesienne on détermine une distribution *a priori* pour chacun des paramètres du modèle :
 $$\begin{array}{lll}
 V_{\alpha} & \sim & \mathcal {IG}(\text{shape}=0.5, \text{rate}=0.005) \text{ avec } \mathrm{rate}=\frac{1}{\mathrm{scale}}, \\
 \beta_{jk} & \sim & \mathcal{N}(0,10^6)  \text{ pour } j=1,\ldots,J \text{ et } k=1,\ldots,p, \\
 \lambda_{jl} & \sim & \begin{cases}
 \mathcal{N}(0,10) & \text{si } l < j \\
-\mathcal{U}(0,10) & \text{si } l=j \\
+\mathcal{U}(0,10) &  \text{si } l=j \\
 P \text{ tel que } \mathbb{P}(\lambda_{jl} = 0)=1  & \text{si } l>j
 \end{cases} \\
-\quad & \quad & \text{ pour } j=1,\ldots,J \text{ et } l=1,\ldots,q.
+\quad &  \quad & \text{ pour } j=1,\ldots,J \text{ et } l=1,\ldots,q.
 \end{array}$$
 
 ### Principe d'un algorithme de Metropolis adaptatif 
 
-** Algorithme de Metropolis adaptatif ** :  
-Cet algorithme appartient aux méthodes MCMC et permet de générer une chaîne de Markov dont la distribution stationnaire est celle voulue. On l'utilise pour échantillonner les paramètres selon leurs distributions conditionnelles *a posterirori* connue à une constante multiplicative près.
+Cet algorithme appartient aux méthode MCMC et permet d’obtenir une réalisation du paramètre $\theta=(\theta_),\ldots,\theta_m)$ selon leurs distributions conditionnelles *a posterirori* $\uppi(\theta_i \ | \ \theta_1,\dots,\theta_{i-1},\theta_{i+1},\ldots,\theta_m, x)$, pour $i =1,\ldots,m$ connues à une constante multiplicative près.  
+On le qualifie d'adaptatif car la variance de la densité instrumentale conditionnelle utilisée est adaptée en fonction du nombre d'acceptation lors des dernières itérations. 
 
-- **Initialisation** : $\theta^{(0)}= (\theta_1^{(0)},\ldots,\theta_m^{(0)})$ fixés arbitrairement. 
-\vspace{0.2cm}
-- **Iteration t** : 
-\vspace{0.2cm}
-
-  * Générer $\theta_i^* \sim q(\theta_i^{(t-1)},.)$, comme densité instrumentale conditionnelle $q(\theta_i^{(t-1)},.)$ symétrique, on utilise $\mathcal{N}(\theta_i^{(t-1)},{\sigma^2_{\theta_i}}^{(t)}$ par exemple.
-  \vspace{0.1cm}
-  * Calculer la probabilité d'acceptation : $$\alpha = min\left(1,\frac{\uppi(\theta_i^*)}{\uppi(\theta_i^{(t-1)})}\right)$$.
-  * Retenir $$\theta_i^{(t)} =  
+\begin{itemize}
+\item \textbf{Initialisation} : $\theta^{(0)}= (\theta_1^{(0)},\ldots,\theta_m^{(0)})$ fixés arbitrairement, les nombres d'acceptation $(n^A_{i})_{i=1,\ldots,m}$ sont intialisés à $0$ et les variances $(\sigma^2_i)_{i=1,\ldots,m}$ sont intialisées à $1$.
+\item \textbf{Itération t} : pour $i=1,\ldots,m$
+  \begin{itemize}
+  
+  \item[$\bullet$] Générer $\theta_i^\star \sim q(\theta_i^{(t-1)},.)$, avec une densité instrumentale conditionnelle $q(\theta_i^{(t-1)},\theta_i^\star)$ symétrique, on choisira une loi $\mathcal{N}(\theta_i^{(t-1)},{\sigma^2_{i}})$ par exemple.
+  
+  \item[$\bullet$] Calculer la probabilité d'acceptation : 
+  $$\alpha =  min\left(1,\dfrac{\uppi\left(\theta_i^\star \ | \ \theta_1^{(t-1)},\dots,\theta_{i-1}^{(t-1)},\theta_{i+1}^{(t-1)},\ldots,\theta_m^{(t-1)}, x \right)}{\uppi\left(\theta_i^{(t-1)} \ | \ \theta_1^{(t-1)},\dots,\theta_{i-1}^{ (t-1)},\theta_{i+1}^{(t-1)},\ldots,\theta_m^{(t-1)},x\right)}\right)$$.
+  
+  \item[$\bullet$] Retenir $$\theta_i^{(t)} =  
   \begin{cases} 
-  \theta_i^* & \text{ avec probabilité } \alpha  \\
+  \theta_i^\star & \text{ avec probabilité } \alpha \\
+  &\text{ si on est dans ce cas le nombre d'acceptation devient : } n^A_{i} \leftarrow n^A_{i} +1 \\
   \theta_i^{(t-1)} & \text{ avec probabilité } 1-\alpha. \\
   \end{cases}$$
-
-### Echantilloneur de Gibbs 
-
-- Initialisation 
-
-- Définition des constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ et $R_{opt}$ tels que  $N_{Gibbs}$ correspond au nombre d'itérations effectuées par l'algorithme,  $N_{burn}$ au nombre d'itérations nécessaires pour le burn-in ou temps de chauffe et $R_{opt}$ au ratio d'acceptation optimal. On définit $N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution a posteriori pour chacun des paramètres. 
-
-- Implémentation de fonctions approchant la log-vraisemblance du modèle à partir des paramètres estimés à l'itération $t$ : 
-
-    On pose $\theta^{(t)}=(\theta_{i,j}^{(t)})^{i=1,\ldots,n}_{j=1,\ldots,m}$. 
-    $$ \log(L(\theta^{(t)}))=l(\theta^{(t)})=\sum\limits_{\substack{1\leq i\leq n \\   1 \leq j\leq m}}\log\left(\mathbb{P}(y_{i,j}|\theta_{i,j}^{(t)})\right)=\sum\limits_{\substack{1\leq i\leq n \\   1 \leq j\leq m}}\log\left(     \dbinom{n_i}{y_{i,j}}(\theta_{i,j}^{(t)})^{y_{i,j}}(1-\theta_{i,j}^{(t)})^{n_i-y_{i,j}} \right) $$ 
-    et retournant une valeur approchée du log de la loi a posteriori pour chacun des paramètres : 
-    $$ \text{On utilise  : } \log \left(\mathrm{p}(\theta^{(t)} \ |  \ Y) \right) \propto l(\theta^{(t)}) + \log(\underbrace{\Pi(\theta^{(t)}))}_{\text{loi a priori}} $$ 
-    
-    * fonction **betadens** estime : $$ \log \left(\mathrm{p}({\beta_j^k}^{(t)} \ |  \ y_{i,j}, \ {\beta_j^{-k}}^{(t)}) \right) \propto  l(\theta^{(t)})  + \log(\underbrace{\Pi({\beta_j^k}^{(t)})}_{\text{loi a priori}}$$ 
-    
-    * fonction **zdens** estime : $$ \log \left(\mathrm{p}({z_{i,l}}^{(t)} \ |  \ y_{i,j}, \ {z_i^{-l}}^{(t)}) \right) \propto  l(\theta^{(t)})  + \log(\underbrace{\Pi({z_{i,l}}^{(t)})}_{\text{loi a priori}}$$
+  \end{itemize}
   
-    * fonction **lambdadens** estime : $$ \log \left(\mathrm{p}({\lambda_j^q}^{(t)} \ |  \ y_{i,j}, \ {\lambda_j^{-q}}^{(t)}) \right) \propto  l(\theta^{(t)}) + \log(\underbrace{\Pi({\lambda_j^q}^{(t)})}_{\text{loi a priori}}$$
-    
-    * fonction **alphadens** estime  $$\log \left(\mathrm{p}({\alpha_i}^{(t)} \ |  \ y_{i,j}, \ \alpha_1^{(t)},\ldots,\alpha_{i-1}^{(t)},\alpha_{i+1}^{(t)},\ldots,\alpha_n^{(t)}) \right) \propto  l(\theta^{(t)}) + \log(\underbrace{\Pi({\alpha_i}^{(t)})}_{\text{loi a priori}}$$
-    
-- Pour $t=1, \ldots, N_{Gibbs}$ à l'itération $t$ on fait une boucle sur $i=1,\ldots,I$ et sur $j=1,\ldots,J$ :
-  1. Calculer $\mathrm{logit}(\theta_{i,j}^{(t-1)}) =\alpha_i^{(t-1)} + \beta_{j,0}^{(t-1)}+X_i'\beta_j^{(t-1)} + {z_i^{(t-1)}}'\lambda_j^{(t-1)}$,  
-  puis $\theta_{i,j}^{(t-1)}=logit^{-1}(\Phi_{i,j}^{(t-1)})=\dfrac{\exp(\Phi_{i,j}^{(t-1)})}{1+ \exp(\Phi_{i,j}^{(t-1)})}$.
-   
-  2. **Algorithme Metropolis Hastings** :  
-  Pour chacun des paramètres on a un algo pour $z_i$ par exemple :   
-  On initialise le nombre d'acceptation $nA^i = (nA_1^i,\ldots,nA_q^i) =0_{\mathbb{R}^q}$ et le taux d'acceptation $Ar^i =     (Ar_1^i,\ldots,Ar_q^i) = 0_{\mathbb{R}^q}$.  
-  Boucle sur $l = 1,\ldots,q$ : 
-      
-    * On pose ${z_{now}}_{i,l}={z_{i,l}}^{(t-1)}$.
-        
-    * On génère ${z_{prop}}_{i,l} \sim \mathcal{N}({z_{now}}_{i,l}, \sigma_{z_{i,l}}^{(t)})$ avec $\sigma_{z_{i,l}}^{(t)}$ adapté en fonction du nombre d'acceptation et initialisé par la valeur 1. 
-        
-    * On calcule $p_{now}=\text{zdens}({z_{now}}_{i,l})$ et $p_{prop}=\text{zdens}({z_{prop}}_{i,l})$.
-        
-    * On calcule la probabilité d'acceptation : $$ \alpha = exp(p_{prop}-p_{now})=\frac{ exp(p_{prop})}{exp(p_{now})} = \frac{L(\theta^{(t)})\Pi({{z_{prop}}_{i,l}})}{L(\theta^{(t)})\Pi({{z_{now}}_{i,l}})} $$
-        
-    * On pose 
-    $${z_{i,l}}^{(t)} =
-    \begin{cases} 
-    {z_{prop}}_{i,l} & \text{avec probabilité } \alpha  \text{ si on est dans ce cas on fait } nA_{i,l} = nA_{i,l} +1 \\
-    {z_{now}}_{i,l} & \text{avec probabilité } 1-\alpha
-    \end{cases}$$
-        
-    * On pose 
-    $$\mathrm{DIV} =  \begin{cases} 
-            100 & \text{ si } N_{Gibbs} \geq 1000 \\
-            \dfrac{N_{Gibbs}}{10}& \text{sinon }  \\
-            \end{cases}$$. 
-            
-    * **Durant le burnin** et lors des itérations $t$ telles que $t+1$ est multiple de $\mathrm{DIV}$ ($t < N_{burn} \text{ et } {t+1}\equiv 0 \pmod {DIV}$) pour $l = 1,\ldots,q$ :   
-    On calcule $Ar_{i,l} = \dfrac{ nA_{i,l}}{\mathrm {DIV}}$ puis on définit 
-    $$\sigma_{z_{i,l}}^{(t)} = \begin{cases}  
-    \sigma_{z_{i,l}}^{(t-\mathrm{DIV})}\left(2-\frac{1-Ar_{i,l}}{1-R_{opt}}\right) & \text{ si } Ar_{i,l} \geq R_{opt} \\ \\
-    \dfrac{\sigma_{z_{i,l}}^{(t-\mathrm{DIV})}}{2-\frac{1-Ar_{i,l}}{1-R_{opt}}} & \text{ sinon }
-    \end{cases}$$  
-    On réinitialise les nombres d'acceptation : $nA_{i,l} \leftarrow 0$.   
-    
-    * **Après le burnin** et lors des itérations $t$ telles que $t+1$ est multiple de $\mathrm{DIV}$ 
-    ($t \geq N_{burn} \text{ et } {t+1}\equiv 0 \pmod {DIV}$) pour $l = 1,\ldots,q$ :   
-    On calcule $Ar_{i,l} = \dfrac{ nA_{i,l}}{\mathrm {DIV}}$ puis on réinitialise les nombres d'acceptation : $nA_{i,l} \leftarrow 0$.
-        
-    * On calcule et affiche le taux d'acceptation moyen $mA^i = \dfrac{1}{q}\sum\limits_{l=1,\ldots,q}Ar_{i,l}$.
+\item \textbf{Durant le burnin}, toutes les $\mathrm{DIV}$ itérations, avec 
+$$\mathrm{DIV} =  \begin{cases} 
+100 & \text{ si } N_{Gibbs} \geq 1000 \\
+\dfrac{N_{Gibbs}}{10}& \text{sinon }  \\
+\end{cases}$$
+, où $N_{Gibbs}$ est le nombre total d'itération effectuées.   
 
+On modifie les variances en fonction des nombres d'acceptation de la manière suivante pour $i=1,\ldots,m$ : 
+
+\begin{itemize}
+  \item[$\bullet$] On calcule le taux d'acceptation : $r^A_{i} = \dfrac{ n^A_i}{\mathrm{DIV}}$.
+  \item[$\bullet$] On adapte les variances selon le taux d'acceptation et une constante fixée $R_{opt}$ : $$\sigma_i \leftarrow \begin{cases}  
+\sigma_i\left(2-\dfrac{1-r^A_i}{1-R_{opt}}\right) & \text{ si } r^A_{i} \geq R_{opt} \\ \\
+\dfrac{\sigma_i}{2-\dfrac{1-r^A_i}{1-R_{opt}}} & \text{ sinon }
+\end{cases}$$  
+  \item[$\bullet$] On réinitialise les nombres d'acceptation : $n^A_i \leftarrow 0$.  
+  \end{itemize} 
+\item Toutes les $\dfrac{N_{Gibbs}}{10}$ itérations, on calcule et affiche les taux d'acceptation moyen $m^A = \dfrac{1}{m}\sum\limits_{i=1,\ldots,m}r^A_i$.
+\end{itemize}
+
+### Echantilloneur de Gibbs et algorithme de Metropolis adapatatif
+
+On utilise un algorithme de Metropolis adapatatif pour échantillonner les paramètres du modèle selon leurs distributions conditionnelles *a posteriori* estimées à une constante multiplicative près.
+
+Dans un premier temps on définit la fonction $f$ permettant de calculer la vraisemblance du modèle en fonction des paramètres estimés :
+$$ f : \lambda_j,\beta_{j0},\beta_j,\alpha_i, W_i, X_i, y_{ij},n_i \rightarrow  f(\lambda_j,\beta_{j0},\beta_j,\alpha_i, W_i, X_i, y_{ij},n_i)=\mathrm{L}(\theta_{ij})$$
+\begin{itemize}
+\item Calcule de $\mathrm{probit}(\theta_{ij})= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j$.
+\item Calcule de $\theta_{ij}= \dfrac{1}{1+\exp\left(-\mathrm{probit}(\theta_{ij})\right)}$.
+\item Retourne $\mathrm{L}(\theta_{ij})= p(y_{ij} \ | \ \theta_{ij},n_i)= \dbinom{n_i}{y_{ij}}(\theta_{ij})^{y_{ij}}(1-\theta_{ij})^{n_i-y_{ij}}$.
+\end{itemize}
+On répète ces étapes pour $i=1,\ldots,I$ et $j=1,\ldots,J$, et on pose $\theta = \left(\theta{ij}\right)_{i=1,\ldots I}^{j= 1,\ldots,J}$.  
+
+On peut ainsi calculer la vraisemblance du modèle : $\mathrm{L}(\theta)= \sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\mathrm{L}(\theta_{ij})$.  
+
+D’après la formules de Bayes on a $$\mathrm{p}(\theta \ |  \ Y) \propto  \underbrace{\uppi(\theta)}_{\text{loi } a \ priori}\mathrm{L}(\theta).$$
+On utilise donc les relations suivantes pour approcher les densités conditionnelles a posteriori de chacun des paramètres :   
+
+$$\begin{aligned}
+& p(\beta_{jk} \ |  \ \beta_{j0},\beta_{j1},\ldots,\beta_{jk-1},\beta_{jk+1},\ldots,\beta_{jp}, \lambda_j,\alpha_1,\ldots,\alpha_I, W_1,\ldots,W_I,Y) \propto  \underbrace{ \uppi(\beta_{jk})}_{\text{loi } a \ priori}\prod\limits_{1\leq i\leq I}  \mathrm{L}(\theta_{ij})\\
+&p(\lambda_{jl} \ |  \ \lambda_{j1},\ldots,\lambda_{jl-1},\lambda_{jl+1},\ldots,\lambda_{jq}, \beta_j,\beta_{j0},\alpha_1,\ldots,\alpha_I, W_1,\ldots,W_I,Y) \propto  \underbrace{\uppi(\lambda_{jl})}_{\text{loi } a \ priori} \prod\limits_{1\leq i \leq I}\mathrm{L}(\theta_{ij})\\
+&p(W_{il} \ |  \ W_{i1},\ldots,W_{il-1},W_{il+1},\ldots,W_{iq},\alpha_i,\beta_{10},\ldots,\beta_{J0},\beta_1,\ldots,\beta_J,\lambda_1,\ldots, \lambda_J,Y) \propto  \underbrace{\uppi(W_{il})}_{\text{loi } a \ priori} \prod\limits_{1\leq j\leq J}\mathrm{L}(\theta_{ij})\\
+&p(\alpha_i \ |  \ W_i,\beta_{10},\ldots,\beta_{J0},\beta_1,\ldots,\beta_J,\lambda_1,\ldots, \lambda_j,V_{\alpha},Y) \propto \underbrace{\uppi(\alpha_i \ | \ V_{\alpha})}_{\text{loi }a \ priori} \prod\limits_{1\leq j\leq J}\mathrm{L}(\theta_{ij})\\
+\end{aligned}$$
+
+\newpage
+L’algorithme utilisé pour estimer les paramètres du modèle logit est donc le suivant :
+
+\begin{itemize}
+\item Définition des constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ et $R_{opt}$ tels que  $N_{Gibbs}$ correspond au nombre d'itérations effectuées par l'algorithme,  $N_{burn}$ au nombre d'itérations nécessaires pour le burn-in ou temps de chauffe, $N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution a posteriori pour chacun des paramètres. 
+On fixe $R_{opt}$ le ratio d'acceptation optimal utilisé dans les algorithmes de Metropolis adaptatifs implémentés pour chacun des paramètres du modèle. 
+
+\item Initialiser tous les paramètres à $0$ par exemple, excepté les valeurs diagonales de $\Lambda$ initialisées à $1$ et $V_{\alpha}^{(0)}=1$. Le nombre d'acceptation de chaque paramètre est intialisé à $0$ et les variances de leur densités instrumententales conditionnelles prennent la valeur $1$.
+\item Gibbs sampler : à chaque itération $t$ pour $t=1,\ldots,N_{Gibbs}$ on répète chacune de ces étapes :
+  \begin{itemize}
+\vspace{0.1cm}
+\item[$\bullet$] Générer les \textbf{effets sites aléatoires} $\alpha_i^{(t)}$ pour $i=1,\ldots,I$ selon un algorithme de Metropolis adaptatif simulant $\alpha_i^\star \sim \mathcal{N}(\alpha_i^{(t-1)},\sigma_{\alpha_i}^2)$ puis calculant le taux d'acceptation de la manière suivante :  
+$$min\left(1,\dfrac{\uppi(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}{\uppi(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}\right).$$
+
+\item[$\bullet$] Générer la \textbf{variance des effets site aléatoires} $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
+
+\item[$\bullet$] Générer les \textbf{prédicteurs non mesurés} (ou “variables latentes”) $W_i^{(t)}$ pour $i=1,\ldots,I$ selon un algorithme de Metropolis adaptatif  simulant $W_{il}^\star \sim \mathcal{N}(W_{il}^{(t-1)}, \sigma_{W_{il}}^2)$ puis calculant le taux d'acceptation de la manière suivante :
+
+$$min\left(1,\dfrac{\uppi(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}{\uppi(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}\right).$$
+
+\item[$\bullet$] Générer les \textbf{effets espèces fixes} $\beta_{jk}^{(t)}$ pour $j=1,\ldots,J$ et $k=1,\ldots,p$ selon un algorithme de Metropolis adaptatif  simulant $\beta_{jk}^\star \sim \mathcal{N}(\beta_{jk}^{(t-1)}, \sigma_{\beta_{jk}}^2)$ puis calculant le taux d'acceptation de la manière suivante :
+
+$$min\left(1,\dfrac{\uppi(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}{\uppi(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}\right).$$
+  
+\item[$\bullet$] Générer les \textbf{effets espèces fixes liés aux prédicteurs non mesurés} $\lambda_{jl}^{(t)}$ pour $j=1,\ldots,J$ et $l=1,\ldots,q$ selon un algorithme de Metropolis adaptatif simulant $\lambda_{jl}^\star \sim \mathcal{N}(\lambda_{jl}^{(t-1)},\sigma_{\lambda_{jl}}^2)$ puis en calculant le taux d'acceptation de la manière suivante : 
+
+$$min\left(1,\dfrac{\uppi(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}{\uppi(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)})\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, y_{ij}\right)}\right).$$
+\end{itemize}
+\end{itemize}
 
 ## Evaluation de la fiabilité de ces méthodes sur des données simulées 
 

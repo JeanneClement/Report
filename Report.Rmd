@@ -22,10 +22,9 @@ header-includes:
   - \usepackage{bbm}
   - \usepackage{answers}
   - \usepackage{xassoccnt}
-
-
+  
 bibliography: Biblio_master.bib
-geometry: left=1.4cm,right=1.4cm,top=1.5cm,bottom=1.3cm
+geometry: left=1.4cm,right=1.4cm,top=1.5cm,bottom=1cm
 fontsize : 10pt
 ---
 
@@ -46,6 +45,10 @@ fontsize : 10pt
 \renewcommand{\listtablename}{Liste des tableaux}
 \renewcommand{\listfigurename}{Liste des figures}
 \renewcommand{\baselinestretch}{1.5}
+\fancypagestyle{simple}{\rhead{\thepage} \chead{} \lhead{} \cfoot{}}
+\renewcommand{\headrulewidth}{0pt}
+
+
 
 \thispagestyle{empty}
 \begin{center}
@@ -57,7 +60,7 @@ Encadrant : Ghislain Vieilledent
 \vspace{0.5cm}
 
 ```{r echo=FALSE, out.width='90%'}
-knitr::include_graphics('Illustrations/Illustrations_Rapport/foret.jpg')
+knitr::include_graphics('Illustrations/foret.jpg')
 
 ```
 
@@ -71,15 +74,16 @@ UMR AMAP - Montpellier
 
 \vspace{1cm}
 
-\includegraphics[height=1.7cm, width=1.7cm]{Illustrations/Illustrations_Rapport/logo_UM.jpg}
-\includegraphics[height=2cm, width=2cm]{Illustrations/Illustrations_Rapport/logo-AMAP.png}
-\includegraphics[height=1.3cm]{Illustrations/Illustrations_Rapport/titre-long.png}
-\includegraphics[height=3.1cm, width=3.1cm]{Illustrations/Illustrations_Rapport/Logo-Cirad.png}
+\includegraphics[height=1.7cm, width=1.7cm]{Illustrations/logo_UM.jpg}
+\includegraphics[height=2cm, width=2cm]{Illustrations/logo-AMAP.png}
+\includegraphics[height=1.3cm]{Illustrations/titre-long.png}
+\includegraphics[height=3.1cm, width=3.1cm]{Illustrations/Logo-Cirad.png}
 \end{center}
 
 \newpage
 \thispagestyle{empty}
 \section*{Remerciements}
+
 J'aimerai adresser mes plus sincères remerciements à G. Vieilledent qui m'a encadrée et conseillée durant ce stage riche en découvertes puisque le language C++, la construction de packages R ainsi que les modèles joints de distribution des espèces m'étaient inconnus. Il m'a beaucoup appris et encouragée à trouver des solutions par moi même. Je remercie également les chercheurs et autres stagiaires de l'UMR AMAP pour leur accueil chaleureux et leur bonne humeur communicative qui font du laboratoire un cadre de travail idéal et tout particulièrement G. Le Moguedec qui fut une référence précieuse en statistiques ainsi que l'instigateur de pic-niques au lac du Crès qui nous ont bien aidé à supporter la canicule. 
 
 \newpage
@@ -89,11 +93,12 @@ J'aimerai adresser mes plus sincères remerciements à G. Vieilledent qui m'a en
 \thispagestyle{empty}
 \listoffigures
 \listoftables
-\newpage
-\thispagestyle{empty}
-\setcounter{page}{1} 
 
+\newpage
+\setcounter{page}{1} 
+\thispagestyle{simple}
 \section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
 
 J'ai effectué mon stage au sein de l'UMR AMAP (botAnique et Modélisation de l'Architecture des Plantes et des végétations), qui se trouve à Montpellier. Il s'agit d'une unité interdisciplinaire hébergée par le Cirad ou « Centre de Coopération Internationale en Recherche Agronomique pour le Développement» et qui mène des recherches sur les plantes et les végétations, dans le but de prévoir la réponse des écosystèmes aux forçages environnementaux.  
 
@@ -188,14 +193,14 @@ D’après l’article @Albert1993, une modélisation possible est de supposer l
 
 \begin{prop}[Modèle probit par l'intermédiaire une variable latente]  \qquad \qquad \qquad \qquad \qquad \qquad \qquad \qquad  \qquad \qquad \qquad  \qquad \qquad \qquad \qquad   
 
-Si $Z_{ij} = \alpha_i + \beta_{j0}+X_i\beta_j+ W_i\lambda_j + \epsilon_{ij}, \ \forall i,j \text{ avec }  \epsilon_{i,j} \sim \mathcal{N}(0,1) \ \mathrm{iid}$ et tel que :
-$$y_{i,j}=
+Si $Z_{ij} = \alpha_i + \beta_{j0}+X_i\beta_j+ W_i\lambda_j + \epsilon_{ij}, \ \forall i,j \text{ avec }  \epsilon_{ij} \sim \mathcal{N}(0,1) \ iid $ et tel que :
+$$y_{ij}=
 \begin{cases}
 1 & \text{ si } Z_{ij} > 0 \\
 0 &  \text{sinon.}
 \end{cases}$$
 Alors on a $y_{ij} \ |\ Z_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$ avec
-$\mathrm{probit(\theta_{ij})} = \alpha_i + \beta_{j,0}+X_i\beta_j+ W_i\lambda_j$.
+$\mathrm{probit(\theta_{ij})} = \alpha_i + \beta_{j0}+X_i\beta_j+ W_i\lambda_j$.
 \end{prop}
 \begin{dem}   
 $$\begin{aligned}
@@ -208,7 +213,7 @@ $$\begin{aligned}
 De la même façon on a :   
 $$\begin{aligned}
 \mathbb{P}(y_{ij}=0) & = \mathbb{P}(Z_{ij} \leq 0)\\
-& = 1 - \Phi( \alpha_i + \beta_{j,0} + X_i\beta_j + W_i\lambda_j) \\
+& = 1 - \Phi( \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j) \\
 \end{aligned}$$
 \end{dem}
 On définit le modèle probit à l’aide d’une variable latente afin d’être en mesure d’uiliser les propriétés des priors conjugués pour échantillonner les paramètres du modèle selon leur distributions conditionnelles *a posteriori*. 
@@ -233,7 +238,7 @@ La fonction *boral()* du package du même nom, permettant d'ajuster toutes sorte
 
 **Effets espèces fixes**:  
 
-On se ramène à un modèle de la forme $Z^* = X\beta + \epsilon$, en posant $Z^*_{i,j} = Z_{ij}  - \alpha_i = \beta_{j0} + X_i\beta_j+ W_i\lambda_j+\epsilon_{ij}$, afin d'estimer simultanément les $\beta_j$ et $\lambda_j$ pour chacune des espèces $j$,   ce qui revient en écriture matricielle à : 
+On se ramène à un modèle de la forme $Z^* = X\beta + \epsilon$, en posant $Z^*_{ij} = Z_{ij}  - \alpha_i = \beta_{j0} + X_i\beta_j+ W_i\lambda_j+\epsilon_{ij}$, afin d'estimer simultanément les $\beta_j$ et $\lambda_j$ pour chacune des espèces $j$,   ce qui revient en écriture matricielle à : 
 $$\begin{aligned} 
 Z^*_{j} = &\begin{pmatrix} 
 Z^*_{1j} \\
@@ -319,7 +324,7 @@ V^* = (I_q + \Lambda'\Lambda)^{-1}
 
 **Effets site aléatoires et variance associée : **   
 
-En ce qui concerne l'effet site aléatoire $(\alpha_i)_{i=1,\dots,I}$, on pose $Z^*_{i,j} = Z_{ij} - D_iP_j = \alpha_i + \epsilon_{i,j}$, avec $D_i =(1,X_{i1},\ldots,X_{ip},W_{i1},\ldots,W_{iq})$. \smallskip   
+En ce qui concerne l'effet site aléatoire $(\alpha_i)_{i=1,\dots,I}$, on pose $Z^*_{ij} = Z_{ij} - D_iP_j = \alpha_i + \epsilon_{ij}$, avec $D_i =(1,X_{i1},\ldots,X_{ip},W_{i1},\ldots,W_{iq})$. \smallskip   
 On a ainsi $Z^*_{ij} \ | \ \alpha_i \ \sim \mathcal{N}(\alpha_i,1)$ *iid* pour $j=1,\ldots,J$, puis on applique la proposition suivante : 
 \begin{prop}
 $$\begin{cases} 
@@ -383,7 +388,7 @@ a' = a + \frac{I}{2} \text{ et } b' = b + \frac{1}{2}\sum\limits_{i=1}^I \alpha_
 \end{cases}$$
 
 \newpage
-### Echantilloneur de Gibbs 
+### Echantilloneur de Gibbs et priors conjugués
 L’algorithme utilisé pour estimer les paramètres du modèle logit est donc le suivant :
 \begin{itemize}
 \item Définir les constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ telles que $N_{Gibbs}$ correspond au nombre d’itérations effectuées par l’échantillonneur de Gibbs,  $N_{burn}$ au nombre d’itérations nécessaires pour le burn-in ou temps de chauffe et $N_{samp} = \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations, afin d’obtenir un échantillon de $N_{samp}$ valeurs distribuées selon la distribution a posteriori pour chacun des paramètres.
@@ -429,7 +434,7 @@ D'autre part on considère une fonction de lien $\mathrm{logit}: p \rightarrow\l
  
 ### Définition du modèle logit
 De la même façon que pour le modèle probit, d’après @Givord2016 on peut définir le modèle logit par l’intermediaire d’une variable latente : $Z_{ij}= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j + \epsilon_{ij}$ pour $i=1,\ldots,I$ et $j=1,\ldots,J$, avec $\epsilon_{ij} \sim \mathrm{logistique}(0,1)$ *iid* et telle que : 
-$$y_{i,j}=
+$$y_{ij}=
 \begin{cases}
 1 & \text{ si } Z_{ij} > 0 \\
 0 &  \text{sinon.}
@@ -437,7 +442,7 @@ $$y_{i,j}=
 Cependant dans ce cas les distributions *a priori* de la variable latente et des paramètres n’étant pas conjuguées, on n’est pas en mesure d’utiliser les propriétés des priors conjugués donc la modélisation à l’aide d’une variable latente ne présente pas d’intérêt.    
 
 Dans ce cas on suppose que $$y_{ij} \ | \theta_{ij} \sim \mathcal{B}(n_i,\theta_{ij})$$, avec
-$\mathrm{probit(\theta_{ij})} = \alpha_i + \beta_{j,0}+X_i\beta_j+ W_i\lambda_j$ et $n_i$ le nombre de visites du site $i$.    
+$\mathrm{probit(\theta_{ij})} = \alpha_i + \beta_{j0}+X_i\beta_j+ W_i\lambda_j$ et $n_i$ le nombre de visites du site $i$.    
 
 Par conséquent on échantillonnera les paramètres de ce modèle selon une estimation de leurs distributions conditionnelles *a posteriori* à l’aide d’un algorithme de Metropolis adaptatif.  
 
@@ -505,8 +510,8 @@ On utilise un algorithme de Metropolis adapatatif pour échantillonner les param
 Dans un premier temps on définit la fonction $f$ permettant de calculer la vraisemblance du modèle en fonction des paramètres estimés :
 $$ f : \lambda_j,\beta_{j0},\beta_j,\alpha_i, W_i, X_i, y_{ij},n_i \rightarrow  f(\lambda_j,\beta_{j0},\beta_j,\alpha_i, W_i, X_i, y_{ij},n_i)=\mathrm{L}(\theta_{ij})$$
 \begin{itemize}
-\item Calcule de $\mathrm{probit}(\theta_{ij})= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j$.
-\item Calcule de $\theta_{ij}= \dfrac{1}{1+\exp\left(-\mathrm{probit}(\theta_{ij})\right)}$.
+\item Calcule de $\mathrm{logit}(\theta_{ij})= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j$.
+\item Calcule de $\theta_{ij}= \dfrac{1}{1+\exp\left(-\mathrm{logit}(\theta_{ij})\right)}$.
 \item Retourne $\mathrm{L}(\theta_{ij})= p(y_{ij} \ | \ \theta_{ij},n_i)= \dbinom{n_i}{y_{ij}}(\theta_{ij})^{y_{ij}}(1-\theta_{ij})^{n_i-y_{ij}}$.
 \end{itemize}
 On répète ces étapes pour $i=1,\ldots,I$ et $j=1,\ldots,J$, et on pose $\theta = \left(\theta{ij}\right)_{i=1,\ldots I}^{j= 1,\ldots,J}$.  
@@ -530,7 +535,8 @@ L’algorithme utilisé pour estimer les paramètres du modèle logit est donc l
 
 \begin{itemize}
 \item Définition des constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ et $R_{opt}$ tels que  $N_{Gibbs}$ correspond au nombre d'itérations effectuées par l'algorithme,  $N_{burn}$ au nombre d'itérations nécessaires pour le burn-in ou temps de chauffe,   
-$N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution a posteriori pour chacun des paramètres.   
+$N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution a posteriori pour chacun des paramètres.  
+
 On fixe $R_{opt}$ le ratio d'acceptation optimal utilisé dans les algorithmes de Metropolis adaptatifs implémentés pour chacun des paramètres du modèle. 
 
 \item Initialiser tous les paramètres à $0$ par exemple, excepté les valeurs diagonales de $\Lambda$ initialisées à $1$ et $V_{\alpha}^{(0)}=1$. Le nombre d'acceptation de chaque paramètre est intialisé à $0$ et les variances de leur densités instrumententales conditionnelles prennent la valeur $1$.
@@ -559,6 +565,118 @@ Dans le cas $l>j$, on pose $\lambda_{jl}^{(t)} = 0$.
 \newpage 
 ## Evaluation de la fiabilité de ces méthodes sur des données simulées 
 
+### Simulation des données 
+On simule pour chacun des sites $i$ deux variables bioclimatiques selon une loi normale centrée réduite et on note $X_i=(1,X_{i1},X_{i2})$ pour $i=1,\ldots,500$. 
+On considérera deux prédicteurs non mesurés.  
+On fixe les paramètres suivants afin de simuler des données de présence absence pour les $100$ espèces et $500$ sites considérés selon les deux modèles définis précédemment.  
+Les effets espèces fixes générés selon des lois uniformes : 
+$$\begin{aligned}
+&\beta_{jk} \sim \mathcal{U}(-2,2) \text{ pour } j=1,\ldots,100 \text{ et } k=0,1,2. \\
+&\lambda_{jl} \begin{cases} 
+\sim  \mathcal{U}(-2,2) & \text{si } l<j, \\
+\sim  \mathcal{U}(0,2) & \text{si } l=j, \\
+=  0 & \text{si } l>j, 
+\end{cases}\\
+&\text{ pour } j=1,\ldots,100 \text{ et } l=1,2.
+\end{aligned}$$
+Les prédicteurs non mesurés $W_{il} \sim \mathcal{N}(0,1) \text{ pour } i=1,\ldots,500 \text{ et } l=1,2$.  
+
+Les effets sites aléatoires générés selon $\alpha_i \sim \mathcal{N}(0,V_{alpha})$ avec $V_{alpha}$ fixé à $0.5$.
+
+Puis on simule les données de présence absence $Y=(y_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ de la manière apropriée pour chacun des modèles envisagés en fonction des paramètres établis : 
+
+\begin{minipage}[l]{0.6\textwidth}
+\textbf{Modèle probit :}   
+
+Pour $i=1,\ldots,500$ et $j=1,\ldots,100$ :   
+
+Générer $\epsilon_{ij} \sim \mathcal{N}(0,1) \ iid$.  
+
+Calculer $Z_{ij}= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j + \epsilon_{ij}$ 
+
+Simuler $y_{ij}=
+\begin{cases}
+1 & \text{ si } Z_{ij} > 0 \\
+0 &  \text{sinon.}
+\end{cases}$
+\end{minipage}
+\begin{minipage}[r]{0.6\textwidth}
+\textbf{Modèle logit :}   
+
+Pour $i=1,\ldots,500$ et $j=1,\ldots,100$ :   
+
+Calculer $\mathrm{logit}(\theta_{ij})= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j$.  
+
+Calculer $\theta_{ij}= \dfrac{1}{1+\exp\left(-\mathrm{logit}(\theta_{ij})\right)}$.  
+
+Simuler $y_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$.
+\end{minipage}
+
+### Représentation des paramètres estimés 
+\begin{center}
+\textbf{Modèle probit :}
+
+\begin{figure}[H]
+ \caption[Représentation des $(\alpha_i)_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\alpha_i)_{i=1,\ldots,I}$ estimés en fonction de ceux simulés pour le modèle probit}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.9\textwidth,height=0.4\textwidth]{Illustrations/probit_site_effect.png}
+\end{figure}
+
+\begin{figure}[H]
+ \caption[Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle probit}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.8\textwidth,height=0.5\textwidth]{Illustrations/probit_W.png}
+\end{figure}
+
+\begin{figure}[H]
+ \caption[Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.8\textwidth,height=0.5\textwidth]{Illustrations/probit_sp_effect.png}
+\end{figure} 
+
+\begin{figure}[H]
+ \caption[Représentation des $(\mathrm{probit}(\theta_{ij}),Z_{ij},\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\mathrm{probit}(\theta_{ij}))_{i=1,\ldots,500}^{j=1,\ldots,100}$, $(Z_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ et $(\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.9\textwidth,height=0.4\textwidth]{Illustrations/probit_proba.png}
+\end{figure} 
+
+\textbf{Modèle logit :}
+\begin{figure}[H]
+ \caption[Représentation des $(\alpha_i)_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(\alpha_i)_{i=1,\ldots,I}$ estimés en fonction de ceux simulés pour le modèle logit}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.9\textwidth,height=0.4\textwidth]{Illustrations/logit_site_effect.png}
+\end{figure}
+
+\begin{figure}[H]
+ \caption[Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.8\textwidth,height=0.5\textwidth]{Illustrations/logit_W.png}
+\end{figure}
+
+\begin{figure}[H]
+ \caption[Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle logit}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.8\textwidth,height=0.5\textwidth]{Illustrations/logit_sp_effect.png}
+\end{figure} 
+
+\begin{figure}[H]
+ \caption[Représentation des $(\mathrm{logit}(\theta_{ij}),\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$  estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\mathrm{logit}(\theta_{ij}))_{i=1,\ldots,500}^{j=1,\ldots,100}$ et $(\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.9\textwidth,height=1.4\textwidth]{Illustrations/logit_proba.png}
+\end{figure} 
+\end{center}
+### Evaluation du temps de calul et de la pertinence des résultats  
+tableau deviance RMSE temps de calcul + formules
+expliquer plus haut nombre de paramètres à estimer et moyenne des échantillons de NSAMP valeurs. 
+
 \newpage
 # Application aux données collectées à Madagascar
 
@@ -571,8 +689,919 @@ On dispose d'inventaires forestiers réalisés sur différents sites de l'île d
 ## Prédictions avec auto-corrélation spatiale
 ## Analyse des résultats et mise en évidence de lieux refuges de la biodiversité
 
-\section*{Conclusion}
+
 
 \newpage
-\pagestyle{empty}
-\section*{References}
+\pagestyle{simple}
+
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+\newpage
+\section*{Bibliographie}
+\addcontentsline{toc}{section}{Bibliographie}
+
+<div id="refs"></div>
+
+\newpage
+\section*{Annexes}
+\addcontentsline{toc}{section}{Annexe}
+
+```{r options, echo=FALSE,include=F}
+library(Rcpp)
+library(RcppArmadillo)
+library(RcppGSL)
+library(knitr)
+library(kableExtra)
+knit_engines$get("Rcpp")
+knit_engines$set("Rcpp")
+opts_chunk$set(echo=TRUE, cache=FALSE,
+               #results="hide", 
+               warning=FALSE,
+               message=FALSE, highlight=TRUE,
+               fig.show="hide", size="small",
+               fig.align="center",
+               tidy=FALSE)
+options(knitr.kable.NA="-")
+```
+
+\subsection*{Fonction utilisée pour le modèle probit}
+
+```{r Rcpp_jSDM_probit_block, engine="Rcpp", eval=F}
+#include <RcppArmadillo.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_cdf.h>
+#include <cmath>
+#include "Rcpp_jSDM_useful.h"
+
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppGSL)]]
+
+using namespace arma;
+using namespace std;
+
+/* ************************************************************ */
+/* Gibbs sampler function */
+
+// [[Rcpp::export]]
+Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn, 
+                                  arma::umat Y, 
+                                  arma::umat T, 
+                                  arma::mat X,
+                                  arma::mat param_start,
+                                  arma::mat Vparam,
+                                  arma::vec muparam,
+                                  arma::mat VW,
+                                  arma::mat W_start,
+                                  arma::vec alpha_start,
+                                  double Valpha_start,
+                                  double shape,
+                                  double rate,
+                                  const int seed,
+                                  const int verbose) {
+  
+  ///////////////////////////////////////
+ // Defining and initializing objects//
+  
+  // Initialize random number generator 
+  gsl_rng *s = gsl_rng_alloc(gsl_rng_mt19937);
+  gsl_rng_set(s, seed);
+  
+  // Redefining constants 
+  const int NGIBBS = ngibbs;
+  const int NTHIN = nthin;
+  const int NBURN = nburn;
+  const int NSAMP = (NGIBBS-NBURN)/NTHIN;
+  const int NSITE = Y.n_rows;
+  const int NP = X.n_cols;
+  const int NSP = Y.n_cols;
+  const int NL = W_start.n_cols; 
+  
+  /////////////////////////////////////////////
+  // Declaring new objects to store results //
+  /* Parameters */
+  arma::Cube<double> param; param.zeros(NSAMP, NSP, NP+NL);
+  arma::Cube<double> W; W.zeros(NSAMP, NSITE, NL);
+  arma::mat alpha; alpha.zeros(NSAMP, NSITE);
+  arma::vec Valpha; Valpha.zeros(NSAMP);
+  /* Latent variable */
+  arma::mat probit_theta_pred; probit_theta_pred.zeros(NSITE, NSP);
+  arma::mat Z_latent; Z_latent.zeros(NSITE, NSP);
+  /* Deviance */
+  arma::vec Deviance; Deviance.zeros(NSAMP);
+  
+   /////////////////////////////////////
+  // Initializing running parameters //
+  
+  //  mat of species effects parameters and coefficients for latent variables (nl+np,nsp)
+  arma::mat param_run = param_start;
+  // alpha vec of sites effects (nsite)
+  arma::vec alpha_run = alpha_start;
+  double Valpha_run = Valpha_start;
+  // w latent variables (nsite*nl)
+  arma::mat W_run = W_start;
+  // Z latent (nsite*nsp)
+  arma::mat Z_run; Z_run.zeros(NSITE,NSP);
+  // probit_theta_ij = X_i*beta_j + W_i*lambda_j + alpha_i
+  arma::mat probit_theta_run; probit_theta_run.zeros(NSITE,NSP);
+  // data 
+  arma::mat data = arma::join_rows(X,W_run);
+  
+  ////////////
+  // Message//
+  Rprintf("\nRunning the Gibbs sampler. It may be long, please keep cool :)\n\n");
+  R_FlushConsole();
+  
+  ///////////////////////////////////////////////////////////////////////////////////////
+  //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  // Gibbs sampler 
+  
+  for (int g=0; g < NGIBBS; g++) {
+    
+    ////////////////////////
+    // latent variable Z // 
+    
+    for (int j=0; j<NSP; j++) {
+      for (int i=0; i<NSITE; i++) {
+        // Actualization
+        if (Y(i,j) == 0) {
+          Z_run(i,j) = rtnorm(s, R_NegInf, 0, probit_theta_run(i,j), 1);
+        } else {
+          Z_run(i,j) = rtnorm(s, 0, R_PosInf, probit_theta_run(i,j), 1);
+        }
+      } // loop on sites
+    }// loop on species
+  
+    //////////////////////////////////
+    // mat param: Gibbs algorithm //
+    
+    // Loop on species
+    for (int j=0; j<NSP; j++) {
+      // small_v
+      arma::vec small_v = inv(Vparam)*muparam + data.t()*(Z_run.col(j) - alpha_run);
+      // big_V
+      arma::mat big_V = inv(inv(Vparam)+data.t()*data);
+      // Draw in the posterior distribution
+      arma::vec param_prop = arma_mvgauss(s, big_V*small_v, chol_decomp(big_V));
+      
+      // constraints on lambda
+      for (int l=0; l<NL; l++) {
+        if (l > j) {
+          param_prop(NP+l) = 0;
+        }
+        if ((l==j) & (param_prop(NP+l) < 0)) {
+          param_prop(NP+l) = param_run(NP+l,j);
+        }
+      }
+      param_run.col(j) = param_prop;
+    }// loop on species
+    
+    
+    /////////////////////////////////////////////
+    // mat latent variable W: Gibbs algorithm //
+    
+    // Loop on sites
+    for (int i=0; i<NSITE; i++) {
+      arma::mat beta_run = param_run.submat(0,0,NP-1,NSP-1);
+      arma::mat lambda_run = param_run.submat(NP,0,NP+NL-1,NSP-1);
+      // big_V
+      arma::mat big_V = inv(inv(VW)+lambda_run*lambda_run.t());
+      
+      // small_v
+      arma::vec small_v =lambda_run*(Z_run.row(i)-X.row(i)*beta_run-alpha_run(i)).t();
+      
+      // Draw in the posterior distribution
+      arma::vec W_i = arma_mvgauss(s, big_V*small_v, chol_decomp(big_V));
+      W_run.row(i) = W_i.t();
+    }
+    
+    data = arma::join_rows(X, W_run);
+    
+    //////////////////////////////////
+    // vec alpha : Gibbs algorithm //
+    
+    // Loop on sites 
+    double sum = 0.0;
+    for (int i=0; i<NSITE; i++) {
+      // small_v
+      double small_v = arma::sum(Z_run.row(i)-data.row(i)*param_run);
+      // big_V
+      double big_V = 1/(1/Valpha_run + NSP);
+      
+      // Draw in the posterior distribution
+      alpha_run(i) = big_V*small_v + gsl_ran_gaussian_ziggurat(s, std::sqrt(big_V));
+      sum += alpha_run(i)*alpha_run(i);
+    }
+    
+    ////////////////////////////////////////////////
+    // Valpha
+    double shape_posterior = shape + 0.5*NSITE;
+    double rate_posterior = rate + 0.5*sum;
+    
+    Valpha_run = rate_posterior/gsl_ran_gamma_mt(s, shape_posterior, 1.0);
+    
+     //////////////
+    // Deviance //
+    
+    // logLikelihood
+    double logL = 0.0;
+    for ( int i = 0; i < NSITE; i++ ) {
+      for ( int j = 0; j < NSP; j++ ) {
+        // probit(theta_ij) = X_i*beta_j + W_i*lambda_j + alpha_i 
+        probit_theta_run(i,j) = arma::as_scalar(data.row(i)*param_run.col(j) + alpha_run(i));
+        // link function probit is the inverse of N(0,1) repartition function 
+        double theta = gsl_cdf_ugaussian_P(probit_theta_run(i,j));
+        /* log Likelihood */
+        logL += R::dbinom(Y(i,j), T(i,j), theta, 1);
+      } // loop on species
+    } // loop on sites
+    
+    // Deviance
+    double Deviance_run = -2 * logL;
+    
+    //////////////////////////////////////////////////
+    // Output
+    if (((g+1)>NBURN) && (((g+1)%(NTHIN))==0)) {
+      int isamp=((g+1)-NBURN)/(NTHIN);
+      for ( int j=0; j<NSP; j++ ) {
+        param.tube(isamp-1,j) = param_run.col(j);
+        for ( int i=0; i<NSITE; i++ ) {
+          W.tube(isamp-1,i) = W_run.row(i);
+          Z_latent(i,j) += Z_run(i,j) / NSAMP; // We compute the mean of NSAMP values
+          probit_theta_pred(i,j) += probit_theta_run(i,j)/NSAMP;        
+        }
+      }
+      alpha.row(isamp-1) = alpha_run.t();
+      Valpha(isamp-1) = Valpha_run;
+      Deviance(isamp-1) = Deviance_run;
+    }
+    
+    //////////////////////////////////////////////////
+    // Progress bar
+    double Perc=100*(g+1)/(NGIBBS);
+    if (((g+1)%(NGIBBS/100))==0 && (verbose==1)) {  
+      Rprintf("*");
+      R_FlushConsole();
+      //R_ProcessEvents(); for windows
+      if (((g+1)%(NGIBBS/10))==0) {
+        Rprintf(":%.1f%% \n",Perc);
+        R_FlushConsole();
+        //R_ProcessEvents(); for windows
+      }
+    } 
+    
+    ///////////////////
+  // User interrupt //
+    R_CheckUserInterrupt(); // allow user interrupts 	    
+    
+  } // Gibbs sampler
+  
+  // Free memory
+  gsl_rng_free(s);
+  
+  // Return results as a Rcpp::List
+  Rcpp::List results = Rcpp::List::create(Rcpp::Named("param") = param,
+                                          Rcpp::Named("W") = W,
+                                          Rcpp::Named("alpha") = alpha,
+                                          Rcpp::Named("Valpha") = Valpha,
+                                          Rcpp::Named("Deviance") = Deviance,
+                                          Rcpp::Named("Z_latent") = Z_latent,
+                                          Rcpp::Named("probit_theta_pred") = probit_theta_pred);  
+  return results;
+  
+} // end Rcpp_jSDM_probit_block
+```
+
+\subsection*{Fonction utilisée pour le modèle logit}
+
+```{r Rcpp_jSDM_gibbs_logit, engine="Rcpp", eval=F}
+#include <RcppArmadillo.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+
+// [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::depends(RcppGSL)]]
+
+/* Function logit */
+double logit (double x) {
+  return std::log(x) - std::log(1-x);
+}
+
+/* Function invlogit */
+double invlogit (double x) {
+  if (x > 0) {
+    return 1 / (1 + std::exp(-x));
+  }
+  else {
+    return std::exp(x) / (1 + std::exp(x));
+  }
+}
+
+/* Function mean */
+double mean (arma::vec x){
+  int n = x.size();
+  double sum = 0.0;
+  for ( int i = 0; i < n ; i++ ) {
+    sum += x(i);
+  }
+  return sum/n ;
+}
+
+/* Function var */
+double var (arma::vec x){
+  int n = x.size();
+  double sum = 0.0;
+  for ( int i = 0; i < n ; i++ ) {
+    sum += (x(i) - mean(x))*(x(i) - mean(x));
+  }
+  return sum/n ;
+}
+
+/* dens_par */
+struct dens_par {
+  // Data 
+  int NSITE;
+  int NSP;
+  arma::umat Y;
+  arma::umat T;
+  // Suitability 
+  // beta
+  int NP;
+  arma::mat X;
+  int pos_beta;
+  int sp_beta;
+  arma::mat mubeta;
+  arma::mat Vbeta;
+  arma::mat beta_run;
+  // lambda
+  int NL; 
+  int pos_lambda;
+  int sp_lambda;
+  arma::mat mulambda;
+  arma::mat Vlambda;
+  arma::mat lambda_run;
+  // W
+  int site_W;
+  int pos_W;
+  arma::mat muW;
+  arma::mat VW;
+  arma::mat W_run;
+  //alpha
+  int site_alpha; 
+  double Valpha_run;
+  double shape;
+  double rate;
+  arma::rowvec alpha_run;
+};
+
+/* betadens */
+double betadens (double beta_jk, void *dens_data) {
+  // Pointer to the structure: d
+  dens_par *d;
+  d = static_cast<dens_par *> (dens_data);
+  // Indicating the rank and the species of the parameter of interest
+  int k = d->pos_beta;
+  int j = d->sp_beta;
+  // logLikelihood
+  double logL = 0.0;
+  for ( int i = 0; i < d->NSITE; i++ ) {
+    /* theta */
+    double Xpart_theta = 0.0;
+    for ( int p = 0; p < d->NP; p++ ) {
+      if ( p != k ) {
+        Xpart_theta += d->X(i,p) * d->beta_run(j,p);
+      }
+    }
+    for ( int q = 0; q < d->NL; q++ ) {
+      Xpart_theta += d->W_run(i,q) * d->lambda_run(j,q);
+    } 
+    Xpart_theta += d->X(i,k) * beta_jk + d->alpha_run(i);
+    double theta = invlogit(Xpart_theta);
+    /* log Likelihood */
+    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
+  } // loop on sites 
+  
+  // logPosterior = logL + logPrior
+  double logP = logL + R::dnorm(beta_jk, d->mubeta(j,k), std::sqrt(d->Vbeta(j,k)), 1);
+  return logP;
+}
+
+/* lambdadens */
+double lambdadens (double lambda_jq, void *dens_data) {
+  // Pointer to the structure: d
+  dens_par *d;
+  d = static_cast<dens_par *> (dens_data);
+  // Indicating the rank and the species of the parameter of interest
+  int q = d->pos_lambda;
+  int j = d->sp_lambda;
+  // logLikelihood
+  double logL = 0.0;
+  for ( int i = 0; i < d->NSITE; i++ ) {
+    /* theta */
+    double Xpart_theta = 0.0;
+    for ( int p = 0;  p < d->NP; p++ ) {
+      Xpart_theta += d->X(i,p) * d->beta_run(j,p);
+    }
+    for ( int l = 0;  l < d->NL; l++ ) {
+      if(l != q) {
+        Xpart_theta += d->W_run(i,l)* d->lambda_run(j,l);
+      }
+    }
+    Xpart_theta += d->W_run(i,q) * lambda_jq +  d->alpha_run(i);
+    double theta = invlogit(Xpart_theta);
+    /* log Likelihood */
+    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
+  } // loop on sites 
+  
+  // logPosterior = logL + logPrior
+  double logP = logL + R::dnorm(lambda_jq, d->mulambda(j,q), std::sqrt(d->Vlambda(j,q)), 1);
+  return logP;
+}
+
+double lambdaUdens (double lambda_jq, void *dens_data) {
+  // Pointer to the structure: d
+  dens_par *d;
+  d = static_cast<dens_par *> (dens_data);
+  // Indicating the rank and the species of the parameter of interest
+  int q = d->pos_lambda;
+  int j = d->sp_lambda;
+  // logLikelihood
+  double logL = 0.0;
+  for ( int i = 0; i < d->NSITE; i++ ) {
+    /* theta */
+    double Xpart_theta = 0.0;
+    for ( int p = 0;  p < d->NP; p++ ) {
+      Xpart_theta += d->X(i,p) * d->beta_run(j,p);
+    }
+    for ( int l = 0;  l < d->NL; l++ ) {
+      if(l != q) {
+        Xpart_theta += d->W_run(i,l)* d->lambda_run(j,l);
+      }
+    }
+    Xpart_theta += d->W_run(i,q) * lambda_jq + d->alpha_run(i);
+    double theta = invlogit(Xpart_theta);
+    /* log Likelihood */
+    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
+  } // loop on sites 
+  
+  // logPosterior = logL + logPrior
+  double logP = logL + R::dunif(lambda_jq, d->mulambda(j,q), d->Vlambda(j,q), 1);
+  return logP;
+}
+
+/* Wdens */
+double Wdens (double W_iq, void *dens_data) {
+  // Pointer to the structure: d
+  dens_par *d;
+  d = static_cast<dens_par *> (dens_data);
+  // Indicating the rank and the species of the parameter of interest
+  int i = d->site_W;
+  int q = d->pos_W;
+  // logLikelihood
+  double logL = 0.0;
+  for ( int j = 0; j < d->NSP; j++ ) {
+    /* theta */
+    double Xpart_theta = 0.0;
+    for ( int p = 0;  p < d->NP; p++ ) {
+      Xpart_theta += d->X(i,p) * d->beta_run(j,p);
+    }
+    for ( int l = 0;  l < d->NL; l++ ) {
+      if(l != q) {
+        Xpart_theta += d->W_run(i,l)* d->lambda_run(j,l);
+      }
+    }
+    Xpart_theta += W_iq * d->lambda_run(j,q) +  d->alpha_run(i);
+    double theta = invlogit(Xpart_theta);
+    /* log Likelihood */
+    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
+  } // loop on species
+  
+  // logPosterior = logL + logPrior
+  double logP = logL + R::dnorm(W_iq, d->muW(i,q), std::sqrt(d->VW(i,q)), 1);
+  return logP;
+}
+
+/* alphadens */
+
+double alphadens (double alpha_i, void *dens_data) {
+  // Pointer to the structure: d
+  dens_par *d;
+  d = static_cast<dens_par *> (dens_data);
+  // Indicating the site of the parameter of interest
+  int i = d->site_alpha;
+  // logLikelihood
+  double logL = 0.0;
+  /* theta */
+  for ( int j = 0; j < d->NSP; j++ ) {
+    double Xpart_theta = 0.0;
+    for ( int p = 0; p < d->NP; p++ ) {
+      Xpart_theta += d->X(i,p) * d->beta_run(j,p); 
+    } 
+    for ( int q = 0; q < d->NL; q++ ) {
+      Xpart_theta += d->W_run(i,q) * d->lambda_run(j,q);
+    } 
+    Xpart_theta += alpha_i; 
+    double theta = invlogit(Xpart_theta);
+    /* log Likelihood */
+    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
+  } // loop on species
+  
+  // logPosterior = logL + logPrior
+  double logP = logL + R::dnorm(alpha_i, 0, std::sqrt(d->Valpha_run),1);
+  return logP;
+}
+
+/* ************************ */
+/* Gibbs sampler function */
+
+// [[Rcpp::export]]
+Rcpp::List  Rcpp_jSDM_gibbs_logit(
+    const int ngibbs, int nthin, int nburn, // Number of iterations, burning and samples
+    arma::umat Y, // Number of successes (presences)
+    arma::umat T, // Number of trials
+    arma::mat X, // Suitability covariates
+    arma::mat beta_start,//beta
+    arma::mat mubeta,
+    arma::mat Vbeta,
+    arma::mat mulambda,//lambda
+    arma::mat Vlambda,
+    arma::mat lambda_start,
+    arma::mat muW,//W
+    arma::mat VW,
+    arma::mat W_start,
+    arma::vec alpha_start,//alpha
+    double Valpha_start,
+    double shape,
+    double rate,
+    const int seed,
+    const double ropt,
+    const int verbose) {
+  
+  ////////////////////////////////////////
+  // Defining and initializing objects //
+  
+  ////////////////////////////////////////
+  // Initialize random number generator //
+  gsl_rng *r = gsl_rng_alloc(gsl_rng_mt19937);
+  gsl_rng_set(r, seed);
+  
+  ///////////////////////////
+  // Redefining constants //
+  const int NGIBBS = ngibbs;
+  const int NTHIN = nthin;
+  const int NBURN = nburn;
+  const int NSAMP = (NGIBBS-NBURN)/NTHIN;
+  const int NSITE = X.n_rows;
+  const int NP = X.n_cols;
+  const int NSP = Y.n_cols;
+  const int NL = lambda_start.n_cols;
+  
+  ////////////////////////////////////////////
+  // Declaring new objects to store results //
+  /* Parameters */
+  arma::Cube<double> beta; beta.zeros(NSAMP, NSP, NP);
+  arma::Cube<double> lambda; lambda.zeros(NSAMP, NSP, NL);
+  arma::Cube<double> W; W.zeros(NSAMP, NSITE, NL);
+  arma::mat alpha; alpha.zeros(NSAMP, NSITE);
+  arma::vec Valpha; Valpha.zeros(NSAMP);
+  /* Latent variable */
+  arma::mat theta_run; theta_run.zeros(NSITE, NSP);
+  arma::mat theta_latent; theta_latent.zeros(NSITE, NSP);
+  /* Deviance */
+  arma::vec Deviance; Deviance.zeros(NSAMP);
+  
+  //////////////////////////////////////////////////////////
+  // Set up and initialize structure for density function //
+  dens_par dens_data;
+  // Data 
+  dens_data.NSITE = NSITE;
+  dens_data.NSP = NSP;
+  dens_data.NL = NL;
+  // Y
+  dens_data.Y = Y;
+  // T
+  dens_data.T = T;
+  // Suitability process 
+  dens_data.NP = NP;
+  dens_data.X = X;
+  // beta
+  dens_data.pos_beta = 0;
+  dens_data.sp_beta = 0;
+  dens_data.mubeta = mubeta;
+  dens_data.Vbeta = Vbeta;
+  dens_data.beta_run = beta_start;
+  // lambda 
+  dens_data.pos_lambda = 0;
+  dens_data.sp_lambda = 0;
+  dens_data.mulambda = mulambda;
+  dens_data.Vlambda = Vlambda;
+  dens_data.lambda_run = lambda_start;
+  // W
+  dens_data.site_W = 0;
+  dens_data.pos_W = 0;
+  dens_data.muW = muW;
+  dens_data.VW = VW;
+  dens_data.W_run = W_start;
+  // alpha
+  dens_data.site_alpha = 0;
+  dens_data.shape = shape;
+  dens_data.rate = rate;
+  dens_data.Valpha_run = Valpha_start;
+  dens_data.alpha_run = alpha_start.t();
+  
+  ////////////////////////////////////////////////////////////
+  // Proposal variance and acceptance for adaptive sampling //
+  
+  // beta
+  arma::mat sigmap_beta; sigmap_beta.ones(NSP,NP);
+  arma::mat nA_beta; nA_beta.zeros(NSP,NP);
+  arma::mat Ar_beta; Ar_beta.zeros(NSP,NP); // Acceptance rate
+  
+  // lambda
+  arma::mat sigmaq_lambda; sigmaq_lambda.ones(NSP,NL);
+  arma::mat nA_lambda; nA_lambda.zeros(NSP,NL);
+  arma::mat Ar_lambda; Ar_lambda.zeros(NSP,NL); // Acceptance rate
+  
+  // W
+  arma::mat sigmaq_W; sigmaq_W.ones(NSITE,NL);
+  arma::mat nA_W; nA_W.zeros(NSITE,NL);
+  arma::mat Ar_W; Ar_W.zeros(NSITE,NL); // Acceptance rate
+  
+  // alpha
+  arma::vec sigma_alpha; sigma_alpha.ones(NSITE);
+  arma::vec nA_alpha; nA_alpha.zeros(NSITE);
+  arma::vec Ar_alpha; Ar_alpha.zeros(NSITE); // Acceptance rate
+  
+  
+  ////////////
+  // Message//
+  Rprintf("\nRunning the Gibbs sampler. It may be long, please keep cool :)\n\n");
+  R_FlushConsole();
+  
+  ////////////////////
+  // Gibbs sampler //
+  
+  for ( int g = 0; g < NGIBBS; g++ ) {
+    
+    double sum = 0.0;
+    for ( int i = 0; i < NSITE; i++ ) {
+      // alpha
+      dens_data.site_alpha = i; // Specifying the site 
+      double x_now = dens_data.alpha_run(i);
+      double x_prop = x_now + gsl_ran_gaussian_ziggurat(r, sigma_alpha(i));
+      double p_now = alphadens(x_now, &dens_data);
+      double p_prop = alphadens(x_prop, &dens_data);
+      double ratio = std::exp(p_prop - p_now); // ratio
+      double z = gsl_rng_uniform(r);
+      // Actualization
+      if ( z < ratio ) {
+        dens_data.alpha_run(i) = x_prop;
+        nA_alpha(i)++;
+      } 
+      sum += dens_data.alpha_run(i)*dens_data.alpha_run(i);
+      
+      // W
+      dens_data.site_W = i; // Specifying the site
+      for ( int q = 0; q < NL; q++ ) {
+        dens_data.pos_W = q; // Specifying the rank of the latent variable of interest
+        double x_now = dens_data.W_run(i,q);
+        double x_prop = x_now + gsl_ran_gaussian_ziggurat(r,sigmaq_W(i,q));
+        double p_now = Wdens(x_now, &dens_data);
+        double p_prop = Wdens(x_prop, &dens_data);
+        double ratio = std::exp(p_prop - p_now); // ratio
+        double z = gsl_rng_uniform(r);
+        // Actualization
+        if ( z < ratio ) {
+          dens_data.W_run(i,q) = x_prop;
+          nA_W(i,q)++;
+        } 
+      } // loop on rank of latent variable 
+    } // loop on sites 
+    
+    // Valpha
+    double shape_posterior = dens_data.shape + 0.5*NSITE;
+    double rate_posterior = dens_data.rate + 0.5*sum;
+    
+    dens_data.Valpha_run = rate_posterior/gsl_ran_gamma_mt(r, shape_posterior, 1.0);
+    
+    // Centering and reducing W_i 
+    for ( int i = 0; i < NSITE; i++ ) {
+      for ( int q = 0; q < NL; q++ ) {
+        dens_data.W_run(i,q) = dens_data.W_run(i,q) - mean(dens_data.W_run.col(q));
+        dens_data.W_run(i,q) = dens_data.W_run(i,q)/std::sqrt(var(dens_data.W_run.col(q)));
+      }
+    }
+    
+    for ( int j = 0; j < NSP; j++ ) {
+      // beta
+      dens_data.sp_beta = j; // Specifying the species
+      for ( int p = 0; p < NP; p++ ) {
+        dens_data.pos_beta = p; // Specifying the rank of the parameter of interest
+        double x_now = dens_data.beta_run(j,p);
+        double x_prop = x_now + gsl_ran_gaussian_ziggurat(r, sigmap_beta(j,p));
+        double p_now = betadens(x_now, &dens_data);
+        double p_prop = betadens(x_prop, &dens_data);
+        double ratio = std::exp(p_prop - p_now); // ratio
+        double z = gsl_rng_uniform(r);
+        // Actualization
+        if ( z < ratio ) {
+          dens_data.beta_run(j,p) = x_prop;
+          nA_beta(j,p)++;
+        } 
+      } // loop on rank of parameters
+      
+      // lambda 
+      dens_data.sp_lambda = j; // Specifying the species
+      for ( int q = 0; q < NL; q++ ) {
+        dens_data.pos_lambda = q ; // Specifying the rank of the parameter of interest
+        if (q < j ) {
+          double x_now = dens_data.lambda_run(j,q);
+          double x_prop = x_now + gsl_ran_gaussian_ziggurat(r, sigmaq_lambda(j,q));
+          double p_now = lambdadens(x_now, &dens_data);
+          double p_prop = lambdadens(x_prop, &dens_data);
+          double ratio = std::exp(p_prop - p_now); // ratio
+          double z = gsl_rng_uniform(r);
+          // Actualization
+          if ( z < ratio ) {
+            dens_data.lambda_run(j,q) = x_prop;
+            nA_lambda(j,q)++;
+          }
+        }
+        if (q == j) { 
+          double x_now = dens_data.lambda_run(j,q);
+          double x_prop = x_now + gsl_ran_gaussian_ziggurat(r,sigmaq_lambda(j,q));
+          double p_now = lambdaUdens(x_now, &dens_data);
+          double p_prop = lambdaUdens(x_prop, &dens_data);
+          double ratio = std::exp(p_prop - p_now); // ratio
+          double z = gsl_rng_uniform(r);
+          // Actualization
+          if ( z < ratio ) {
+            dens_data.lambda_run(j,q) = x_prop;
+            nA_lambda(j,q)++;
+          }  
+        }
+        if (q > j) { 
+          dens_data.lambda_run(j,q) = 0;
+        } 
+      } // loop on rank of latent variable
+    } // loop on species
+    
+    ///////////////
+    // Deviance //
+    
+    // logLikelihood
+    double logL = 0.0;
+    for ( int i = 0; i < NSITE; i++ ) {
+      for ( int j = 0; j < NSP; j++ ) {
+        /* theta */
+        double Xpart_theta = 0.0;
+        for ( int p = 0; p < NP; p++ ) {
+          Xpart_theta += dens_data.X(i,p) * dens_data.beta_run(j,p);
+        }
+        for ( int q = 0; q < NL; q++ ) {
+          Xpart_theta += dens_data.W_run(i,q) * dens_data.lambda_run(j,q);
+        }
+        Xpart_theta += dens_data.alpha_run(i);
+        theta_run(i,j) = invlogit(Xpart_theta);
+        /* log Likelihood */
+        logL += R::dbinom(dens_data.Y(i,j), dens_data.T(i,j), theta_run(i,j), 1);
+      } // loop on species
+    } // loop on sites
+    
+    // Deviance
+    double Deviance_run = -2 * logL;
+    
+    
+   /////////////
+  // Output //
+    if (((g+1)>NBURN) && (((g+1)%(NTHIN))==0)) {
+      int isamp=((g+1)-NBURN)/(NTHIN);
+      for ( int j=0; j<NSP; j++ ) {
+        beta.tube(isamp-1,j) = dens_data.beta_run.row(j);
+        lambda.tube(isamp-1,j) = dens_data.lambda_run.row(j);
+        for ( int i=0; i<NSITE; i++ ) {
+          W.tube(isamp-1,i) = dens_data.W_run.row(i);
+          theta_latent(i,j) += theta_run(i,j) / NSAMP; // We compute the mean of NSAMP values
+        }//loop on sites
+      }// loop on species
+      alpha.row(isamp-1) = dens_data.alpha_run;
+      Valpha(isamp-1) = dens_data.Valpha_run;
+      Deviance(isamp-1) = Deviance_run;
+    }
+    
+    ///////////////////////////////////////////////
+    // Adaptive sampling (on the burnin period) //
+    const double ROPT = ropt;
+    int DIV = 0;
+    if ( NGIBBS >= 1000 ) DIV=100;
+    else DIV = NGIBBS / 10;
+    /* During the burnin period */
+    if ( (g+1)%DIV== 0 && (g+1)<=NBURN ) {
+      for (int j=0; j<NSP; j++) {
+        for ( int p=0; p<NP; p++ ) {
+          Ar_beta(j,p) = ((double) nA_beta(j,p)) / DIV;
+          if ( Ar_beta(j,p) >= ROPT )
+            sigmap_beta(j,p) = sigmap_beta(j,p)*(2-(1-Ar_beta(j,p)) / (1-ROPT));
+          else sigmap_beta(j,p) = sigmap_beta(j,p) / (2-Ar_beta(j,p) / ROPT);
+          nA_beta(j,p) = 0.0; // We reinitialize the number of acceptance to zero for beta
+        } // loop on rank of parameters
+        for ( int q=0; q<NL; q++ ) {
+          Ar_lambda(j,q) = ((double) nA_lambda(j,q)) / DIV;
+          if ( Ar_lambda(j,q) >= ROPT ) 
+            sigmaq_lambda(j,q) = sigmaq_lambda(j,q)*(2-(1-Ar_lambda(j,q)) / (1-ROPT));
+          else sigmaq_lambda(j,q) = sigmaq_lambda(j,q) / (2-Ar_lambda(j,q) / ROPT);
+          nA_lambda(j,q) = 0.0; // We reinitialize the number of acceptance to zero for lambda 
+        } // loop on rank of latent variable
+      } // loop on species 
+      for (int i=0; i<NSITE; i++) {
+        Ar_alpha(i) = ((double) nA_alpha(i)) / DIV;
+        if ( Ar_alpha(i) >= ROPT ) sigma_alpha(i) = sigma_alpha(i) * (2-(1-Ar_alpha(i)) / (1-ROPT));
+        else sigma_alpha(i) = sigma_alpha(i) / (2-Ar_alpha(i) / ROPT);
+        nA_alpha(i) = 0.0; // We reinitialize the number of acceptance for alpha to zero
+        for ( int q=0; q<NL; q++ ) {
+          Ar_W(i,q) = ((double) nA_W(i,q)) / DIV;
+          if ( Ar_W(i,q) >= ROPT ) sigmaq_W(i,q) = sigmaq_W(i,q) * (2-(1-Ar_W(i,q)) / (1-ROPT));
+          else sigmaq_W(i,q) = sigmaq_W(i,q) / (2-Ar_W(i,q) / ROPT);
+          nA_W(i,q) = 0.0; // We reinitialize the number of acceptance to zero for z
+        } // loop on rank of latent variable
+      } // loop on sites
+    }
+    
+    /* After the burnin period */
+    if ( (g+1) % DIV == 0 && (g+1) > NBURN ) {
+      for (int j=0; j<NSP; j++) {
+        for (int p=0; p<NP; p++) {
+          Ar_beta(j,p) = ((double) nA_beta(j,p)) / DIV;
+          nA_beta(j,p) = 0.0; // We reinitialize the number of acceptance to zero for beta
+        } // loop on rank of parameters
+        for (int q=0; q<NL; q++) {
+          Ar_lambda(j,q) = ((double) nA_lambda(j,q)) / DIV;
+          nA_lambda(j,q) = 0.0; // We reinitialize the number of acceptance to zero for lambda
+        } // loop on rank of latent variable 
+      } // loop on species
+      for (int i=0; i<NSITE; i++) {
+        Ar_alpha(i) = ((double) nA_alpha(i)) / DIV;
+        nA_alpha(i) = 0.0; // We reinitialize the number of acceptance for alpha to zero
+        for (int q=0; q<NL; q++) {
+          Ar_W(i,q) = ((double) nA_W(i,q)) / DIV;
+          nA_W(i,q) = 0.0; // We reinitialize the number of acceptance to zero for z
+        } // loop on rank of latent variable
+      } // loop on sites
+    }
+    
+    //////////////////////////////////////////////////
+    // Progress bar
+    double Perc = 100 * (g+1) / (NGIBBS);
+    if ( (g+1) % (NGIBBS/100) == 0 && verbose == 1) {
+      Rprintf("*");
+      R_FlushConsole();
+      if( (g+1) % (NGIBBS/10) == 0 ) {
+        double mAr_beta=0; // Mean acceptance rate of beta
+        double mAr_lambda=0; // Mean acceptance rate of lambda
+        for ( int j = 0; j < NSP; j++ ) {
+          for ( int p = 0; p < NP; p++ ) {
+            mAr_beta += Ar_beta(j,p) / (NSP*NP);
+          } // loop on rank of parameters
+          for ( int q = 0; q < NL; q++ ) {
+            mAr_lambda += Ar_lambda(j,q) / (NSP*NL-NL*(NL-1)*0.5);
+          } // loop on rank of latent variable 
+        } // loop on species
+        
+        double mAr_W=0; // Mean acceptance rate of W
+        double mAr_alpha=0; // Mean acceptance rate of alpha 
+        for ( int i = 0; i < NSITE; i++ ) {
+          mAr_alpha += Ar_alpha(i) / NSITE;
+          for ( int q = 0; q < NL; q++ ) {
+            mAr_W += Ar_W(i,q) / (NSITE*NL);
+          }// loop on rank of latent variable 
+        }// loop on sites
+        Rprintf(":%.1f%%, mean accept. rates= beta:%.3f lambda:%.3f W:%.3f alpha:%4.3f\n",
+                Perc, mAr_beta, mAr_lambda, mAr_W, mAr_alpha);
+        R_FlushConsole();
+      }
+    }
+    
+    //////////////////////////////////////////////////
+    // User interrupt
+    R_CheckUserInterrupt(); // allow user interrupt
+    
+  } // Gibbs sampler
+  
+  // Free memory
+  gsl_rng_free(r);
+  
+  // Return results as a Rcpp::List
+  Rcpp::List w = Rcpp::List::create(Rcpp::Named("beta") = beta,
+                                    Rcpp::Named("lambda") = lambda,
+                                    Rcpp::Named("W") = W,
+                                    Rcpp::Named("alpha") = alpha,
+                                    Rcpp::Named("Valpha") = Valpha,
+                                    Rcpp::Named("Deviance") = Deviance,
+                                    Rcpp::Named("theta_latent") = theta_latent);
+  
+  return w;
+  
+}// end Rcpp_jSDM_gibbs_logit function
+```
+

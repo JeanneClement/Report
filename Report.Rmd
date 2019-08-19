@@ -48,8 +48,6 @@ fontsize : 10pt
 \fancypagestyle{simple}{\rhead{\thepage} \chead{} \lhead{} \cfoot{}}
 \renewcommand{\headrulewidth}{0pt}
 
-
-
 \thispagestyle{empty}
 \begin{center}
 
@@ -178,7 +176,7 @@ L’**échantillonnage de Gibbs** consiste à :
 
 Les itérations successives de cet algorithme génèrent les états d’une chaîne de
 Markov $\{\theta^{(t)}, t > 0\}$ à valeurs dans $\mathbb{R}^{m}$, on montre que cette chaîne admet une mesure invariante qui est la *loi a posteriori*.  
-Pour un nombre d’itérations suffisamment grand, le vecteur $\theta$ obtenu peut donc être considéré comme étant une réalisation de la loi *a posteriori* $\uppi(\theta \ | \ x)$. 
+Pour un nombre d’itérations suffisamment grand, le vecteur $\theta$ obtenu peut donc être considéré comme étant une réalisation de la loi *a posteriori* jointe $\uppi(\theta \ | \ x)$. 
 \vspace{0.2cm} 
 
 Par conséquent l'implémentation d'un échantillonneur de Gibbs nécessite la connaissance des ditributions *a posteriori* de chacun des paramètres conditionnellement aux autres paramètres du modèle, qui se déduisent des formules de priors conjugués dans le cas du modèle probit mais ne sont pas explicitement exprimables dans le cas où on utilise une fonction de lien logit.
@@ -232,7 +230,9 @@ P \text{ tel que } \mathbb{P}(\lambda_{jl} = 0)=1  & \text{si } l>j
 \quad & \quad & \text{ pour } j=1,\ldots,J \text{ et } l=1,\ldots,q.
 \end{array}$$
 En effet pour assurer l’identifiabilité du modèle les valeurs de $\Lambda$ sont contraintes à des valeurs strictements positives sur la diagonale et nulles au dessus de celle-ci, $\Lambda$ est ainsi supposée être triangulaire inférieure d’après l’article @Warton2015.  
-La fonction *boral()* du package du même nom, permettant d'ajuster toutes sortes de modèles utilise ces distributions *a priori* pour le modèle qui nous intéresse. Dans l'article @Warton2015 l'ajustement de modèle joints de distributions des espèces est réalisé avec *boral()* qui fonctionne avec JAGS (Just Another Gibbs Sampler) un programme de simulation à partir de modèles hiérarchiques bayésiens utilisant des méthodes MCMC, implémenté en C++. Cependant la fonction *jSDM_probit_block()* du package jSDM que j'ai implémentée utilise une distribution *a priori* jointe pour les effets espèces fixes de la manière qui suit. 
+
+(Au cas où je rajoute la partie comparaison boral jSDM : 
+La fonction *boral()* du package du même nom, permettant d'ajuster différents modèles utilise ces distributions *a priori* pour le modèle qui nous intéresse. Dans l'article @Warton2015 l'ajustement de modèle joints de distributions des espèces est réalisé avec *boral()* qui fonctionne avec JAGS (Just Another Gibbs Sampler) un programme de simulation à partir de modèles hiérarchiques bayésiens utilisant des méthodes MCMC, implémenté en C++. Cependant la fonction *jSDM_probit_block()* du package jSDM que j'ai implémentée utilise une distribution *a priori* jointe pour les effets espèces fixes de la manière qui suit.)
 
 ### Propositions sur les priors conjugués  
 
@@ -516,7 +516,7 @@ $$ f : \lambda_j,\beta_{j0},\beta_j,\alpha_i, W_i, X_i, y_{ij},n_i \rightarrow  
 \end{itemize}
 On répète ces étapes pour $i=1,\ldots,I$ et $j=1,\ldots,J$, et on pose $\theta = \left(\theta{ij}\right)_{i=1,\ldots I}^{j= 1,\ldots,J}$.  
 
-On peut ainsi calculer la vraisemblance du modèle : $\mathrm{L}(\theta)= \sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\mathrm{L}(\theta_{ij})$.  
+On peut ainsi calculer la vraisemblance du modèle : $\mathrm{L}(\theta)= \prod\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\mathrm{L}(\theta_{ij})$.  
 
 D’après la formules de Bayes on a $$\mathrm{p}(\theta \ |  \ Y) \propto \uppi(\theta) \mathrm{L}(\theta).$$
 On utilise donc les relations suivantes pour approcher les densités conditionnelles a posteriori de chacun des paramètres avec $\uppi(.)$ les densités correspondants à leurs lois *a priori*.
@@ -613,7 +613,12 @@ Simuler $y_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$.
 \end{minipage}
 
 ### Représentation des paramètres estimés 
-\begin{center}
+
+Les paramètres à estimer sont au nombre de $(p+1)J+qJ-1+qI+I+1=3\times100+2\times100-1+2\times500+500+1=2000$, pour chacun d'entre eux les fonctions implémentées retournent un échantillon de $N_{samp}$ valeurs dont on fait la moyenne pour obtenir un estimateur du paramètre.  
+On note $\widehat{\beta_{jk}} = \sum\limits_{n=1}^{N_{samp}}\frac{\beta_{jk}^{(n)}}{N_{samp}}$ l'estimateur de $\beta_{jk}$ et on utilise les mêmes notations pour les autres estimateurs.  
+
+On effectue $40000$ itérations au total dont $35000$ de burnin puis $5000$ durant lesquelles les fonctions implémentées enregistrent les paramètres estimés à partir des données simulées précédemment, toutes les $5$ itérations et retournent un échantillon de $N_{samp}=1000$ valeurs pour chacun des paramètres du modèle considéré.   
+
 \textbf{Modèle probit :}
 
 \begin{figure}[H]
@@ -656,37 +661,89 @@ Simuler $y_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$.
  \caption[Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.8\textwidth,height=0.5\textwidth]{Illustrations/logit_W.png}
+\includegraphics[width=0.8\textwidth,height=0.6\textwidth]{Illustrations/logit_W.png}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle logit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.8\textwidth,height=0.5\textwidth]{Illustrations/logit_sp_effect.png}
+\includegraphics[width=0.8\textwidth,height=0.6\textwidth]{Illustrations/logit_sp_effect.png}
 \end{figure} 
 
 \begin{figure}[H]
  \caption[Représentation des $(\mathrm{logit}(\theta_{ij}),\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$  estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\mathrm{logit}(\theta_{ij}))_{i=1,\ldots,500}^{j=1,\ldots,100}$ et $(\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.9\textwidth,height=1.4\textwidth]{Illustrations/logit_proba.png}
+\includegraphics[width=0.9\textwidth,height=0.4\textwidth]{Illustrations/logit_proba.png}
 \end{figure} 
-\end{center}
-### Evaluation du temps de calul et de la pertinence des résultats  
-tableau deviance RMSE temps de calcul + formules
-expliquer plus haut nombre de paramètres à estimer et moyenne des échantillons de NSAMP valeurs. 
 
+### Evaluation du temps de calul et de la pertinence des résultats  
+
+\begin{table}[H]
+\caption[Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que les RMSE (Root Mean Square Error) et déviances obtenues]
+{Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que les RMSE (Root Mean Square Error) et déviances obtenues tels que $RMSE=\sqrt{g(\theta_{ij})-\widehat{g(\theta_{ij})}}$ avec un fonction de lien $g$ probit ou logit et la déviance de la forme $-2\mathrm{l}(\theta)$ avec $\mathrm{l}(\theta)=\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\log(\mathrm{L}(\theta_{ij}))$, la log-vraisemblance du modèle.  
+La déviance est calculée avec les paramètres obtenus à chaque itération et la valeur affichée corrrespond à la moyennes des $NSAMP$ valeurs retournées.}
+$$\begin{tabular}{|c|c|c|c|}
+  \hline
+  \text{Modèle} & \text{Temps de calcul}  & \text{Deviance} & \text{RMSE} \\
+  \hline
+  \text{probit} & 13 \text{ min } & 26805 & 0.473 \\
+  \hline
+  \text{logit} & 60 \text{ min } & 39976 & 0.594 \\
+  \hline
+\end{tabular}$$
+\end{table} 
+Afin d'ajuster un modèle joint de distribution des espèces à partir des données collectées à Madagascar, on utilisera donc la fonction implémentée pour le modèle probit qui présente une déviance et un RMSE indiquant que les paramètres estimés sont en relativement en acoord avec les données et proches des valeurs attendues ainsi qu'un temps de calcul bien inférieur à celui de la fonction ajustant le modèle logit. 
 \newpage
 # Application aux données collectées à Madagascar
 
 ## Description des données 
 
-On dispose d'inventaires forestiers réalisés sur différents sites de l'île de Madagascar (plot sites).
+On dispose d'inventaires forestiers réalisés sur $751$ sites de l'île de Madagascar et répertoriant la présence ou l'absence de $483$ espèces végétales sur chacun de ces sites. 
+ 
+Parmi les données climatiques et environnementales concernant Madagascar à l'heure actuelle (interpolations de données observées représentatives des années 1950-2000), disponibles sur le site \url{https://madaclim.cirad.fr}, on choisit d'utiliser les variables suivantes : 
+```{r data_clim, echo=F}
+library(raster)
+library(rgdal)
+library(readr)
+s <- stack("data/current.tif")
+names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
+              paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
+              paste("pet",1:12,sep=""),"pet","cwd","ndm")
+# get intersting covariables 
+clim_var = dropLayer(s, c(1:36,38,39,41:47,49,50,52:67))
+names(clim_var) <- c("temp","prec","sais_temp","sais_prec","pet","cwd","ndm")
+
+# foresr inventory
+trees <- read_csv("data/forest_inventory_Madagascar.csv")
+# spatial points of each plot
+longlat = SpatialPoints(unique(cbind(trees$long,trees$lat)))
+proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66")
+
+# latlong to UTM38S projection 
+xy = spTransform(longlat, CRS("+init=epsg:32738"))
+
+# extract climatic data on each plot
+clim =  extract(clim_var,xy)
+
+head(clim_var)
+```
 
 ## Estimation des paramètres
+Représentation CV paramètres traceplot + densplot 
+Représentation effets sites estimés 
+
+Représentation prédicteurs non mesurés sites estimés 
+Représentation probas estimés 
+
 ## Prédictions par interpolation 
+Expliquer 2D spline Ordinary kriging Inverse distance weighted 
+résultats + CV sur effets sites 
+résultats variables latentes 
+résultats proba 
 ## Prédictions avec auto-corrélation spatiale
+méthode CAR + 2D spline implémentée mais pas abouties les résultats ne sont pas satisfaisants pour l'instant 
 ## Analyse des résultats et mise en évidence de lieux refuges de la biodiversité
 
 
@@ -696,7 +753,7 @@ On dispose d'inventaires forestiers réalisés sur différents sites de l'île d
 
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
-
+données GIECC pour évolution biodiversité avec changement climatique, intégrer traits spécifiques dans le modèle, enrichir le package,  
 \newpage
 \section*{Bibliographie}
 \addcontentsline{toc}{section}{Bibliographie}

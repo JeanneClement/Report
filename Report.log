@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (MiKTeX 2.9.7000 64-bit) (preloaded format=xelatex 2019.7.25)  22 AUG 2019 04:40
+This is XeTeX, Version 3.14159265-2.6-0.999991 (MiKTeX 2.9.7000 64-bit) (preloaded format=xelatex 2019.7.25)  22 AUG 2019 12:24
 entering extended mode
 **./Report.tex
 (Report.tex
@@ -1353,7 +1353,13 @@ File: Illustrations/logit_sp_effect.png Graphic file (type bmp)
 <Illustrations/logit_sp_effect.png>
 File: Illustrations/logit_proba.png Graphic file (type bmp)
 <Illustrations/logit_proba.png>
-[13] [14] [15]
+[13]
+Underfull \hbox (badness 6691) in paragraph at lines 1039--1039
+\TU/lmr/m/sl/9 On ajuste le modèle nul avec la fonction jSDM_binomial() du pack
+age jSDM pour le modèle logit et avec
+ []
+
+[14] [15]
 File: Illustrations/mada_W1.png Graphic file (type bmp)
 <Illustrations/mada_W1.png>
 File: Illustrations/mada_W2.png Graphic file (type bmp)
@@ -1499,7 +1505,7 @@ LaTeX Warning: There were multiply-defined labels.
 Here is how much of TeX's memory you used:
  30472 strings out of 427667
  559373 string characters out of 3149150
- 741289 words of memory out of 3000000
+ 741284 words of memory out of 3000000
  34140 multiletter control sequences out of 15000+200000
  554666 words of font info for 78 fonts, out of 3000000 for 9000
  1348 hyphenation exceptions out of 8191

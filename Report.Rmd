@@ -151,7 +151,7 @@ Cette dernière partie du modèle est problématique lorsque le nombre d'espèce
 
 ## Modèle à variable latente (LVM)
 
-D'autre part en posant $u_{ij} = W_i\lambda_j$, avec $W_i=(W_{i1},\ldots,W_{iq})$ les $q$ prédicteurs non mesurés (ou "variables latentes") considérés et $\lambda_j=(\lambda_{j1},\ldots, \lambda_{jq})'$ les coefficients associés, on obtient le modèle à variables latentes **(LVM)** suivant : 
+D'autre part en posant $u_{ij} = W_i\lambda_j$, avec $W_i=(W_{i1},\ldots,W_{iq})$ les $q$ variables latentes (ou "variables latentes") considérés et $\lambda_j=(\lambda_{j1},\ldots, \lambda_{jq})'$ les coefficients associés, on obtient le modèle à variables latentes **(LVM)** suivant : 
 $$g(\theta_{ij}) =\alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j$$
 $$y_{ij} \ | \ W_i, \alpha_i \sim \mathcal{B}ernoulli(\theta_{ij}),$$
 $$W_i \sim \mathcal{N}(0,I_q) \ iid $$
@@ -323,7 +323,7 @@ m^* = (V^{-1} + D'D)^{-1}(V^{-1}m + D'Z^*_j)\\
 V^*=(V^{-1} + D'D)^{-1} 
 \end{cases}$$.
 
-**Prédicteurs non mesurés ( ou “variables latentes”) : **
+**Variables latentes (prédicteurs non mesurés) : **
 
 De la même façon, on pose : $Z^\star_{ij} = Z_{ij} - \alpha_i - \beta_{j0} - X_i\beta_j = W_i\lambda_j + \epsilon_{ij}$, afin d’estimer $W_i$ pour chaque site $i$.  
 En appliquant la proposition précédente, on obtient :
@@ -433,7 +433,7 @@ $$P_{jp+1+l}^{(t)} = \lambda_{jl}^{(t)} \leftarrow \begin{cases}
 On pose $P^{(t)}=\left( P_1^{(t)} | \ldots | P_J^{(t)} \right)$.  
 \vspace{0.1cm}
 
-  \item[$\bullet$] Générer les \textbf{prédicteurs non mesurés} (ou “variables latentes”) $W_i^{(t)}$ pour $i=1,\ldots,I$ selon : $$W_i^{(t)} \ | \ Z^{(t)}, P^{(t)},  \alpha_i^{(t-1)} \sim \mathcal{N}_{q} \left((I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}({\Lambda^{(t)}}'Z_i^{\star \star}),(I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}\right),$$
+  \item[$\bullet$] Générer les \textbf{variables latentes} (ou prédicteurs non mesurés) $W_i^{(t)}$ pour $i=1,\ldots,I$ selon : $$W_i^{(t)} \ | \ Z^{(t)}, P^{(t)},  \alpha_i^{(t-1)} \sim \mathcal{N}_{q} \left((I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}({\Lambda^{(t)}}'Z_i^{\star \star}),(I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}\right),$$
 $$\text{où } Z_i^{\star \star} =(Z_{i1}^{\star \star},\ldots,Z_{iJ}^{\star \star}) \text{ tel que } Z_{ij}^{\star \star } = Z_{ij}^{(t)}-\alpha_i^{(t-1)} − \beta_{j0}^{(t)} - X_i\beta_j^{(t)}.$$ On pose $D_i^{(t)} = \left(1,X_{i1},\ldots,X_{ip},W_{i1}^{(t)}, \ldots, W_{iq}^{(t)} \right)$.
 
   \item[$\bullet$] Générer les \textbf{effets sites aléatoires} $\alpha_i^{(t)}$ pour $i=1,\ldots,I$ selon :
@@ -564,7 +564,7 @@ $$\gamma =min\left(1, \ \dfrac{\uppi\left(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)
 
 \item[$\bullet$] Générer la \textbf{variance des effets site aléatoires} $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
 
-\item[$\bullet$] Générer les \textbf{prédicteurs non mesurés} (ou “variables latentes”) $W_{il}^{(t)}$ pour $i=1,\ldots,I$ et $l=1,\ldots,q$ selon un algorithme de Metropolis adaptatif  simulant $W_{il}^\star \sim \mathcal{N}(W_{il}^{(t-1)}, \sigma_{W_{il}}^2)$ puis calculant le taux d'acceptation de la manière suivante :
+\item[$\bullet$] Générer les \textbf{variables latentes} (ou prédicteurs non mesurés) $W_{il}^{(t)}$ pour $i=1,\ldots,I$ et $l=1,\ldots,q$ selon un algorithme de Metropolis adaptatif  simulant $W_{il}^\star \sim \mathcal{N}(W_{il}^{(t-1)}, \sigma_{W_{il}}^2)$ puis calculant le taux d'acceptation de la manière suivante :
 
 $$\gamma = min\left(1,\ \dfrac{\uppi\left(W_{il}^\star\right)\prod\limits_{1\leq j\leq J}f\left(W_{il}^\star, \alpha_i^{(t)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)},X_i,y_{ij},n_i\right)} {\uppi\left(W_{il}^{(t-1)}\right)\prod\limits_{1\leq j\leq J}f\left(W_{il}^{(t-1)}, \alpha_i^{(t)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, X_i,y_{ij},n_i\right)}\right).$$
 
@@ -572,7 +572,7 @@ $$\gamma = min\left(1,\ \dfrac{\uppi\left(W_{il}^\star\right)\prod\limits_{1\leq
 
 $$\gamma = min\left(1,\dfrac{\uppi\left(\beta_{jk}^\star\right)\prod\limits_{1\leq i\leq I}f\left(\beta_{j0}^{(t)},\small{\ldots},\beta_{jk-1}^{(t)},\beta_{jk}^\star,\beta_{jk+1}^{(t-1)},\small{\ldots}, \beta_{jp}^{(t-1)},\lambda_j^{(t-1)}, \alpha_1^{(t)},W_1^{(t)},\small{\ldots},\alpha_I^{(t)},  W_I^{(t)},X_i,y_{ij},n_i\right)} {\uppi\left(\beta_{jk}^{(t-1)}\right)\prod\limits_{1\leq i\leq I}f\left(\beta_{j0}^{(t)},\small{\ldots},\beta_{jk-1}^{(t)},\beta_{jk}^{(t-1)},\beta_{jk+1}^{(t-1)},\small{\ldots}, \beta_{jp}^{(t-1)},\lambda_j^{(t-1)}, \alpha_1^{(t)},W_1^{(t)}, \small{\ldots},\alpha_I^{(t)},  W_I^{(t)},X_i,y_{ij},n_i\right)}\right).$$
   
-\item[$\bullet$] Générer les \textbf{effets espèces fixes liés aux prédicteurs non mesurés} $\lambda_{jl}^{(t)}$ pour $j=1,\ldots,J$ et $l=1,\ldots,q$ selon un algorithme de Metropolis adaptatif pour $l \geq j$, simulant $\lambda_{jl}^\star \sim \mathcal{N}(\lambda_{jl}^{(t-1)},\sigma_{\lambda_{jl}}^2)$ puis calculant le taux d'acceptation de la manière suivante : 
+\item[$\bullet$] Générer les \textbf{effets espèces fixes liés aux variables latentes} $\lambda_{jl}^{(t)}$ pour $j=1,\ldots,J$ et $l=1,\ldots,q$ selon un algorithme de Metropolis adaptatif pour $l \geq j$, simulant $\lambda_{jl}^\star \sim \mathcal{N}(\lambda_{jl}^{(t-1)},\sigma_{\lambda_{jl}}^2)$ puis calculant le taux d'acceptation de la manière suivante : 
 $$\gamma = min\left(1,\dfrac{\uppi\left(\lambda_{jl}^\star\right)\prod\limits_{1\leq i\leq I}f\left(\lambda_{j1}^{(t)},\small{\ldots},\lambda_{jl-1}^{(t)},\lambda_{jl}^\star,\lambda_{jl+1}^{(t-1)},\small{\ldots}, \lambda_{jq}^{(t-1)},\beta_{j0}^{(t)},\beta_j^{(t)}, \alpha_1^{(t)},W_1^{(t)},\small{\ldots},\alpha_I^{(t)},  W_I^{(t)},X_i,y_{ij},n_i\right)} {\uppi\left(\lambda_{jl}^{(t-1)}\right)\prod\limits_{1\leq i\leq I}f\left(\lambda_{j1}^{(t)},\small{\ldots},\lambda_{jl-1}^{(t)},\lambda_{jl}^{(t-1)},\lambda_{jl+1}^{(t-1)},\small{\ldots}, \lambda_{jq}^{(t-1)},\beta_{j0}^{(t)},\beta_j^{(t)}, \alpha_1^{(t)},W_1^{(t)},\small{\ldots},\alpha_I^{(t)},  W_I^{(t)},X_i,y_{ij},n_i\right)}\right).$$
 Dans le cas $l>j$, on pose $\lambda_{jl}^{(t)} = 0$. 
 \end{itemize}
@@ -583,7 +583,7 @@ Dans le cas $l>j$, on pose $\lambda_{jl}^{(t)} = 0$.
 
 ### Simulation des données 
 On simule pour chacun des sites $i$ deux variables bioclimatiques selon une loi normale centrée réduite et on note $X_i=(1,X_{i1},X_{i2})$ pour $i=1,\ldots,500$. 
-On considérera deux prédicteurs non mesurés.  
+On considérera deux variables latentes.  
 On fixe les paramètres suivants afin de simuler des données de présence absence pour les $100$ espèces et $500$ sites considérés selon les deux modèles définis précédemment.  
 Les effets espèces fixes générés selon des lois uniformes : 
 $$\begin{aligned}
@@ -595,7 +595,7 @@ $$\begin{aligned}
 \end{cases}\\
 &\text{ pour } j=1,\ldots,100 \text{ et } l=1,2.
 \end{aligned}$$
-Les prédicteurs non mesurés $W_{il} \sim \mathcal{N}(0,1) \text{ pour } i=1,\ldots,500 \text{ et } l=1,2$.  
+Les variables latentes $W_{il} \sim \mathcal{N}(0,1) \text{ pour } i=1,\ldots,500 \text{ et } l=1,2$.  
 
 Les effets sites aléatoires générés selon $\alpha_i \sim \mathcal{N}(0,V_{alpha})$ avec $V_{alpha}$ fixé à $0.5$.
 
@@ -700,14 +700,14 @@ On effectue $40 000$ itérations au total dont $35 000$ de burnin puis $5 000$ d
 $NRMSE_g=\frac{RMSE_g}{\overline{g(\theta)}}$ avec $\overline{g(\theta)}=\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\frac{g(\theta_{ij})}{IJ}$ et $RMSE=\sqrt{\frac{1}{IJ}\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\left(g(\theta_{ij})-\widehat{g(\theta_{ij})}\right)^2}$.\\ 
 Le pourcentage de déviance expliquée est défini par $1-\dfrac{D}{D_0}$ avec $D=-2(l(\widehat{\theta})-l_s)$ la déviance du modèle considéré avec $l_s$ la log-vraisemblance du modèle saturé comportant autant de paramètres qu'il y a d'observations et dont l'ajustement est supposé parfait par conséquent dans le cas de données binaires, les probabilités ajustées prenant les valeurs $0$ ou $1$ en fonction de celles de $Y$, on a $l_s=0$ car la vraisemblance des données observées sous le modèle saturé est de $1$.\\
 De plus la déviance nulle est définie par $D_0=-2(l(\widehat{\theta}_0)-l_s)$ avec $l(\widehat{\theta}_0)$ la log-vraisemblance du modèle nul défini par $g(\theta_{ij})=\mu$, pour lequel le seul paramètre est l'intercept $\mu$.\\
-On ajuste le modèle nul avec la fonction jSDM\_binomial() du package jSDM pour le modèle logit et avec hSDM\_probit\_block() pour le modèle probit.\\
+On ajuste le modèle nul avec la fonction jSDM\_binomial() du package jSDM pour le modèle logit et avec Rcpp\_hSDM\_binomial\_probit() pour le modèle probit.\\
 Les log-vraisemblance des différents modèles sont calculées avec les paramètres estimés à chaque itération $l(\widehat{\theta})=\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\log(\mathrm{L}(\widehat{\theta_{ij}}))$ et les valeurs utilisées pour le calcul du pourcentage de déviance expliquée correspondent à la moyenne des $N_{samp}$ valeurs retournées par chacune des fonctions implémentées.}
 ```{r results-probit-logit, echo=F, include=T}
 load("data/probit_logit.RData")
 library(dplyr)
 T_probit<- as.numeric(T_probit,units="mins")
 T_logit <- as.numeric(T_logit,units="mins")
-results <- data.frame("Temps"=c(T_probit,T_logit), NRMSE=c(NRMSE_probit,NRMSE_logit), D=c(1-exp_dev_probit,1-exp_dev_logit)*100)
+results <- data.frame("Temps"=c(T_probit,T_logit), NRMSE=c(NRMSE_probit,NRMSE_logit), D=c(exp_dev_probit,exp_dev_logit)*100)
 colnames(results)<- c("Temps de calcul (mins)","NRMSE","Déviance expliquée (%)")
 rownames(results)<- c("Modèle probit","Modèle logit")
 knitr::kable(results, row.names=T, digits=1,booktabs=TRUE) %>%
@@ -715,7 +715,7 @@ knitr::kable(results, row.names=T, digits=1,booktabs=TRUE) %>%
 ```
 \end{table} 
 
-Afin d'ajuster un modèle joint de distribution des espèces à partir des données collectées à Madagascar, on utilisera donc la fonction implémentée pour le modèle probit qui présente un pourcentage de déviance expliquée et un RMSE indiquant que les paramètres estimés sont en relativement en acoord avec les données et proches des valeurs attendues ainsi qu'un temps de calcul bien inférieur à celui de la fonction ajustant le modèle logit. 
+Afin d'ajuster un modèle joint de distribution des espèces à partir des données collectées à Madagascar, on utilisera donc la fonction implémentée pour le modèle probit qui présente un pourcentage de déviance expliquée supérieur, un RMSE inférieur ainsi qu'un temps de calcul bien inférieur à ceux associés au modèle logit, indiquant que les paramètres estimés sont plus en acoord avec les données et proches des valeurs attendues pour le modèle logit.
 
 # Comparaison des packages boral et jSDM 
 
@@ -862,6 +862,7 @@ params_sites <- data.frame(plot = scaled_data_clim2$site,
                            lat = scaled_data_clim2$lat,
                            long = scaled_data_clim2$long,
                            alphas, Valpha = rep(Valpha,nplot),W1,W2)
+write.csv(params_sites, file = "data/params_sites.csv",row.names = F)
 
 ### fixed species effect lambdas and betas 
 lambdas <- matrix(0,nsp,nl)
@@ -878,7 +879,7 @@ for (j in 1:nsp){
 colnames(betas) <- c("beta_intercept",paste0("beta_",colnames(X[,-1])))
 params_species <- data.frame(species = colnames(PA), Id_species = c(1:nsp),
                              betas, lambda_1 = lambdas[,1], lambda_2 = lambdas[,2])
-write.csv(params_sites, file = "data/params_sites.csv",row.names = F)
+write.csv(params_species, file = "data/params_species.csv",row.names = F)
 
 ## probit_theta_pred
 write.csv(mod_all$probit_theta_pred, file = "data/probit_theta_pred.csv", row.names = F)
@@ -928,7 +929,7 @@ par(mfrow=c(1,2),oma=c(1, 0, 1.4, 0))
 for (l in 1:n_latent) {
   plot(mod_all$mcmc.latent[[paste0("lv_",l)]][,1:2], main = paste0("W_", l))
 }
-title(main="Prédicteurs non mesurés", outer=T)
+title(main="Variables latentes", outer=T)
 ## probit_theta
 par (mfrow=c(1,2))
 hist(mod_all$probit_theta_pred, main = "probit(theta) estimé", xlab ="probit(theta) estimé")
@@ -937,7 +938,7 @@ plot(mod_all$mcmc.Deviance,main = "Deviance")
 ```
 
 \begin{figure}[H]
- \caption[Représentation spatiale des prédicteurs non mesurés estimés pour chaque site]{Représentation spatiale des prédicteurs non mesurés estimés pour chaque site}
+ \caption[Représentation spatiale des variables latentes estimés pour chaque site]{Représentation spatiale des variables latentes estimés pour chaque site}
   \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.5\textwidth,height=0.5\textwidth]{Illustrations/mada_W1.png}\includegraphics[width=0.5\textwidth,height=0.5\textwidth]{Illustrations/mada_W2.png}
@@ -990,7 +991,7 @@ La carte intitulée ensemble représente la moyenne des résulats obtenus avec l
 \includegraphics[width=25cm,height=7cm]{Illustrations/mada_site_effect_OK.png}
 \end{figure}
 \begin{figure}[H]
- \caption[Interpolation spatiale des prédicteurs non mesurés par krigeage ordinaire]{Interpolation spatiale des prédicteurs non mesurés par krigeage ordinaire}
+ \caption[Interpolation spatiale des variables latentes par krigeage ordinaire]{Interpolation spatiale des variables latentes par krigeage ordinaire}
   \label{fig:condSimApp}
   \centering
 \includegraphics[width=25cm,height=7cm]{Illustrations/mada_W1_OK.png}\\

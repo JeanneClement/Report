@@ -138,7 +138,7 @@ MCMC.vl1 <- coda::mcmc(mod_probit$W[,,1], start=nburn+1, end=ngibbs, thin=nthin)
 MCMC.vl2 <- coda::mcmc(mod_probit$W[,,2], start=nburn+1, end=ngibbs, thin=nthin)
 plot(W[,1],summary(MCMC.vl1)[[1]][,"Mean"],xlab="W1 fixé", ylab= "W1 estimé",
      main="W1")
-title("Prédicteurs non mesurés", outer = T)
+title("Variables latentes", outer = T)
 abline(a=0,b=1,col='red')
 plot(W[,2],summary(MCMC.vl2)[[1]][,"Mean"],xlab="W2 fixé", ylab= "W2 estimé",
      main="W2")
@@ -169,11 +169,13 @@ abline(a=0,b=1,col='red')
 ## Deviance
 dev_probit<-mean(mod_probit$Deviance)
 # Calcul of Null deviance (intercept only)
-mod_null_probit <- jSDM::jSDM_binomial(presences=c(Y_probit), trials=rep(1,nsite*nsp), suitability=~1, data =data.frame(Y_probit=c(Y_probit),visits=c(1,nsite*nsp)), 
-                                       burnin = 35000, mcmc = 5000, thin = 5,
-                                       beta_start=0, mubeta = 0, Vbeta = 1e+06, seed = 1234, ropt = 0.44, verbose = 1)
-null_dev_probit <- mean(mod_null_probit$mcmc[,"Deviance"])
-exp_dev_probit <- dev_probit/null_dev_probit 
+# Calcul of Null deviance (intercept only)
+Rcpp::sourceCpp('Code/Rcpp_hSDM_probit.cpp')
+mod_null_probit <-Rcpp_hSDM_binomial_probit(ngibbs=40000, nthin=5, nburn=5000,          Y=c(Y_probit),T=rep(1,nsp*nsite),X=matrix(1,nrow=nsp*nsite,ncol=1),
+beta_start=0, mubeta= 0, Vbeta=as.matrix(1), 
+seed=1234, verbose=1)
+null_dev_probit <- mean(mod_null_probit$Deviance)
+exp_dev_probit <- 1-dev_probit/null_dev_probit 
 ### RMSE
 SE<-(probit_theta-mod_probit$probit_theta_pred)^2
 RMSE_probit <-sqrt(sum(SE/(nsite*nsp)))
@@ -213,7 +215,7 @@ MCMC.vl1 <- coda::mcmc(mod_logit$W[,,1], start=nburn+1, end=ngibbs, thin=nthin)
 MCMC.vl2 <- coda::mcmc(mod_logit$W[,,2], start=nburn+1, end=ngibbs, thin=nthin)
 plot(W[,1],summary(MCMC.vl1)[[1]][,"Mean"],xlab="W1 fixé", ylab= "W1 estimé",
      main="W1")
-title("Prédicteurs non mesurés", outer = T)
+title("Variables latentes", outer = T)
 abline(a=0,b=1,col='red')
 plot(W[,2],summary(MCMC.vl2)[[1]][,"Mean"],xlab="W2 fixé", ylab= "W2 estimé",
      main="W2")
@@ -247,7 +249,7 @@ mod_null_logit <- jSDM::jSDM_binomial(presences=c(Y_logit), trials=rep(1,nsite*n
                                       burnin = 35000, mcmc = 5000, thin = 5,
                                       beta_start=0, mubeta = 0, Vbeta = 1e+06, seed = 1234, ropt = 0.44, verbose = 1)
 null_dev_logit <- mean(mod_null_logit$mcmc[,"Deviance"])
-exp_dev_logit <- dev_logit/null_dev_logit 
+exp_dev_logit <- 1-dev_logit/null_dev_logit 
 ##RMSE
 SE<-(logit.theta-logit_theta_pred)^2
 RMSE_logit<-sqrt(sum(SE/(nsite*nsp)))

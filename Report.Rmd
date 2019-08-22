@@ -22,12 +22,11 @@ header-includes:
   - \usepackage{bbm}
   - \usepackage{answers}
   - \usepackage{xassoccnt}
-  
 bibliography: Biblio_master.bib
-geometry: left=1.4cm,right=1.4cm,top=1.5cm,bottom=1cm
+geometry: left=1.4cm,right=1.4cm,top=1.5cm,bottom=0.3cm
 fontsize : 10pt
 ---
-
+\renewcommand\UrlFont{\color{blue}\rmfamily\itshape}
 \newtheorem{prop}{Proposition}
 \RemoveFromReset{prop}{section}
 \AddToReset{prop}{subsubsection}
@@ -57,9 +56,8 @@ Encadrant : Ghislain Vieilledent
 
 \vspace{0.5cm}
 
-```{r echo=FALSE, out.width='90%'}
+```{r illustration, echo=FALSE, include=T, out.width='90%'}
 knitr::include_graphics('Illustrations/foret.jpg')
-
 ```
 
 \vspace{0.5cm}
@@ -77,6 +75,24 @@ UMR AMAP - Montpellier
 \includegraphics[height=1.3cm]{Illustrations/titre-long.png}
 \includegraphics[height=3.1cm, width=3.1cm]{Illustrations/Logo-Cirad.png}
 \end{center}
+
+```{r options, echo=FALSE,include=F}
+library(Rcpp)
+library(RcppArmadillo)
+library(RcppGSL)
+library(knitr)
+library(kableExtra)
+knit_engines$get("Rcpp")
+knit_engines$set("Rcpp")
+opts_chunk$set(echo=TRUE, cache=FALSE,
+               #results="hide", 
+               warning=FALSE,
+               message=FALSE, highlight=TRUE,
+               fig.show="hide", size="small",
+               fig.align="center",
+               tidy=FALSE)
+options(knitr.kable.NA="-")
+```
 
 \newpage
 \thispagestyle{empty}
@@ -614,10 +630,10 @@ Simuler $y_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$.
 
 ### Représentation des paramètres estimés 
 
-Les paramètres à estimer sont au nombre de $(p+1)J+qJ-1+qI+I+1=3\times100+2\times100-1+2\times500+500+1=2000$, pour chacun d'entre eux les fonctions implémentées retournent un échantillon de $N_{samp}$ valeurs dont on fait la moyenne pour obtenir un estimateur du paramètre.  
+Les paramètres à estimer sont au nombre de $(p+1)J+qJ-\sum\limits_{j=1}^{q-1}(q-j)+qI+I+1=3\times100+2\times100-1+2\times500+500+1=2 000$, pour chacun d'entre eux les fonctions implémentées retournent un échantillon de $N_{samp}$ valeurs dont on fait la moyenne pour obtenir un estimateur du paramètre.  
 On note $\widehat{\beta_{jk}} = \sum\limits_{n=1}^{N_{samp}}\frac{\beta_{jk}^{(n)}}{N_{samp}}$ l'estimateur de $\beta_{jk}$ et on utilise les mêmes notations pour les autres estimateurs.  
 
-On effectue $40000$ itérations au total dont $35000$ de burnin puis $5000$ durant lesquelles les fonctions implémentées enregistrent les paramètres estimés à partir des données simulées précédemment, toutes les $5$ itérations et retournent un échantillon de $N_{samp}=1000$ valeurs pour chacun des paramètres du modèle considéré.   
+On effectue $40 000$ itérations au total dont $35 000$ de burnin puis $5 000$ durant lesquelles les fonctions implémentées enregistrent les paramètres estimés à partir des données simulées précédemment, toutes les $5$ itérations et retournent un échantillon de $N_{samp}=1 000$ valeurs pour chacun des paramètres du modèle considéré.   
 
 \textbf{Modèle probit :}
 
@@ -625,28 +641,28 @@ On effectue $40000$ itérations au total dont $35000$ de burnin puis $5000$ dura
  \caption[Représentation des $(\alpha_i)_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\alpha_i)_{i=1,\ldots,I}$ estimés en fonction de ceux simulés pour le modèle probit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.9\textwidth,height=0.4\textwidth]{Illustrations/probit_site_effect.png}
+\includegraphics[width=0.9\textwidth,height=0.35\textwidth]{Illustrations/probit_site_effect.png}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle probit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.8\textwidth,height=0.5\textwidth]{Illustrations/probit_W.png}
+\includegraphics[width=0.8\textwidth,height=0.4\textwidth]{Illustrations/probit_W.png}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.8\textwidth,height=0.5\textwidth]{Illustrations/probit_sp_effect.png}
+\includegraphics[width=0.8\textwidth,height=0.4\textwidth]{Illustrations/probit_sp_effect.png}
 \end{figure} 
 
 \begin{figure}[H]
  \caption[Représentation des $(\mathrm{probit}(\theta_{ij}),Z_{ij},\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\mathrm{probit}(\theta_{ij}))_{i=1,\ldots,500}^{j=1,\ldots,100}$, $(Z_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ et $(\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.9\textwidth,height=0.4\textwidth]{Illustrations/probit_proba.png}
+\includegraphics[width=0.9\textwidth,height=0.35\textwidth]{Illustrations/probit_proba.png}
 \end{figure} 
 
 \textbf{Modèle logit :}
@@ -654,99 +670,338 @@ On effectue $40000$ itérations au total dont $35000$ de burnin puis $5000$ dura
  \caption[Représentation des $(\alpha_i)_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(\alpha_i)_{i=1,\ldots,I}$ estimés en fonction de ceux simulés pour le modèle logit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.9\textwidth,height=0.4\textwidth]{Illustrations/logit_site_effect.png}
+\includegraphics[width=0.9\textwidth,height=0.35\textwidth]{Illustrations/logit_site_effect.png}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.8\textwidth,height=0.6\textwidth]{Illustrations/logit_W.png}
+\includegraphics[width=0.8\textwidth,height=0.4\textwidth]{Illustrations/logit_W.png}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle logit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.8\textwidth,height=0.6\textwidth]{Illustrations/logit_sp_effect.png}
+\includegraphics[width=0.8\textwidth,height=0.4\textwidth]{Illustrations/logit_sp_effect.png}
 \end{figure} 
 
 \begin{figure}[H]
  \caption[Représentation des $(\mathrm{logit}(\theta_{ij}),\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$  estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\mathrm{logit}(\theta_{ij}))_{i=1,\ldots,500}^{j=1,\ldots,100}$ et $(\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.9\textwidth,height=0.4\textwidth]{Illustrations/logit_proba.png}
+\includegraphics[width=0.9\textwidth,height=0.35\textwidth]{Illustrations/logit_proba.png}
 \end{figure} 
 
 ### Evaluation du temps de calul et de la pertinence des résultats  
 
-\begin{table}[H]
-\caption[Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que les RMSE (Root Mean Square Error) et déviances obtenues]
-{Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que les RMSE (Root Mean Square Error) et déviances obtenues tels que $RMSE=\sqrt{g(\theta_{ij})-\widehat{g(\theta_{ij})}}$ avec un fonction de lien $g$ probit ou logit et la déviance de la forme $-2\mathrm{l}(\theta)$ avec $\mathrm{l}(\theta)=\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\log(\mathrm{L}(\theta_{ij}))$, la log-vraisemblance du modèle.  
-La déviance est calculée avec les paramètres obtenus à chaque itération et la valeur affichée corrrespond à la moyennes des $NSAMP$ valeurs retournées.}
-$$\begin{tabular}{|c|c|c|c|}
-  \hline
-  \text{Modèle} & \text{Temps de calcul}  & \text{Deviance} & \text{RMSE} \\
-  \hline
-  \text{probit} & 13 \text{ min } & 26805 & 0.473 \\
-  \hline
-  \text{logit} & 60 \text{ min } & 39976 & 0.594 \\
-  \hline
-\end{tabular}$$
+\begin{table}[H]\caption[Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que les NRMSE (Normalized Root Mean Square Error) et les pourcentages de déviance expliquée obtenus]{Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que le pourcentage de déviance expliquée et la racine de la moyenne des carrés des erreurs normalisée (NRMSE) obtenus.pour chaque modèle de la manière suivante avec une fonction de lien $g$ probit ou logit :\\
+$NRMSE_g=\frac{RMSE_g}{\overline{g(\theta)}}$ avec $\overline{g(\theta)}=\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\frac{g(\theta_{ij})}{IJ}$ et $RMSE=\sqrt{\frac{1}{IJ}\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\left(g(\theta_{ij})-\widehat{g(\theta_{ij})}\right)^2}$.\\ 
+Le pourcentage de déviance expliquée est défini par $1-\dfrac{D}{D_0}$ avec $D=-2(l(\widehat{\theta})-l_s)$ la déviance du modèle considéré avec $l_s$ la log-vraisemblance du modèle saturé comportant autant de paramètres qu'il y a d'observations et dont l'ajustement est supposé parfait par conséquent dans le cas de données binaires, les probabilités ajustées prenant les valeurs $0$ ou $1$ en fonction de celles de $Y$, on a $l_s=0$ car la vraisemblance des données observées sous le modèle saturé est de $1$.\\
+De plus la déviance nulle est définie par $D_0=-2(l(\widehat{\theta}_0)-l_s)$ avec $l(\widehat{\theta}_0)$ la log-vraisemblance du modèle nul défini par $g(\theta_{ij})=\mu$, pour lequel le seul paramètre est l'intercept $\mu$.\\
+On ajuste le modèle nul avec la fonction jSDM\_binomial() du package jSDM pour le modèle logit et avec hSDM\_probit\_block() pour le modèle probit.\\
+Les log-vraisemblance des différents modèles sont calculées avec les paramètres estimés à chaque itération $l(\widehat{\theta})=\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\log(\mathrm{L}(\widehat{\theta_{ij}}))$ et les valeurs utilisées pour le calcul du pourcentage de déviance expliquée correspondent à la moyenne des $N_{samp}$ valeurs retournées par chacune des fonctions implémentées.}
+```{r results-probit-logit, echo=F, include=T}
+load("data/probit_logit.RData")
+library(dplyr)
+T_probit<- as.numeric(T_probit,units="mins")
+T_logit <- as.numeric(T_logit,units="mins")
+results <- data.frame("Temps"=c(T_probit,T_logit), NRMSE=c(NRMSE_probit,NRMSE_logit), D=c(1-exp_dev_probit,1-exp_dev_logit)*100)
+colnames(results)<- c("Temps de calcul (mins)","NRMSE","Déviance expliquée (%)")
+rownames(results)<- c("Modèle probit","Modèle logit")
+knitr::kable(results, row.names=T, digits=1,booktabs=TRUE) %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+```
 \end{table} 
-Afin d'ajuster un modèle joint de distribution des espèces à partir des données collectées à Madagascar, on utilisera donc la fonction implémentée pour le modèle probit qui présente une déviance et un RMSE indiquant que les paramètres estimés sont en relativement en acoord avec les données et proches des valeurs attendues ainsi qu'un temps de calcul bien inférieur à celui de la fonction ajustant le modèle logit. 
+
+Afin d'ajuster un modèle joint de distribution des espèces à partir des données collectées à Madagascar, on utilisera donc la fonction implémentée pour le modèle probit qui présente un pourcentage de déviance expliquée et un RMSE indiquant que les paramètres estimés sont en relativement en acoord avec les données et proches des valeurs attendues ainsi qu'un temps de calcul bien inférieur à celui de la fonction ajustant le modèle logit. 
+
+# Comparaison des packages boral et jSDM 
+
+## Performances sur des données simulées 
+
+On ajuste le modèle joint de distribution des espèces défini précèdemment à partir des données simulées selon le modèle probit à l'aide du package jSDM d'une part et boral d'autre part, puis on compare les résultats obtenus et les temps de calculs nécessaires.
+
+## Comparaison des résultats sur des jeux de données réels 
+### Jeux de données utilisés 
+### Comparaison des résultats 
+
 \newpage
 # Application aux données collectées à Madagascar
 
-## Description des données 
+## Description des données  
 
 On dispose d'inventaires forestiers réalisés sur $751$ sites de l'île de Madagascar et répertoriant la présence ou l'absence de $483$ espèces végétales sur chacun de ces sites. 
  
 Parmi les données climatiques et environnementales concernant Madagascar à l'heure actuelle (interpolations de données observées représentatives des années 1950-2000), disponibles sur le site \url{https://madaclim.cirad.fr}, on choisit d'utiliser les variables suivantes : 
-```{r data_clim, echo=F}
+
+\begin{table}[H]
+\caption[Variables bioclimatiques considérées]{Variables bioclimatiques considérées affichées pour quelques sites : \\
+Les températures (temp) et précipitations (temp) moyennes annuelles qui sont exprimées respectivement en $\degre C$ et millimètres.\\
+La saisonnalité des températures (sais\_temp) correspond à l'écart type des températures mensuelles multiplié par $100$ ainsi que la saisonnalité des précipitations (sais\_prec) sous la forme d'un coefficient de variation.\\
+Le déficit hydrique climatique (cwd) annuel est calculé en fonction des précipitations et des évapotranspirations potentielles mensuelles (pet) qui sont définies comme la quantité d'évaporation qui se produirait en un mois si une source d'eau suffisante était disponible : \\$\mathrm{cwd}= \sum_{m=1}^{12}\min(0, \ \mathrm{prec}_m-\ \mathrm{pet}_m)$ , il est exprimé en millimètres.  \\
+Les trois dernières colonnes correspondent aux coordonnées du site considéré en 
+latitude (lat) et longitude (long) ainsi qu'à son identifiant (site).}
+
+```{r site-data-clim, echo=F,include=F}
 library(raster)
 library(rgdal)
 library(readr)
+library(dplyr)
 s <- stack("data/current.tif")
 names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
               paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
               paste("pet",1:12,sep=""),"pet","cwd","ndm")
 # get intersting covariables 
-clim_var = dropLayer(s, c(1:36,38,39,41:47,49,50,52:67))
-names(clim_var) <- c("temp","prec","sais_temp","sais_prec","pet","cwd","ndm")
+clim_var <- dropLayer(s, c(1:36,38,39,41:47,49,50,52:68,70))
+names(clim_var) <- c("temp","prec","sais_temp","sais_prec","cwd")
 
 # foresr inventory
 trees <- read_csv("data/forest_inventory_Madagascar.csv")
 # spatial points of each plot
-longlat = SpatialPoints(unique(cbind(trees$long,trees$lat)))
+longlat <- SpatialPoints(unique(cbind(trees$long,trees$lat)))
 proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66")
 
 # latlong to UTM38S projection 
-xy = spTransform(longlat, CRS("+init=epsg:32738"))
+xy <- spTransform(longlat, CRS("+init=epsg:32738"))
 
 # extract climatic data on each plot
-clim =  extract(clim_var,xy)
+clim <-  extract(clim_var,xy)
+clim2 <- clim^2
+colnames(clim2)<-paste(colnames(clim),rep("2",ncol(clim)),sep="")
+pos = unique(trees[,c("long","lat","plot")])
+colnames(pos) <- c("long","lat","site")
+data_clim <- cbind(clim,pos)
+# order plot
+ord_data_clim <- data_clim[sort(data_clim$site, index.return=TRUE)$ix,]
 
-head(clim_var)
+# Add squared data
+data_clim2 <- cbind(clim,clim2,pos)
+nparam <- ncol(data_clim2) -3
+
+library(tidyverse)
+# order plot
+ord_data_clim2 <- data_clim2[sort(data_clim2$site, index.return=TRUE)$ix,]
+
+# reduced centered data
+scaled_data_clim2 <- as_tibble(cbind(scale(ord_data_clim2[1:nparam]),ord_data_clim2[(nparam+1):ncol(ord_data_clim2)]))
+
 ```
 
-## Estimation des paramètres
-Représentation CV paramètres traceplot + densplot 
-Représentation effets sites estimés 
+```{r head-site-data-clim, echo=F}
+knitr::kable(head(ord_data_clim), row.names=F, digits=3,booktabs=TRUE) %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+```
+\end{table}
 
-Représentation prédicteurs non mesurés sites estimés 
-Représentation probas estimés 
+On considère également les carrés de ces variables climatiques afin d'effectuer un régression quadratique, plus adaptée pour ajuster un modèle de niche qu'une régression linéaire. On centre et on réduit ces variables afin de former une matrice de design $X$ telle que 
+$X_i=(1,\mathrm{temp}_i, \mathrm{prec}_i,\mathrm{sais\_temp}_i, \mathrm{sais\_prec}_i,  \mathrm{cwd}_i,\mathrm{temp}_i^2, \mathrm{prec}_i^2,\mathrm{sais\_temp}_i^2, \mathrm{sais\_prec}_i^2, \mathrm{cwd}_i^2)$ pour $i=1,\ldots,751$.  
 
-## Prédictions par interpolation 
-Expliquer 2D spline Ordinary kriging Inverse distance weighted 
-résultats + CV sur effets sites 
-résultats variables latentes 
-résultats proba 
-## Prédictions avec auto-corrélation spatiale
-méthode CAR + 2D spline implémentée mais pas abouties les résultats ne sont pas satisfaisants pour l'instant 
+Les coordonnées des sites seront utilisées par la suite dans le cadre de l'interpolation spatiale des résultats. 
+
+## Estimation des paramètres et représentation des résulats 
+
+```{r fit-jSDM-Mada-data, echo=F, include=F, eval=F}
+species <- unique(trees$taxize)
+nplot <- nrow(data_clim)
+nsp <- length(species)
+nl <- 2
+# presence/absence of each species on each plot
+PA <- matrix(0,nplot,nsp)
+rownames(PA) <- sort(unique(trees$plot))
+colnames(PA) <- species
+for (i in 1:nplot){    
+  for (j in 1:nsp){
+    idx <- which(trees$taxize == species[j])
+    PA[paste(trees$plot[idx]),j] <- 1 
+  }
+}
+
+## Design matrix
+X <- data.frame(intercept=rep(1,nplot),select(as_tibble(scaled_data_clim2),-lat,-long, -site))
+np<-ncol(X)
+write.csv(X, "data/X.csv", row.names = F)
+
+## Call to jSDM_probit_block function
+library(jSDM)
+
+T1<- Sys.time()
+mod_all <- jSDM::jSDM_probit_block (
+  # Response variable 
+  presence_site_sp = as.matrix(PA), 
+  # Explanatory variables 
+  site_suitability = ~.,   
+  site_data =X[,-1], 
+  n_latent=2,
+  # Chains
+  burnin= 90000, mcmc=10000, thin=10,
+  # Starting values
+  alpha_start=0, beta_start=0,
+  lambda_start=0, W_start=0,
+  V_alpha_start=1, 
+  # Priors
+  shape=0.5, rate=0.0005,
+  mu_beta=0, V_beta=1.0E6,
+  mu_lambda=0, V_lambda=10,
+  # Various 
+  seed=1234, verbose=1)
+T2 <- Sys.time()
+T_all <- difftime(T2,T1)
+
+## Save parameters 
+### alphas
+alphas <- summary(mod_all$mcmc.alpha)[[1]][,"Mean"]
+### Valpha
+Valpha <- mean(mod_all$mcmc.Valpha)
+### latent variables 
+W1 <- colMeans(mod_all$mcmc.latent[["lv_1"]])
+W2 <- colMeans(mod_all$mcmc.latent[["lv_2"]])
+
+params_sites <- data.frame(plot = scaled_data_clim2$site,
+                           lat = scaled_data_clim2$lat,
+                           long = scaled_data_clim2$long,
+                           alphas, Valpha = rep(Valpha,nplot),W1,W2)
+
+### fixed species effect lambdas and betas 
+lambdas <- matrix(0,nsp,nl)
+betas <- matrix(0,nsp,np)
+
+for (j in 1:nsp){
+  for (l in 1:nl){
+    lambdas[j,l] <- mean(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l])
+  }
+  for (p in 1:np){
+    betas[j,p] <- mean(mod_all$mcmc.sp[[paste0("sp_",j)]][,p])
+  }
+}
+colnames(betas) <- c("beta_intercept",paste0("beta_",colnames(X[,-1])))
+params_species <- data.frame(species = colnames(PA), Id_species = c(1:nsp),
+                             betas, lambda_1 = lambdas[,1], lambda_2 = lambdas[,2])
+write.csv(params_sites, file = "data/params_sites.csv",row.names = F)
+
+## probit_theta_pred
+write.csv(mod_all$probit_theta_pred, file = "data/probit_theta_pred.csv", row.names = F)
+```
+
+On ajuste un modèle joint de distribution des espèces de fonction de lien probit et en considérant deux variables latentes à l'aide de la fonction *jSDM\_probit\_block()* du package jSDM à partir des données décrites précédemment, en effectuant $100 000$ itérations dont $90 000$ de burnin et on retient $N_{samp}=1 000$ valeurs pour chaque paramètre du modèle que l'on va représenter en fonction du nombre d'itérations effectuées afin d'évaluer la convergence de l'algorithme de Gibbs.  
+
+On représente également une estimation de la densité pour chaque échantillon obtenu qui devrait correspondre aux distributions *a posteriori* définies et donc être de forme gaussienne.   
+
+```{r plot-results-Mada, cache=T,echo=F,include=F,eval=F}
+## alpha_i of the first two sites
+plot(coda::as.mcmc(mod_all$mcmc.alpha[,1:2]))
+title(main="Effet site aléatoire alpha pour les deux premiers sites")
+## Valpha
+par(mfrow=c(1,2))
+coda::traceplot(mod_all$mcmc.Valpha)
+coda::densplot(mod_all$mcmc.Valpha)
+title(main=" Variance Valpha associée à l'effet site")
+
+## beta_j of the first two species
+par(mfrow=c(np,2))
+for (j in 1:2) {
+  for (p in 1:np) {
+      coda::traceplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,p]))
+      coda::densplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,p]), 
+main = paste(colnames(mod_all$mcmc.sp[[paste0("sp_",j)]])[p],
+", species : ",j))
+  }
+}
+title(main="Effet espèce fixe beta pour les deux premières espèces")
+
+## lambda_j of the first two species
+n_latent <- mod_all$model_spec$n_latent
+par(mfrow=c(n_latent*2,2))
+for (j in 1:2) {
+  for (l in 1:n_latent) {
+      coda::traceplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l]))
+      coda::densplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l]), 
+      main = paste(colnames(mod_all$mcmc.sp[[paste0("sp_",j)]])[np+l],
+      ", species : ",j))
+  }
+  }
+title(main="Effet espèce fixe lambda pour les deux premières espèces")
+
+## Latent variables W_i for the first two sites
+par(mfrow=c(1,2),oma=c(1, 0, 1.4, 0))
+for (l in 1:n_latent) {
+  plot(mod_all$mcmc.latent[[paste0("lv_",l)]][,1:2], main = paste0("W_", l))
+}
+title(main="Prédicteurs non mesurés", outer=T)
+## probit_theta
+par (mfrow=c(1,2))
+hist(mod_all$probit_theta_pred, main = "probit(theta) estimé", xlab ="probit(theta) estimé")
+## Deviance
+plot(mod_all$mcmc.Deviance,main = "Deviance")
+```
+
+\begin{figure}[H]
+ \caption[Représentation spatiale des prédicteurs non mesurés estimés pour chaque site]{Représentation spatiale des prédicteurs non mesurés estimés pour chaque site}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.5\textwidth,height=0.5\textwidth]{Illustrations/mada_W1.png}\includegraphics[width=0.5\textwidth,height=0.5\textwidth]{Illustrations/mada_W2.png}
+\end{figure} 
+
+\begin{minipage}[l]{0.5\textwidth}
+\begin{figure}[H]
+ \caption[Représentation spatiale des effets sites estimés]{Représentation spatiale des effets sites estimés}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_site_effect.png}
+\end{figure} 
+\end{minipage}
+\begin{minipage}[r]{0.5\textwidth}
+\begin{figure}[H]
+ \caption[Représentation spatiale de la richesse spécifique estimée pour chaque site]{Représentation spatiale de la richesse spécifique estimée pour chaque site par $\sum\limits_ {j=1}^{483} \widehat{\theta_{ij}}$}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_specific_richness.png}
+\end{figure} 
+\end{minipage}
+
+## Comparaison de effets sites obtenus avec différentes méthodes d'interpolation spatiale
+
+définition interpolation et expliquer méthodes
+
+### Thin plate spline
+
+### Ordinary kriging 
+
+### Inverse distance weighted 
+
+### Comparaison des méthodes par validation croisée sur les effets sites estimés
+
+expliquer validation croisée et calcul RMSE
+
+\begin{figure}[H]
+ \caption[Comparaison des cartes obtenues pour l'effet site par différentes méthodes d'interpolation]{Comparaison des cartes obtenues pour l'effet site par une interpolation avec la méthode du krigeage ordinaire (OK), de l'inverse de la distance pondéré (IDW) et de thin plate spline (TPS). \\
+La carte intitulée ensemble représente la moyenne des résulats obtenus avec les différentes méthodes d'interpolation pondérés par le RMSE de la méthode considérée divisée par la somme des RMSE, qui sont calculés durant la validaton croisée et correspondent à l'écart entre les effets sites interpolés et ceux estimés pour les sites sur lesquels on a collecté des données.}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.8\textwidth,height=0.8\textwidth]{Illustrations/comparaison_site_effect.png}
+\end{figure}
+
+## Résultats de l'interpolation spatiale par krigeage ordinaire
+\begin{figure}[H]
+ \caption[Interpolation spatiale des effets sites par krigeage ordinaire]{Interpolation spatiale des effets sites par krigeage ordinaire}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=25cm,height=7cm]{Illustrations/mada_site_effect_OK.png}
+\end{figure}
+\begin{figure}[H]
+ \caption[Interpolation spatiale des prédicteurs non mesurés par krigeage ordinaire]{Interpolation spatiale des prédicteurs non mesurés par krigeage ordinaire}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=25cm,height=7cm]{Illustrations/mada_W1_OK.png}\\
+\includegraphics[width=25cm,height=7cm]{Illustrations/mada_W2_OK.png}
+\end{figure} 
+
 ## Analyse des résultats et mise en évidence de lieux refuges de la biodiversité
+résultats species richness theta et probit theta
 
-
+## Prédictions avec auto-corrélation spatiale
+Expliqer méthode CAR + 2D spline qui sont implémentées mais pas abouties les résultats ne sont pas satisfaisants pour l'instant. 
 
 \newpage
 \pagestyle{simple}
@@ -754,7 +1009,6 @@ méthode CAR + 2D spline implémentée mais pas abouties les résultats ne sont 
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
 données GIECC pour évolution biodiversité avec changement climatique, intégrer traits spécifiques dans le modèle, enrichir le package,  
-\newpage
 \section*{Bibliographie}
 \addcontentsline{toc}{section}{Bibliographie}
 
@@ -763,24 +1017,6 @@ données GIECC pour évolution biodiversité avec changement climatique, intégr
 \newpage
 \section*{Annexes}
 \addcontentsline{toc}{section}{Annexe}
-
-```{r options, echo=FALSE,include=F}
-library(Rcpp)
-library(RcppArmadillo)
-library(RcppGSL)
-library(knitr)
-library(kableExtra)
-knit_engines$get("Rcpp")
-knit_engines$set("Rcpp")
-opts_chunk$set(echo=TRUE, cache=FALSE,
-               #results="hide", 
-               warning=FALSE,
-               message=FALSE, highlight=TRUE,
-               fig.show="hide", size="small",
-               fig.align="center",
-               tidy=FALSE)
-options(knitr.kable.NA="-")
-```
 
 \subsection*{Fonction utilisée pour le modèle probit}
 
@@ -1028,637 +1264,5 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
   return results;
   
 } // end Rcpp_jSDM_probit_block
-```
-
-\subsection*{Fonction utilisée pour le modèle logit}
-
-```{r Rcpp_jSDM_gibbs_logit, engine="Rcpp", eval=F}
-#include <RcppArmadillo.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
-
-// [[Rcpp::depends(RcppArmadillo)]]
-// [[Rcpp::depends(RcppGSL)]]
-
-/* Function logit */
-double logit (double x) {
-  return std::log(x) - std::log(1-x);
-}
-
-/* Function invlogit */
-double invlogit (double x) {
-  if (x > 0) {
-    return 1 / (1 + std::exp(-x));
-  }
-  else {
-    return std::exp(x) / (1 + std::exp(x));
-  }
-}
-
-/* Function mean */
-double mean (arma::vec x){
-  int n = x.size();
-  double sum = 0.0;
-  for ( int i = 0; i < n ; i++ ) {
-    sum += x(i);
-  }
-  return sum/n ;
-}
-
-/* Function var */
-double var (arma::vec x){
-  int n = x.size();
-  double sum = 0.0;
-  for ( int i = 0; i < n ; i++ ) {
-    sum += (x(i) - mean(x))*(x(i) - mean(x));
-  }
-  return sum/n ;
-}
-
-/* dens_par */
-struct dens_par {
-  // Data 
-  int NSITE;
-  int NSP;
-  arma::umat Y;
-  arma::umat T;
-  // Suitability 
-  // beta
-  int NP;
-  arma::mat X;
-  int pos_beta;
-  int sp_beta;
-  arma::mat mubeta;
-  arma::mat Vbeta;
-  arma::mat beta_run;
-  // lambda
-  int NL; 
-  int pos_lambda;
-  int sp_lambda;
-  arma::mat mulambda;
-  arma::mat Vlambda;
-  arma::mat lambda_run;
-  // W
-  int site_W;
-  int pos_W;
-  arma::mat muW;
-  arma::mat VW;
-  arma::mat W_run;
-  //alpha
-  int site_alpha; 
-  double Valpha_run;
-  double shape;
-  double rate;
-  arma::rowvec alpha_run;
-};
-
-/* betadens */
-double betadens (double beta_jk, void *dens_data) {
-  // Pointer to the structure: d
-  dens_par *d;
-  d = static_cast<dens_par *> (dens_data);
-  // Indicating the rank and the species of the parameter of interest
-  int k = d->pos_beta;
-  int j = d->sp_beta;
-  // logLikelihood
-  double logL = 0.0;
-  for ( int i = 0; i < d->NSITE; i++ ) {
-    /* theta */
-    double Xpart_theta = 0.0;
-    for ( int p = 0; p < d->NP; p++ ) {
-      if ( p != k ) {
-        Xpart_theta += d->X(i,p) * d->beta_run(j,p);
-      }
-    }
-    for ( int q = 0; q < d->NL; q++ ) {
-      Xpart_theta += d->W_run(i,q) * d->lambda_run(j,q);
-    } 
-    Xpart_theta += d->X(i,k) * beta_jk + d->alpha_run(i);
-    double theta = invlogit(Xpart_theta);
-    /* log Likelihood */
-    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
-  } // loop on sites 
-  
-  // logPosterior = logL + logPrior
-  double logP = logL + R::dnorm(beta_jk, d->mubeta(j,k), std::sqrt(d->Vbeta(j,k)), 1);
-  return logP;
-}
-
-/* lambdadens */
-double lambdadens (double lambda_jq, void *dens_data) {
-  // Pointer to the structure: d
-  dens_par *d;
-  d = static_cast<dens_par *> (dens_data);
-  // Indicating the rank and the species of the parameter of interest
-  int q = d->pos_lambda;
-  int j = d->sp_lambda;
-  // logLikelihood
-  double logL = 0.0;
-  for ( int i = 0; i < d->NSITE; i++ ) {
-    /* theta */
-    double Xpart_theta = 0.0;
-    for ( int p = 0;  p < d->NP; p++ ) {
-      Xpart_theta += d->X(i,p) * d->beta_run(j,p);
-    }
-    for ( int l = 0;  l < d->NL; l++ ) {
-      if(l != q) {
-        Xpart_theta += d->W_run(i,l)* d->lambda_run(j,l);
-      }
-    }
-    Xpart_theta += d->W_run(i,q) * lambda_jq +  d->alpha_run(i);
-    double theta = invlogit(Xpart_theta);
-    /* log Likelihood */
-    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
-  } // loop on sites 
-  
-  // logPosterior = logL + logPrior
-  double logP = logL + R::dnorm(lambda_jq, d->mulambda(j,q), std::sqrt(d->Vlambda(j,q)), 1);
-  return logP;
-}
-
-double lambdaUdens (double lambda_jq, void *dens_data) {
-  // Pointer to the structure: d
-  dens_par *d;
-  d = static_cast<dens_par *> (dens_data);
-  // Indicating the rank and the species of the parameter of interest
-  int q = d->pos_lambda;
-  int j = d->sp_lambda;
-  // logLikelihood
-  double logL = 0.0;
-  for ( int i = 0; i < d->NSITE; i++ ) {
-    /* theta */
-    double Xpart_theta = 0.0;
-    for ( int p = 0;  p < d->NP; p++ ) {
-      Xpart_theta += d->X(i,p) * d->beta_run(j,p);
-    }
-    for ( int l = 0;  l < d->NL; l++ ) {
-      if(l != q) {
-        Xpart_theta += d->W_run(i,l)* d->lambda_run(j,l);
-      }
-    }
-    Xpart_theta += d->W_run(i,q) * lambda_jq + d->alpha_run(i);
-    double theta = invlogit(Xpart_theta);
-    /* log Likelihood */
-    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
-  } // loop on sites 
-  
-  // logPosterior = logL + logPrior
-  double logP = logL + R::dunif(lambda_jq, d->mulambda(j,q), d->Vlambda(j,q), 1);
-  return logP;
-}
-
-/* Wdens */
-double Wdens (double W_iq, void *dens_data) {
-  // Pointer to the structure: d
-  dens_par *d;
-  d = static_cast<dens_par *> (dens_data);
-  // Indicating the rank and the species of the parameter of interest
-  int i = d->site_W;
-  int q = d->pos_W;
-  // logLikelihood
-  double logL = 0.0;
-  for ( int j = 0; j < d->NSP; j++ ) {
-    /* theta */
-    double Xpart_theta = 0.0;
-    for ( int p = 0;  p < d->NP; p++ ) {
-      Xpart_theta += d->X(i,p) * d->beta_run(j,p);
-    }
-    for ( int l = 0;  l < d->NL; l++ ) {
-      if(l != q) {
-        Xpart_theta += d->W_run(i,l)* d->lambda_run(j,l);
-      }
-    }
-    Xpart_theta += W_iq * d->lambda_run(j,q) +  d->alpha_run(i);
-    double theta = invlogit(Xpart_theta);
-    /* log Likelihood */
-    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
-  } // loop on species
-  
-  // logPosterior = logL + logPrior
-  double logP = logL + R::dnorm(W_iq, d->muW(i,q), std::sqrt(d->VW(i,q)), 1);
-  return logP;
-}
-
-/* alphadens */
-
-double alphadens (double alpha_i, void *dens_data) {
-  // Pointer to the structure: d
-  dens_par *d;
-  d = static_cast<dens_par *> (dens_data);
-  // Indicating the site of the parameter of interest
-  int i = d->site_alpha;
-  // logLikelihood
-  double logL = 0.0;
-  /* theta */
-  for ( int j = 0; j < d->NSP; j++ ) {
-    double Xpart_theta = 0.0;
-    for ( int p = 0; p < d->NP; p++ ) {
-      Xpart_theta += d->X(i,p) * d->beta_run(j,p); 
-    } 
-    for ( int q = 0; q < d->NL; q++ ) {
-      Xpart_theta += d->W_run(i,q) * d->lambda_run(j,q);
-    } 
-    Xpart_theta += alpha_i; 
-    double theta = invlogit(Xpart_theta);
-    /* log Likelihood */
-    logL += R::dbinom(d->Y(i,j), d->T(i,j), theta, 1);
-  } // loop on species
-  
-  // logPosterior = logL + logPrior
-  double logP = logL + R::dnorm(alpha_i, 0, std::sqrt(d->Valpha_run),1);
-  return logP;
-}
-
-/* ************************ */
-/* Gibbs sampler function */
-
-// [[Rcpp::export]]
-Rcpp::List  Rcpp_jSDM_gibbs_logit(
-    const int ngibbs, int nthin, int nburn, // Number of iterations, burning and samples
-    arma::umat Y, // Number of successes (presences)
-    arma::umat T, // Number of trials
-    arma::mat X, // Suitability covariates
-    arma::mat beta_start,//beta
-    arma::mat mubeta,
-    arma::mat Vbeta,
-    arma::mat mulambda,//lambda
-    arma::mat Vlambda,
-    arma::mat lambda_start,
-    arma::mat muW,//W
-    arma::mat VW,
-    arma::mat W_start,
-    arma::vec alpha_start,//alpha
-    double Valpha_start,
-    double shape,
-    double rate,
-    const int seed,
-    const double ropt,
-    const int verbose) {
-  
-  ////////////////////////////////////////
-  // Defining and initializing objects //
-  
-  ////////////////////////////////////////
-  // Initialize random number generator //
-  gsl_rng *r = gsl_rng_alloc(gsl_rng_mt19937);
-  gsl_rng_set(r, seed);
-  
-  ///////////////////////////
-  // Redefining constants //
-  const int NGIBBS = ngibbs;
-  const int NTHIN = nthin;
-  const int NBURN = nburn;
-  const int NSAMP = (NGIBBS-NBURN)/NTHIN;
-  const int NSITE = X.n_rows;
-  const int NP = X.n_cols;
-  const int NSP = Y.n_cols;
-  const int NL = lambda_start.n_cols;
-  
-  ////////////////////////////////////////////
-  // Declaring new objects to store results //
-  /* Parameters */
-  arma::Cube<double> beta; beta.zeros(NSAMP, NSP, NP);
-  arma::Cube<double> lambda; lambda.zeros(NSAMP, NSP, NL);
-  arma::Cube<double> W; W.zeros(NSAMP, NSITE, NL);
-  arma::mat alpha; alpha.zeros(NSAMP, NSITE);
-  arma::vec Valpha; Valpha.zeros(NSAMP);
-  /* Latent variable */
-  arma::mat theta_run; theta_run.zeros(NSITE, NSP);
-  arma::mat theta_latent; theta_latent.zeros(NSITE, NSP);
-  /* Deviance */
-  arma::vec Deviance; Deviance.zeros(NSAMP);
-  
-  //////////////////////////////////////////////////////////
-  // Set up and initialize structure for density function //
-  dens_par dens_data;
-  // Data 
-  dens_data.NSITE = NSITE;
-  dens_data.NSP = NSP;
-  dens_data.NL = NL;
-  // Y
-  dens_data.Y = Y;
-  // T
-  dens_data.T = T;
-  // Suitability process 
-  dens_data.NP = NP;
-  dens_data.X = X;
-  // beta
-  dens_data.pos_beta = 0;
-  dens_data.sp_beta = 0;
-  dens_data.mubeta = mubeta;
-  dens_data.Vbeta = Vbeta;
-  dens_data.beta_run = beta_start;
-  // lambda 
-  dens_data.pos_lambda = 0;
-  dens_data.sp_lambda = 0;
-  dens_data.mulambda = mulambda;
-  dens_data.Vlambda = Vlambda;
-  dens_data.lambda_run = lambda_start;
-  // W
-  dens_data.site_W = 0;
-  dens_data.pos_W = 0;
-  dens_data.muW = muW;
-  dens_data.VW = VW;
-  dens_data.W_run = W_start;
-  // alpha
-  dens_data.site_alpha = 0;
-  dens_data.shape = shape;
-  dens_data.rate = rate;
-  dens_data.Valpha_run = Valpha_start;
-  dens_data.alpha_run = alpha_start.t();
-  
-  ////////////////////////////////////////////////////////////
-  // Proposal variance and acceptance for adaptive sampling //
-  
-  // beta
-  arma::mat sigmap_beta; sigmap_beta.ones(NSP,NP);
-  arma::mat nA_beta; nA_beta.zeros(NSP,NP);
-  arma::mat Ar_beta; Ar_beta.zeros(NSP,NP); // Acceptance rate
-  
-  // lambda
-  arma::mat sigmaq_lambda; sigmaq_lambda.ones(NSP,NL);
-  arma::mat nA_lambda; nA_lambda.zeros(NSP,NL);
-  arma::mat Ar_lambda; Ar_lambda.zeros(NSP,NL); // Acceptance rate
-  
-  // W
-  arma::mat sigmaq_W; sigmaq_W.ones(NSITE,NL);
-  arma::mat nA_W; nA_W.zeros(NSITE,NL);
-  arma::mat Ar_W; Ar_W.zeros(NSITE,NL); // Acceptance rate
-  
-  // alpha
-  arma::vec sigma_alpha; sigma_alpha.ones(NSITE);
-  arma::vec nA_alpha; nA_alpha.zeros(NSITE);
-  arma::vec Ar_alpha; Ar_alpha.zeros(NSITE); // Acceptance rate
-  
-  
-  ////////////
-  // Message//
-  Rprintf("\nRunning the Gibbs sampler. It may be long, please keep cool :)\n\n");
-  R_FlushConsole();
-  
-  ////////////////////
-  // Gibbs sampler //
-  
-  for ( int g = 0; g < NGIBBS; g++ ) {
-    
-    double sum = 0.0;
-    for ( int i = 0; i < NSITE; i++ ) {
-      // alpha
-      dens_data.site_alpha = i; // Specifying the site 
-      double x_now = dens_data.alpha_run(i);
-      double x_prop = x_now + gsl_ran_gaussian_ziggurat(r, sigma_alpha(i));
-      double p_now = alphadens(x_now, &dens_data);
-      double p_prop = alphadens(x_prop, &dens_data);
-      double ratio = std::exp(p_prop - p_now); // ratio
-      double z = gsl_rng_uniform(r);
-      // Actualization
-      if ( z < ratio ) {
-        dens_data.alpha_run(i) = x_prop;
-        nA_alpha(i)++;
-      } 
-      sum += dens_data.alpha_run(i)*dens_data.alpha_run(i);
-      
-      // W
-      dens_data.site_W = i; // Specifying the site
-      for ( int q = 0; q < NL; q++ ) {
-        dens_data.pos_W = q; // Specifying the rank of the latent variable of interest
-        double x_now = dens_data.W_run(i,q);
-        double x_prop = x_now + gsl_ran_gaussian_ziggurat(r,sigmaq_W(i,q));
-        double p_now = Wdens(x_now, &dens_data);
-        double p_prop = Wdens(x_prop, &dens_data);
-        double ratio = std::exp(p_prop - p_now); // ratio
-        double z = gsl_rng_uniform(r);
-        // Actualization
-        if ( z < ratio ) {
-          dens_data.W_run(i,q) = x_prop;
-          nA_W(i,q)++;
-        } 
-      } // loop on rank of latent variable 
-    } // loop on sites 
-    
-    // Valpha
-    double shape_posterior = dens_data.shape + 0.5*NSITE;
-    double rate_posterior = dens_data.rate + 0.5*sum;
-    
-    dens_data.Valpha_run = rate_posterior/gsl_ran_gamma_mt(r, shape_posterior, 1.0);
-    
-    // Centering and reducing W_i 
-    for ( int i = 0; i < NSITE; i++ ) {
-      for ( int q = 0; q < NL; q++ ) {
-        dens_data.W_run(i,q) = dens_data.W_run(i,q) - mean(dens_data.W_run.col(q));
-        dens_data.W_run(i,q) = dens_data.W_run(i,q)/std::sqrt(var(dens_data.W_run.col(q)));
-      }
-    }
-    
-    for ( int j = 0; j < NSP; j++ ) {
-      // beta
-      dens_data.sp_beta = j; // Specifying the species
-      for ( int p = 0; p < NP; p++ ) {
-        dens_data.pos_beta = p; // Specifying the rank of the parameter of interest
-        double x_now = dens_data.beta_run(j,p);
-        double x_prop = x_now + gsl_ran_gaussian_ziggurat(r, sigmap_beta(j,p));
-        double p_now = betadens(x_now, &dens_data);
-        double p_prop = betadens(x_prop, &dens_data);
-        double ratio = std::exp(p_prop - p_now); // ratio
-        double z = gsl_rng_uniform(r);
-        // Actualization
-        if ( z < ratio ) {
-          dens_data.beta_run(j,p) = x_prop;
-          nA_beta(j,p)++;
-        } 
-      } // loop on rank of parameters
-      
-      // lambda 
-      dens_data.sp_lambda = j; // Specifying the species
-      for ( int q = 0; q < NL; q++ ) {
-        dens_data.pos_lambda = q ; // Specifying the rank of the parameter of interest
-        if (q < j ) {
-          double x_now = dens_data.lambda_run(j,q);
-          double x_prop = x_now + gsl_ran_gaussian_ziggurat(r, sigmaq_lambda(j,q));
-          double p_now = lambdadens(x_now, &dens_data);
-          double p_prop = lambdadens(x_prop, &dens_data);
-          double ratio = std::exp(p_prop - p_now); // ratio
-          double z = gsl_rng_uniform(r);
-          // Actualization
-          if ( z < ratio ) {
-            dens_data.lambda_run(j,q) = x_prop;
-            nA_lambda(j,q)++;
-          }
-        }
-        if (q == j) { 
-          double x_now = dens_data.lambda_run(j,q);
-          double x_prop = x_now + gsl_ran_gaussian_ziggurat(r,sigmaq_lambda(j,q));
-          double p_now = lambdaUdens(x_now, &dens_data);
-          double p_prop = lambdaUdens(x_prop, &dens_data);
-          double ratio = std::exp(p_prop - p_now); // ratio
-          double z = gsl_rng_uniform(r);
-          // Actualization
-          if ( z < ratio ) {
-            dens_data.lambda_run(j,q) = x_prop;
-            nA_lambda(j,q)++;
-          }  
-        }
-        if (q > j) { 
-          dens_data.lambda_run(j,q) = 0;
-        } 
-      } // loop on rank of latent variable
-    } // loop on species
-    
-    ///////////////
-    // Deviance //
-    
-    // logLikelihood
-    double logL = 0.0;
-    for ( int i = 0; i < NSITE; i++ ) {
-      for ( int j = 0; j < NSP; j++ ) {
-        /* theta */
-        double Xpart_theta = 0.0;
-        for ( int p = 0; p < NP; p++ ) {
-          Xpart_theta += dens_data.X(i,p) * dens_data.beta_run(j,p);
-        }
-        for ( int q = 0; q < NL; q++ ) {
-          Xpart_theta += dens_data.W_run(i,q) * dens_data.lambda_run(j,q);
-        }
-        Xpart_theta += dens_data.alpha_run(i);
-        theta_run(i,j) = invlogit(Xpart_theta);
-        /* log Likelihood */
-        logL += R::dbinom(dens_data.Y(i,j), dens_data.T(i,j), theta_run(i,j), 1);
-      } // loop on species
-    } // loop on sites
-    
-    // Deviance
-    double Deviance_run = -2 * logL;
-    
-    
-   /////////////
-  // Output //
-    if (((g+1)>NBURN) && (((g+1)%(NTHIN))==0)) {
-      int isamp=((g+1)-NBURN)/(NTHIN);
-      for ( int j=0; j<NSP; j++ ) {
-        beta.tube(isamp-1,j) = dens_data.beta_run.row(j);
-        lambda.tube(isamp-1,j) = dens_data.lambda_run.row(j);
-        for ( int i=0; i<NSITE; i++ ) {
-          W.tube(isamp-1,i) = dens_data.W_run.row(i);
-          theta_latent(i,j) += theta_run(i,j) / NSAMP; // We compute the mean of NSAMP values
-        }//loop on sites
-      }// loop on species
-      alpha.row(isamp-1) = dens_data.alpha_run;
-      Valpha(isamp-1) = dens_data.Valpha_run;
-      Deviance(isamp-1) = Deviance_run;
-    }
-    
-    ///////////////////////////////////////////////
-    // Adaptive sampling (on the burnin period) //
-    const double ROPT = ropt;
-    int DIV = 0;
-    if ( NGIBBS >= 1000 ) DIV=100;
-    else DIV = NGIBBS / 10;
-    /* During the burnin period */
-    if ( (g+1)%DIV== 0 && (g+1)<=NBURN ) {
-      for (int j=0; j<NSP; j++) {
-        for ( int p=0; p<NP; p++ ) {
-          Ar_beta(j,p) = ((double) nA_beta(j,p)) / DIV;
-          if ( Ar_beta(j,p) >= ROPT )
-            sigmap_beta(j,p) = sigmap_beta(j,p)*(2-(1-Ar_beta(j,p)) / (1-ROPT));
-          else sigmap_beta(j,p) = sigmap_beta(j,p) / (2-Ar_beta(j,p) / ROPT);
-          nA_beta(j,p) = 0.0; // We reinitialize the number of acceptance to zero for beta
-        } // loop on rank of parameters
-        for ( int q=0; q<NL; q++ ) {
-          Ar_lambda(j,q) = ((double) nA_lambda(j,q)) / DIV;
-          if ( Ar_lambda(j,q) >= ROPT ) 
-            sigmaq_lambda(j,q) = sigmaq_lambda(j,q)*(2-(1-Ar_lambda(j,q)) / (1-ROPT));
-          else sigmaq_lambda(j,q) = sigmaq_lambda(j,q) / (2-Ar_lambda(j,q) / ROPT);
-          nA_lambda(j,q) = 0.0; // We reinitialize the number of acceptance to zero for lambda 
-        } // loop on rank of latent variable
-      } // loop on species 
-      for (int i=0; i<NSITE; i++) {
-        Ar_alpha(i) = ((double) nA_alpha(i)) / DIV;
-        if ( Ar_alpha(i) >= ROPT ) sigma_alpha(i) = sigma_alpha(i) * (2-(1-Ar_alpha(i)) / (1-ROPT));
-        else sigma_alpha(i) = sigma_alpha(i) / (2-Ar_alpha(i) / ROPT);
-        nA_alpha(i) = 0.0; // We reinitialize the number of acceptance for alpha to zero
-        for ( int q=0; q<NL; q++ ) {
-          Ar_W(i,q) = ((double) nA_W(i,q)) / DIV;
-          if ( Ar_W(i,q) >= ROPT ) sigmaq_W(i,q) = sigmaq_W(i,q) * (2-(1-Ar_W(i,q)) / (1-ROPT));
-          else sigmaq_W(i,q) = sigmaq_W(i,q) / (2-Ar_W(i,q) / ROPT);
-          nA_W(i,q) = 0.0; // We reinitialize the number of acceptance to zero for z
-        } // loop on rank of latent variable
-      } // loop on sites
-    }
-    
-    /* After the burnin period */
-    if ( (g+1) % DIV == 0 && (g+1) > NBURN ) {
-      for (int j=0; j<NSP; j++) {
-        for (int p=0; p<NP; p++) {
-          Ar_beta(j,p) = ((double) nA_beta(j,p)) / DIV;
-          nA_beta(j,p) = 0.0; // We reinitialize the number of acceptance to zero for beta
-        } // loop on rank of parameters
-        for (int q=0; q<NL; q++) {
-          Ar_lambda(j,q) = ((double) nA_lambda(j,q)) / DIV;
-          nA_lambda(j,q) = 0.0; // We reinitialize the number of acceptance to zero for lambda
-        } // loop on rank of latent variable 
-      } // loop on species
-      for (int i=0; i<NSITE; i++) {
-        Ar_alpha(i) = ((double) nA_alpha(i)) / DIV;
-        nA_alpha(i) = 0.0; // We reinitialize the number of acceptance for alpha to zero
-        for (int q=0; q<NL; q++) {
-          Ar_W(i,q) = ((double) nA_W(i,q)) / DIV;
-          nA_W(i,q) = 0.0; // We reinitialize the number of acceptance to zero for z
-        } // loop on rank of latent variable
-      } // loop on sites
-    }
-    
-    //////////////////////////////////////////////////
-    // Progress bar
-    double Perc = 100 * (g+1) / (NGIBBS);
-    if ( (g+1) % (NGIBBS/100) == 0 && verbose == 1) {
-      Rprintf("*");
-      R_FlushConsole();
-      if( (g+1) % (NGIBBS/10) == 0 ) {
-        double mAr_beta=0; // Mean acceptance rate of beta
-        double mAr_lambda=0; // Mean acceptance rate of lambda
-        for ( int j = 0; j < NSP; j++ ) {
-          for ( int p = 0; p < NP; p++ ) {
-            mAr_beta += Ar_beta(j,p) / (NSP*NP);
-          } // loop on rank of parameters
-          for ( int q = 0; q < NL; q++ ) {
-            mAr_lambda += Ar_lambda(j,q) / (NSP*NL-NL*(NL-1)*0.5);
-          } // loop on rank of latent variable 
-        } // loop on species
-        
-        double mAr_W=0; // Mean acceptance rate of W
-        double mAr_alpha=0; // Mean acceptance rate of alpha 
-        for ( int i = 0; i < NSITE; i++ ) {
-          mAr_alpha += Ar_alpha(i) / NSITE;
-          for ( int q = 0; q < NL; q++ ) {
-            mAr_W += Ar_W(i,q) / (NSITE*NL);
-          }// loop on rank of latent variable 
-        }// loop on sites
-        Rprintf(":%.1f%%, mean accept. rates= beta:%.3f lambda:%.3f W:%.3f alpha:%4.3f\n",
-                Perc, mAr_beta, mAr_lambda, mAr_W, mAr_alpha);
-        R_FlushConsole();
-      }
-    }
-    
-    //////////////////////////////////////////////////
-    // User interrupt
-    R_CheckUserInterrupt(); // allow user interrupt
-    
-  } // Gibbs sampler
-  
-  // Free memory
-  gsl_rng_free(r);
-  
-  // Return results as a Rcpp::List
-  Rcpp::List w = Rcpp::List::create(Rcpp::Named("beta") = beta,
-                                    Rcpp::Named("lambda") = lambda,
-                                    Rcpp::Named("W") = W,
-                                    Rcpp::Named("alpha") = alpha,
-                                    Rcpp::Named("Valpha") = Valpha,
-                                    Rcpp::Named("Deviance") = Deviance,
-                                    Rcpp::Named("theta_latent") = theta_latent);
-  
-  return w;
-  
-}// end Rcpp_jSDM_gibbs_logit function
 ```
 

@@ -1,0 +1,257 @@
+---
+title: "Ajustement probit et logit modèles sur données simulées"
+author: "Jeanne Clément"
+date: "21/08/2019"
+output: html_document
+---
+```{r data-simulation, echo=F}
+nsp <- 100
+nl <- 2
+nsite <- 500
+seed <- 123
+set.seed(seed)
+# Ecological process (suitability)
+x1 <- rnorm(nsite,0,1)
+x2 <- rnorm(nsite,0,1)
+X <- cbind(rep(1,nsite),x1,x2)
+np <- ncol(X)
+W <- cbind(rnorm(nsite,0,1),rnorm(nsite,0,1))
+beta.target <- t(matrix(runif(nsp*np,-2,2), byrow=TRUE, nrow=nsp))
+l.zero <- 0
+l.diag <- runif(2,0,2)
+l.other <- runif(nsp*2-3,-2,2)
+lambda.target <- t(matrix(c(l.diag[1],l.zero,l.other[1],l.diag[2],l.other[-1]), byrow=T, nrow=nsp))
+Valpha.target <- 0.5
+alpha.target <- rnorm(nsite,0,sqrt(Valpha.target))
+visits <- matrix(1,nsite,nsp)
+
+## Modèle probit
+inv.logit <- function(x, min=0, max=1) {
+  p <- exp(x)/(1+exp(x))
+  p <- ifelse( is.na(p) & !is.na(x), 1, p ) # fix problems with +Inf
+  p * (max-min) + min
+}
+probit_theta <- X %*% beta.target + W %*% lambda.target + alpha.target
+e <- matrix(rnorm(nsp*nsite,0,1),nsite,nsp)
+Z_true <- probit_theta + e
+Y_probit <- matrix (NA, nsite,nsp)
+for (i in 1:nsite){
+  for (j in 1:nsp){
+    if ( Z_true[i,j] > 0) {Y_probit[i,j] <- 1}
+    else {Y_probit[i,j] <- 0}
+  }
+}
+
+## Modèle logit
+logit.theta <- X %*% beta.target + W %*% lambda.target + alpha.target
+theta <- inv.logit(logit.theta)
+Y_logit <- cbind(rbinom(nsite,visits[,1],theta[,1]))
+for (j in 2:ncol(beta.target)){
+  Y_logit <- cbind(Y_logit,rbinom(nsite,visits[,j],theta[,j]))
+}
+```
+
+```{r fit-simulated-data, echo=F,include=F,eval=F}
+# Iterations
+nsamp <- 5000
+nburn <- 35000
+nthin <- 5
+ngibbs <- nsamp+nburn
+
+# Modèle probit
+param_start=matrix(0,np+nl,nsp)
+for (i in 1:nl){
+  param_start[np+i,i] = 1
+}
+T1<-Sys.time() 
+ngibbs <- nsamp+nburn
+Rcpp::sourceCpp('~/Code/Rcpp_jSDM_probit_block.cpp')
+mod_probit <- Rcpp_jSDM_probit_block(
+  ngibbs=ngibbs, nthin=nthin, nburn=nburn,
+  Y=Y_probit, T=visits, X=X, param_start=param_start,
+  Vparam=diag(c(rep(1.0E6,np),rep(10,nl))),muparam = rep(0,np+nl),
+  W_start=matrix(0,nsite,nl), VW=diag(rep(1,nl)),
+  alpha_start=rep(0,nsite), Valpha_start=1, shape=0.5, rate=0.0005,
+  seed=123, verbose=1)
+T2<-Sys.time() 
+T_probit=difftime(T2, T1)
+
+# Modèle logit
+lambda_start = matrix(0,ncol(lambda.target),nrow(lambda.target))
+for (i in 1:nrow(lambda.target)){
+  lambda_start[i,i] = 1
+}
+Vlambda = matrix(10,ncol(lambda.target),nrow(lambda.target))
+mulambda = matrix(0,ncol(lambda.target),nrow(lambda.target))
+# Call to C++ function
+Rcpp::sourceCpp('~/Code/Rcpp_jSDM_gibbs_logit.cpp')
+T1<-Sys.time() 
+mod_logit <-  Rcpp_jSDM_gibbs_logit(
+  ngibbs=ngibbs, nthin=nthin, nburn=nburn,
+  Y=Y_logit,T=visits,X=X,
+  beta_start=matrix(0,ncol(beta.target),nrow(beta.target)),
+  mubeta=matrix(0,ncol(beta.target),nrow(beta.target)),
+  Vbeta=matrix(1.0E6,ncol(beta.target),nrow(beta.target)),
+  lambda_start= lambda_start, mulambda = mulambda, Vlambda = Vlambda,
+  W_start=matrix(0,nsite,nrow(lambda.target)),
+  muW=matrix(0,nsite,nrow(lambda.target)), VW=matrix(1,nsite,nrow(lambda.target)),
+  alpha_start=rep(0,nsite),Valpha_start=1, shape = 0.5, rate = 0.0005,
+  seed=123, ropt=0.44, verbose=1)
+T2<-Sys.time() 
+T_logit=difftime(T2, T1)
+```
+
+```{r params-probit,echo=F,eval=F}
+# Parameter estimates
+
+## Modèle probit
+### logit_theta
+par(mfrow=c(1,3),oma=c(1, 0, 1.4, 0))
+plot(Z_true,mod_probit$Z_latent, ylab ="Z estimé",
+     xlab="Z fixé", main="Variable latente Z",cex.main=1.4)
+title(main="Probabilités de présence",outer=T,cex.main=1.8)
+abline(a=0,b=1,col='red')
+### probit theta
+plot(probit_theta,mod_probit$probit_theta,ylab ="probit(theta) estimé",
+     xlab="probit(theta) fixé",main="probit(theta)",cex.main=1.4)
+abline(a=0,b=1,col='red')
+### theta
+plot(theta,apply(mod_probit$probit_theta,c(1,2),pnorm),ylab ="theta estimé",
+     xlab="theta fixé",main="Theta",cex.main=1.4)
+abline(a=0,b=1,col='red')
+### alpha
+par(mfrow=c(1,3),oma=c(1, 0, 1.4, 0))
+MCMC_alpha <- coda::mcmc(mod_probit$alpha, start=nburn+1, end=ngibbs, thin=nthin)
+plot(alpha.target,summary(MCMC_alpha)[[1]][,"Mean"], ylab ="alphas estimés",
+     xlab="alphas fixés",main="Alphas",cex.main=1.4)
+abline(a=0,b=1,col='red')
+### Valpha
+title(main="Effet site aléatoire et variance associée",outer=T,cex.main=1.8)
+MCMC_Valpha <- coda::mcmc(mod_probit$Valpha, start=nburn+1, end=ngibbs, thin=nthin)
+coda::traceplot(MCMC_Valpha,main="Trace Valpha",cex.main=1.4)
+coda::densplot(MCMC_Valpha,main="Densité Valpha",cex.main=1.4)
+abline(v=Valpha.target,col='red')
+legend("topright", lty=1, col='red',legend="Valpha fixé",cex=0.8)
+### W latent variables
+par(mfrow=c(1,2),oma=c(1, 0, 1, 0))
+MCMC.vl1 <- coda::mcmc(mod_probit$W[,,1], start=nburn+1, end=ngibbs, thin=nthin)
+MCMC.vl2 <- coda::mcmc(mod_probit$W[,,2], start=nburn+1, end=ngibbs, thin=nthin)
+plot(W[,1],summary(MCMC.vl1)[[1]][,"Mean"],xlab="W1 fixé", ylab= "W1 estimé",
+     main="W1")
+title("Prédicteurs non mesurés", outer = T)
+abline(a=0,b=1,col='red')
+plot(W[,2],summary(MCMC.vl2)[[1]][,"Mean"],xlab="W2 fixé", ylab= "W2 estimé",
+     main="W2")
+abline(a=0,b=1,col='red')
+### beta_j
+mean_betas <- matrix(0,nsp,np)
+par(mfrow=c(np,2))
+for (j in 1:nsp) {
+  for (p in 1:ncol(X)) {
+    mean_betas[j,p] <-mean(mod_probit$param[,j,p])
+  }
+}
+### lambda_j
+mean_lambdas <- matrix(0,nsp,nl)
+par(mfrow=c(nl,2))
+for (j in 1:nsp) {
+  for (l in 1:nl) {
+    mean_lambdas[j,l] <-mean(mod_probit$param[,j,np+l])
+  }
+}
+par(mfrow=c(1,2),oma=c(1, 0, 1, 0))
+plot(t(beta.target),mean_betas, xlab="betas fixés", ylab="betas estimés",main="Betas")
+title("Effets espèces fixes", outer = T)
+abline(a=0,b=1,col='red')
+plot(t(lambda.target),mean_lambdas, xlab="lambdas fixés", ylab="lambdas estimés",main="Lambdas")
+abline(a=0,b=1,col='red')
+### Deviance
+## Deviance
+dev_probit<-mean(mod_probit$Deviance)
+# Calcul of Null deviance (intercept only)
+mod_null_probit <- jSDM::jSDM_binomial(presences=c(Y_probit), trials=rep(1,nsite*nsp), suitability=~1, data =data.frame(Y_probit=c(Y_probit),visits=c(1,nsite*nsp)), 
+                                       burnin = 35000, mcmc = 5000, thin = 5,
+                                       beta_start=0, mubeta = 0, Vbeta = 1e+06, seed = 1234, ropt = 0.44, verbose = 1)
+null_dev_probit <- mean(mod_null_probit$mcmc[,"Deviance"])
+exp_dev_probit <- dev_probit/null_dev_probit 
+### RMSE
+SE<-(probit_theta-mod_probit$probit_theta_pred)^2
+RMSE_probit <-sqrt(sum(SE/(nsite*nsp)))
+NRMSE_probit <- RMSE_probit/abs(mean(probit_theta))
+```
+
+```{r params-logit, echo=F, eval=F}
+
+# Modèle logit
+##logit_theta
+par(mfrow=c(1,2),oma=c(1, 0, 1, 0))
+logit_theta_pred <- apply(mod_logit$theta_latent,c(1,2),logit)
+plot(logit.theta,logit_theta_pred, ylab ="logit(theta) estimé",
+     xlab="logit(theta) fixé", main="logit(theta)")
+title(main="Probabilités de présence",outer=T)
+abline(a=0,b=1,col='red')
+##theta
+plot(theta,mod_logit$theta_latent,ylab ="theta estimé",
+     xlab="theta fixé",main="Theta")
+abline(a=0,b=1,col='red')
+##alpha
+par(mfrow=c(1,3),oma=c(1, 0, 1.4, 0))
+MCMC_alpha <- coda::mcmc(mod_logit$alpha, start=nburn+1, end=ngibbs, thin=nthin)
+plot(alpha.target,summary(MCMC_alpha)[[1]][,"Mean"], ylab ="alphas estimés",
+     xlab="alphas fixés",main="Alphas",cex.main=1.4)
+abline(a=0,b=1,col='red')
+##Valpha
+title(main="Effet site aléatoire et variance associée",outer=T,cex.main=1.8)
+MCMC_Valpha <- coda::mcmc(mod_logit$Valpha, start=nburn+1, end=ngibbs, thin=nthin)
+coda::traceplot(MCMC_Valpha,main="Trace Valpha",cex.main=1.4)
+coda::densplot(MCMC_Valpha,main="Densité Valpha",cex.main=1.4)
+abline(v=Valpha.target,col='red')
+legend("topright", lty=1, col='red',legend="Valpha fixé",cex=0.8)
+## W latent variables
+par(mfrow=c(1,2),oma=c(1, 0, 1, 0))
+MCMC.vl1 <- coda::mcmc(mod_logit$W[,,1], start=nburn+1, end=ngibbs, thin=nthin)
+MCMC.vl2 <- coda::mcmc(mod_logit$W[,,2], start=nburn+1, end=ngibbs, thin=nthin)
+plot(W[,1],summary(MCMC.vl1)[[1]][,"Mean"],xlab="W1 fixé", ylab= "W1 estimé",
+     main="W1")
+title("Prédicteurs non mesurés", outer = T)
+abline(a=0,b=1,col='red')
+plot(W[,2],summary(MCMC.vl2)[[1]][,"Mean"],xlab="W2 fixé", ylab= "W2 estimé",
+     main="W2")
+abline(a=0,b=1,col='red')
+##beta_j
+mean_betas <- matrix(0,nsp,np)
+par(mfrow=c(np,2))
+for (j in 1:nsp) {
+  for (p in 1:ncol(X)) {
+    mean_betas[j,p] <-mean(mod_logit$beta[,j,p])
+  }
+}
+##lambda_j
+mean_lambdas <- matrix(0,nsp,nl)
+par(mfrow=c(nl,2))
+for (j in 1:nsp) {
+  for (l in 1:nl) {
+    mean_lambdas[j,l] <-mean(mod_logit$lambda[,j,l])
+  }
+}
+par(mfrow=c(1,2),oma=c(1, 0, 1, 0))
+plot(t(beta.target),mean_betas, xlab="betas fixés", ylab="betas estimés",main="Betas")
+title("Effets espèces fixes", outer = T)
+abline(a=0,b=1,col='red')
+plot(t(lambda.target),mean_lambdas, xlab="lambdas fixés", ylab="lambdas estimés",main="Lambdas")
+abline(a=0,b=1,col='red')
+## Deviance
+dev_logit<-mean(mod_logit$Deviance)
+# Calcul of Null deviance (intercept only)
+mod_null_logit <- jSDM::jSDM_binomial(presences=c(Y_logit), trials=rep(1,nsite*nsp), suitability=~1, data =data.frame(Y_logit=c(Y_logit),visits=c(1,nsite*nsp)), 
+                                      burnin = 35000, mcmc = 5000, thin = 5,
+                                      beta_start=0, mubeta = 0, Vbeta = 1e+06, seed = 1234, ropt = 0.44, verbose = 1)
+null_dev_logit <- mean(mod_null_logit$mcmc[,"Deviance"])
+exp_dev_logit <- dev_logit/null_dev_logit 
+##RMSE
+SE<-(logit.theta-logit_theta_pred)^2
+RMSE_logit<-sqrt(sum(SE/(nsite*nsp)))
+NRMSE_logit <- RMSE_logit/abs(mean(logit.theta))
+
+save(T_logit, NRMSE_logit, exp_dev_logit, T_probit, NRMSE_probit, exp_dev_probit, file="probit_logit.RData")
+```

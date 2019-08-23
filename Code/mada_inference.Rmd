@@ -16,12 +16,52 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Estimation des paramètres  
-```{r fit-jSDM-Mada-data, echo=F, include=F, eval=F}
-species <- unique(trees$taxize)
-nplot <- nrow(data_clim)
-nsp <- length(species)
-n_latent <- 2
+# Mise en forme des données 
+```{r site-data-clim, echo=F,include=F}
+library(raster)
+library(rgdal)
+library(readr)
+library(dplyr)
+s <- stack("data/current.tif")
+names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
+              paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
+              paste("pet",1:12,sep=""),"pet","cwd","ndm")
+# get intersting covariables 
+clim_var <- dropLayer(s, c(1:36,38,39,41:47,49,50,52:68,70))
+names(clim_var) <- c("temp","prec","sais_temp","sais_prec","cwd")
+
+# foresr inventory
+trees <- read_csv("data/forest_inventory_Madagascar.csv")
+# spatial points of each plot
+longlat <- SpatialPoints(unique(cbind(trees$long,trees$lat)))
+proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66")
+
+# latlong to UTM38S projection 
+xy <- spTransform(longlat, CRS("+init=epsg:32738"))
+
+# extract climatic data on each plot
+clim <-  extract(clim_var,xy)
+clim2 <- clim^2
+colnames(clim2)<-paste(colnames(clim),rep("2",ncol(clim)),sep="")
+pos = unique(trees[,c("long","lat","plot")])
+colnames(pos) <- c("long","lat","site")
+
+# Add squared data
+data_clim2 <- cbind(clim,clim2,pos)
+nparam <- ncol(data_clim2) -3
+
+library(tidyverse)
+# order plot
+ord_data_clim2 <- data_clim2[sort(data_clim2$site, index.return=TRUE)$ix,]
+
+# reduced centered data
+scaled_data_clim2 <- as_tibble(cbind(scale(ord_data_clim2[1:nparam]),ord_data_clim2[(nparam+1):ncol(ord_data_clim2)]))
+
+## Design matrix
+X <- data.frame(intercept=rep(1,nplot),select(as_tibble(scaled_data_clim2),-lat,-long, -site))
+np<-ncol(X)
+write.csv(X, "~/Code/Report/data/X.csv", row.names = F)
+
 # presence/absence of each species on each plot
 PA <- matrix(0,nplot,nsp)
 rownames(PA) <- sort(unique(trees$plot))
@@ -33,10 +73,14 @@ for (i in 1:nplot){
   }
 }
 
-## Design matrix
-X <- data.frame(intercept=rep(1,nplot),select(as_tibble(scaled_data_clim2),-lat,-long, -site))
-np<-ncol(X)
-write.csv(X, "~/Code/Report/data/X.csv", row.names = F)
+```
+
+# Estimation des paramètres  
+```{r fit-jSDM-Mada-data, echo=F, include=F, eval=F}
+species <- unique(trees$taxize)
+nplot <- nrow(data_clim)
+nsp <- length(species)
+n_latent <- 2
 
 ## Call to jSDM_probit_block function
 library(jSDM)

@@ -730,7 +730,7 @@ On ajuste le modèle joint de distribution des espèces défini précèdemment �
 \newpage
 # Application aux données collectées à Madagascar
 
-## Description des données  
+  ## Description des données  
 
 On dispose d'inventaires forestiers réalisés sur $753$ sites de l'île de Madagascar et répertoriant la présence ou l'absence de $555$ espèces végétales sur chacun de ces sites. 
  
@@ -775,18 +775,6 @@ colnames(pos) <- c("long","lat","site")
 data_clim <- cbind(clim,pos)
 # order plot
 ord_data_clim <- data_clim[sort(data_clim$site, index.return=TRUE)$ix,]
-
-# Add squared data
-data_clim2 <- cbind(clim,clim2,pos)
-nparam <- ncol(data_clim2) -3
-
-library(tidyverse)
-# order plot
-ord_data_clim2 <- data_clim2[sort(data_clim2$site, index.return=TRUE)$ix,]
-
-# reduced centered data
-scaled_data_clim2 <- as_tibble(cbind(scale(ord_data_clim2[1:nparam]),ord_data_clim2[(nparam+1):ncol(ord_data_clim2)]))
-
 ```
 
 ```{r head-site-data-clim, echo=F}
@@ -917,39 +905,40 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 
 ## Comparaison des effets sites obtenus avec différentes méthodes d'interpolation spatiale
 
-définition interpolation et expliquer méthodes
+définition interpolation et expliquer méthodes Thin plate spline Ordinary kriging Inverse distance weighted 
 
-### Thin plate spline
-
-### Ordinary kriging 
-
-### Inverse distance weighted 
-
-### Comparaison des méthodes par validation croisée sur les effets sites estimés
-
-expliquer validation croisée et calcul RMSE
-
+\begin{table}[H]\caption[RMSE obtenus par validation croisée entre les effets sites estimés et ceux prédits par différentes méthodes d'interpolation]{RMSE obtenus par validation croisée entre les effets sites estimés et ceux prédits par interpolation avec OK, TPS et IDW.\\
+Dans le cadre de la validation croisée, on divise l'échantillon original d'effets sites estimés en $k=5$ échantillons, puis on sélectionne un des $k$ échantillons comme ensemble d'apprentissage et les $k-1$ autres échantillons constitueront l'ensemble de validation. On répète $k$ fois cette opération afin qu'en fin de compte chaque sous-échantillon ait été utilisé exactement une fois pour la phase d'apprentissage qui consite à ajuster les modèles correspondant à chaque méthode d'interpolation. Puis les effets sites sont interpolés suivant ces modèles pour les localisations correspondant à l'ensemble de validation.\\
+Enfin on calcule le RMSE entre les valeurs estimées des effets sites appartenant à l'ensemble de validation $(\widehat{\alpha_i})_{i=1,\ldots,n_v}$ et celles interpolées $(\widetilde{\alpha_i})_{i=1,\ldots,n_v}$ de la forme $RMSE=\sqrt{\sum\limits_{1\leq i\leq n_v} \frac{1}{n_v}\left(\widehat{\alpha_i}-\widetilde{\alpha_i}\right)^2}
+$ avec $n_v$ le nombre d'éléments de l'ensemble de validation correspondant au nombre de sites sur lesquels on a collecté des données moins ceux utilisés pour l'apprentissage.\\
+La dénomination Ensemble correspond aux résulats obtenus en calculant la moyenne des effets sites interpolés par OK, TPS et IDW, pondérée par le RMSE de la méthode considérée sur la somme des RMSE correspondant à chacune des méthodes.\\
+Chaque effet site calculé pour Ensemble est donc de la forme $\widetilde{\alpha_i}^E = \frac{RMSE^{TPS}}{SRMSE}\widetilde{\alpha_i}^{TPS} + \frac{RMSE^{OK}}{SRMSE}\widetilde{\alpha_i}^{OK} + \frac{RMSE^{IDW}}{SRMSE}\widetilde{\alpha_i}^{IDW}$ avec $SRMSE=RMSE^{TPS}+RMSE^{OK}+RMSE^{IDW}$.\\
+La moyenne de $k$ RMSE obtenus pour chaque méthode est présentée dans le tableau.}
+```{r results-cv, echo=F, include=T}
+library(dplyr)
+cv_alphas<-read.csv("~/Code/Report/data/cv_alphas.csv")
+cv_alphas <- cv_alphas[,1:4]
+colnames(cv_alphas)<- c("IDW","OK","TPS","Ensemble")
+rownames(cv_alphas)<-c("RMSE")
+knitr::kable(cv_alphas, row.names=T, digits=3,booktabs=TRUE,align = 'c') %>%
+kableExtra::kable_styling(latex_options=c("HOLD_position","basic"), full_width=FALSE)
+```
+\end{table}
 \begin{figure}[H]
- \caption[Comparaison des cartes obtenues pour l'effet site par différentes méthodes d'interpolation]{Comparaison des cartes obtenues pour l'effet site par une interpolation avec la méthode du krigeage ordinaire (OK), de l'inverse de la distance pondéré (IDW) et de thin plate spline (TPS). \\
-La carte intitulée ensemble représente la moyenne des résulats obtenus avec les différentes méthodes d'interpolation pondérés par le RMSE de la méthode considérée divisée par la somme des RMSE, qui sont calculés durant la validaton croisée et correspondent à l'écart entre les effets sites interpolés et ceux estimés pour les sites sur lesquels on a collecté des données.}
+ \caption[Comparaison des cartes obtenues pour les effets sites par différentes méthodes d'interpolation]{Comparaison des cartes obtenues pour les effets sites par une interpolation avec la méthode du krigeage ordinaire (OK), de l'inverse de la distance pondéré (IDW) et de thin plate spline (TPS)}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=0.8\textwidth,height=0.8\textwidth]{Illustrations/comparaison_site_effect.png}
+\includegraphics[width=0.8\textwidth,height=0.45\textheight]{Illustrations/comparaison_site_effect.png}
 \end{figure}
+
 
 ## Résultats de l'interpolation spatiale par krigeage ordinaire
-\begin{figure}[H]
- \caption[Interpolation spatiale des effets sites par krigeage ordinaire]{Interpolation spatiale des effets sites par krigeage ordinaire}
-  \label{fig:condSimApp}
-  \centering
-\includegraphics[width=25cm,height=7cm]{Illustrations/mada_site_effect_OK.png}
-\end{figure}
+
 \begin{figure}[H]
  \caption[Interpolation spatiale des variables latentes par krigeage ordinaire]{Interpolation spatiale des variables latentes par krigeage ordinaire}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=25cm,height=7cm]{Illustrations/mada_W1_OK.png}\\
-\includegraphics[width=25cm,height=7cm]{Illustrations/mada_W2_OK.png}
+\includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_W_OK.png}
 \end{figure} 
 
 ## Analyse des résultats et mise en évidence de lieux refuges de la biodiversité

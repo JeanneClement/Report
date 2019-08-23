@@ -22,6 +22,7 @@ header-includes:
   - \usepackage{bbm}
   - \usepackage{answers}
   - \usepackage{xassoccnt}
+
 bibliography: Biblio_master.bib
 geometry: left=1.4cm,right=1.4cm,top=1.5cm,bottom=0.3cm
 fontsize : 10pt
@@ -114,7 +115,7 @@ J'aimerai adresser mes plus sincères remerciements à G. Vieilledent qui m'a en
 \section*{Introduction}
 \addcontentsline{toc}{section}{Introduction}
 
-J'ai effectué mon stage au sein de l'UMR AMAP (botAnique et Modélisation de l'Architecture des Plantes et des végétations), qui se trouve à Montpellier. Il s'agit d'une unité interdisciplinaire hébergée par le Cirad ou « Centre de Coopération Internationale en Recherche Agronomique pour le Développement» et qui mène des recherches sur les plantes et les végétations, dans le but de prévoir la réponse des écosystèmes aux forçages environnementaux.  
+J'ai effectué mon stage au sein de l'UMR AMAP (botAnique et Modélisation de l'Architecture des Plantes et des végétations), qui se trouve à Montpellier. Il s'agit d'une unité interdisciplinaire hébergée par le Cirad ou « Centre de Coopération Internationale en Recherche Agronomique pour le Développement», qui mène des recherches sur les plantes et les végétations, dans le but de prévoir la réponse des écosystèmes aux forçages environnementaux.  
 
 Ce stage s'inscrit dans le cadre du projet BioSceneMada qui vise à fournir des scénarios d'évolution de la biodiversité sous l’eﬀet conjoint du changement climatique et de la déforestation à Madagascar. Pour ce faire, plusieurs jeux de données sur la biodiversité ont été collectés et regroupés pour diﬀérents groupes taxonomiques (mammifères, oiseaux, reptiles, amphibiens, arbres, plantes herbacées, invertébrés), parmi lesquels j'ai utilisé des inventaires forestiers répertoriant l'absence ou la présence d'espèces d'arbres sur différents sites de l'île ainsi que des variables bioclimatques afin d'ajuster un modèle joint de distribution des espèces permettent d’estimer la niche des espèces, de prédire leur distribution, tout en prenant en compte les intéractions entre espèces (@Warton2015).  
 Dans un premier temps j'ai implémenté différents échantillonneurs de Gibbs en C++ permettant d’estimer les paramètres de modèles joints de distribution des espèces (JSDM) comportant des variables latentes, à l'aide du package Rcpp. La construction du package R \url{https://ecology.ghislainv.fr/jSDM/} autour de l'une de ces fonctions ainsi que sa présentation à la conférence useR 2019 ont constitué une partie importante de mon stage. 
@@ -146,7 +147,7 @@ $$g(\theta_{ij}) =\alpha_i + \beta_{j0} + X_i\beta_j + u_{ij},$$
 $$y_{ij} \ | \ u_{ij}, \alpha_i \sim \mathcal{B}ernoulli(\theta_{ij}),$$
 $$u_i \sim \mathcal{N}_J(0_{\mathbb{R}^J},\Sigma) \ iid,$$
 $$\alpha_i \sim \mathcal{N}(0, V_{\alpha}) \ iid \text{ et indépendant de } u_i.$$
-où $g : \ ]0,1[ \ \rightarrow \ ]-\infty, +\infty[$ est une fonction de lien, $\beta_j=(\beta_{j1},\ldots,\beta_{jp})'$ et $\beta_{j0}$ sont les coefficients de régression correspondants aux variables bioclimatiques et l'intercept pour l'espèce $j$ qui est supposé être un effet fixe, $\alpha_i$ représente l'effet aléatoire du site $i$, et $u_i=(u_{i1},\ldots,u_{iJ})$ est un effets aléatoires multivariés corrélés dont la matrice de variance covariance $\Sigma$ controle la correlation entre les espèces et est supposée être complètement non structurée.    
+où $g : \ ]0,1[ \ \rightarrow \ ]-\infty, +\infty[$ est une fonction de lien, $\beta_j=(\beta_{j1},\ldots,\beta_{jp})'$ et $\beta_{j0}$ sont les coefficients de régression correspondants aux variables bioclimatiques et l'intercept pour l'espèce $j$ qui est supposé être un effet fixe, $\alpha_i$ représente l'effet aléatoire du site $i$, et $u_i=(u_{i1},\ldots,u_{iJ})$ est un effet aléatoire multivarié corrélé dont la matrice de variance covariance $\Sigma$ controle la corrélation entre les espèces et est supposée être complètement non structurée.    
 Cette dernière partie du modèle est problématique lorsque le nombre d'espèces $J$ est important car le nombre de paramètres dans $\Sigma$ augmente quadratiquement avec $J$.
 
 ## Modèle à variable latente (LVM)
@@ -166,7 +167,7 @@ $$\Lambda := \begin{pmatrix}
 
 On préferera ce dernier modèle, en effet il comporte potentiellement beaucoup moins de paramètres que le GLMM précédent car $\Lambda$ a autant de colonne qu’il y a de variables latentes ($q$) tandis que $\Sigma$ présente autant de colonnes de paramètres qu’il y a d’espèces ($J$).
 
-On peut choisir de modéliser l'abondance absolue plutôt que l'abondance relative en supprimant l'effet site aléatoire $\alpha_i$ du modèle. 
+On peut choisir de modéliser l'abondance absolue plutôt que l'abondance relative en supprimant les effets sites aléatoires  $\alpha_i$ du modèle. 
 
 # Méthodes d’inférence bayesienne selon la fonction de lien choisie 
 
@@ -203,9 +204,9 @@ D’une part, on utilise un fonction de lien $\mathrm{probit} : p \rightarrow \P
 
 ### Définition du modèle probit
 
-D’après l’article @Albert1993, une modélisation possible est de supposer l’existence d’une variable latente sous-jacente liée à notre variable binaire observées en utilisant la proposition suivante :
+D’après l’article @Albert1993, une modélisation possible est de supposer l’existence d’une variable latente sous-jacente liée à notre variable binaire observée en utilisant la proposition suivante :
 
-\begin{prop}[Modèle probit par l'intermédiaire une variable latente]  \qquad \qquad \qquad \qquad \qquad \qquad \qquad \qquad  \qquad \qquad \qquad  \qquad \qquad \qquad \qquad   
+\begin{prop}[Modèle probit par l'intermédiaire d'une variable latente]  \qquad \qquad \qquad \qquad \qquad \qquad \qquad \qquad  \qquad \qquad \qquad  \qquad \qquad \qquad \qquad   
 
 Si $Z_{ij} = \alpha_i + \beta_{j0}+X_i\beta_j+ W_i\lambda_j + \epsilon_{ij}, \ \forall i,j \text{ avec }  \epsilon_{ij} \sim \mathcal{N}(0,1) \ iid $ et tel que :
 $$y_{ij}=
@@ -230,7 +231,7 @@ $$\begin{aligned}
 & = 1 - \Phi( \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j) \\
 \end{aligned}$$
 \end{dem}
-On définit le modèle probit à l’aide d’une variable latente afin d’être en mesure d’uiliser les propriétés des priors conjugués pour échantillonner les paramètres du modèle selon leur distributions conditionnelles *a posteriori*. 
+On définit le modèle probit à l’aide d’une variable latente afin d’être en mesure d’utiliser les propriétés des priors conjugués pour échantillonner les paramètres du modèle selon leurs distributions conditionnelles *a posteriori*. 
 
 ### Priors utilisés 
 
@@ -245,10 +246,9 @@ P \text{ tel que } \mathbb{P}(\lambda_{jl} = 0)=1  & \text{si } l>j
 \end{cases} \\
 \quad & \quad & \text{ pour } j=1,\ldots,J \text{ et } l=1,\ldots,q.
 \end{array}$$
-En effet pour assurer l’identifiabilité du modèle les valeurs de $\Lambda$ sont contraintes à des valeurs strictements positives sur la diagonale et nulles au dessus de celle-ci, $\Lambda$ est ainsi supposée être triangulaire inférieure d’après l’article @Warton2015.  
+En effet pour assurer l’identifiabilité du modèle les valeurs de $\Lambda$ sont contraintes à des valeurs strictements positives sur la diagonale et nulles au dessus de celle-ci, $\Lambda$ est ainsi supposée être triangulaire inférieure d’après l’article @Warton2015. 
 
-(Au cas où je rajoute la partie comparaison boral jSDM : 
-La fonction *boral()* du package du même nom, permettant d'ajuster différents modèles utilise ces distributions *a priori* pour le modèle qui nous intéresse. Dans l'article @Warton2015 l'ajustement de modèle joints de distributions des espèces est réalisé avec *boral()* qui fonctionne avec JAGS (Just Another Gibbs Sampler) un programme de simulation à partir de modèles hiérarchiques bayésiens utilisant des méthodes MCMC, implémenté en C++. Cependant la fonction *jSDM_probit_block()* du package jSDM que j'ai implémentée utilise une distribution *a priori* jointe pour les effets espèces fixes de la manière qui suit.)
+La fonction *boral()* du package du même nom, permettant d'ajuster différents modèles utilise ces distributions *a priori* pour le modèle qui nous intéresse. Dans l'article @Warton2015 l'ajustement de modèles joints de distributions des espèces est réalisé à l'aide de boral qui fonctionne avec JAGS (Just Another Gibbs Sampler) un programme de simulation à partir de modèles hiérarchiques bayésiens utilisant des méthodes MCMC, implémenté en C++. Cependant la fonction *jSDM_probit_block()* du package jSDM que j'ai implémentée utilise une distribution *a priori* jointe pour les effets espèces fixes de la manière qui suit.
 
 ### Propositions sur les priors conjugués  
 
@@ -284,7 +284,7 @@ Z^*_{Ij}
 & =  DP_j + \epsilon_j \quad \text{ avec } \epsilon_j \sim \mathcal{N}_I(0_{\mathbb{R}^I},I_I).
 \end{aligned}$$
 On suppose que $P_j \sim \mathcal{N}_{p+q+1}(m,V)$ avec $m=0_{\mathbb{R}^{p+q+1}}$ et $V=diag(\underbrace{10^6,\ldots,10^6}_{\times p+1},\underbrace{10,\ldots,10}_{\times q})$, par exemple.  
-Bien que cette distribution *a priori* ne prennent pas en compte les contraintes sur $\Lambda$, elle permet l'échantillonage selon une loi normale multivariée des effets espèce fixes. On imposera les contraintes aux $\lambda_{jl}$ concernés après les avoir simulés. 
+Bien que cette distribution *a priori* ne prenne pas en compte les contraintes sur $\Lambda$, elle permet l'échantillonnage selon une loi normale multivariée des effets espèce fixes. On imposera les contraintes aux $\lambda_{jl}$ concernés après les avoir simulés. 
 
 On applique la proposition suivante : 
 
@@ -338,9 +338,9 @@ m^* = (I_q + \Lambda'\Lambda)^{-1}(\Lambda'Z^*_i)\\
 V^* = (I_q + \Lambda'\Lambda)^{-1} 
 \end{cases}$$.
 
-**Effets site aléatoires et variance associée : **   
+**Effets sites aléatoires et variance associée : **   
 
-En ce qui concerne l'effet site aléatoire $(\alpha_i)_{i=1,\dots,I}$, on pose $Z^*_{ij} = Z_{ij} - D_iP_j = \alpha_i + \epsilon_{ij}$, avec $D_i =(1,X_{i1},\ldots,X_{ip},W_{i1},\ldots,W_{iq})$. \smallskip   
+En ce qui concerne les effets sites aléatoires  $(\alpha_i)_{i=1,\dots,I}$, on pose $Z^*_{ij} = Z_{ij} - D_iP_j = \alpha_i + \epsilon_{ij}$, avec $D_i =(1,X_{i1},\ldots,X_{ip},W_{i1},\ldots,W_{iq})$. \smallskip   
 On a ainsi $Z^*_{ij} \ | \ \alpha_i \ \sim \mathcal{N}(\alpha_i,1)$ *iid* pour $j=1,\ldots,J$, puis on applique la proposition suivante : 
 \begin{prop}
 $$\begin{cases} 
@@ -375,7 +375,7 @@ Z^*_{ij} \ | \ \alpha_i \sim \mathcal{N}(\alpha_i, \ 1) \text{, iid } \forall j=
 \alpha_i | \ Z^*_{i1}, \ldots, Z^*_{iJ} \sim \mathcal{N}(\mu_1,{\tau_1}^2) \text{ avec } \\
 \mu_1 = \dfrac{ \sum_{j=1}^J Z^*_{ij}}{V_{\alpha}^{-1}+ J} \text{ et } {\tau_1}^{-2} = V_{\alpha}^{-1}+ J.
 \end{cases}$$
-Finalement pour estimer $V_{\alpha}$, la variance des effets site aléatoires $(\alpha_i)_{i=1,\dots,I}$, on utilise la proposition suivante :
+Finalement pour estimer $V_{\alpha}$, la variance des effets sites aléatoires $(\alpha_i)_{i=1,\dots,I}$, on utilise la proposition suivante :
 \begin{prop}
 Si $$\begin{cases} 
 x \ | \ \sigma^2 \sim \mathcal{N}_n (\theta, \ \sigma^2I_n) \\
@@ -404,10 +404,10 @@ a' = a + \frac{I}{2} \text{ et } b' = b + \frac{1}{2}\sum\limits_{i=1}^I \alpha_
 \end{cases}$$
 
 \newpage
-### Echantilloneur de Gibbs et priors conjugués
+### Echantillonneur de Gibbs et priors conjugués
 L’algorithme utilisé pour estimer les paramètres du modèle logit est donc le suivant :
 \begin{itemize}
-\item Définir les constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ telles que $N_{Gibbs}$ correspond au nombre d’itérations effectuées par l’échantillonneur de Gibbs,  $N_{burn}$ au nombre d’itérations nécessaires pour le burn-in ou temps de chauffe et $N_{samp} = \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations, afin d’obtenir un échantillon de $N_{samp}$ valeurs distribuées selon la distribution a posteriori pour chacun des paramètres.
+\item Définir les constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ telles que $N_{Gibbs}$ correspond au nombre d’itérations effectuées par l’échantillonneur de Gibbs,  $N_{burn}$ au nombre d’itérations nécessaires pour le burn-in ou temps de chauffe et $N_{samp} = \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations, afin d’obtenir un échantillon de $N_{samp}$ valeurs distribuées selon la distribution \it{a posteriori} pour chacun des paramètres.
 \vspace{0.2cm}
 \item Initialiser tous les paramètres à $0$ par exemple, excepté les valeurs diagonales de $\Lambda$ initialisées à $1$ et $V_{\alpha}^{(0)}=1$.
 \vspace{0.2cm}
@@ -433,13 +433,13 @@ $$P_{jp+1+l}^{(t)} = \lambda_{jl}^{(t)} \leftarrow \begin{cases}
 On pose $P^{(t)}=\left( P_1^{(t)} | \ldots | P_J^{(t)} \right)$.  
 \vspace{0.1cm}
 
-  \item[$\bullet$] Générer les \textbf{variables latentes} (ou prédicteurs non mesurés) $W_i^{(t)}$ pour $i=1,\ldots,I$ selon : $$W_i^{(t)} \ | \ Z^{(t)}, P^{(t)},  \alpha_i^{(t-1)} \sim \mathcal{N}_{q} \left((I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}({\Lambda^{(t)}}'Z_i^{\star \star}),(I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}\right),$$
+\item[$\bullet$] Générer les \textbf{variables latentes} (ou prédicteurs non mesurés) $W_i^{(t)}$ pour $i=1,\ldots,I$ selon : $$W_i^{(t)} \ | \ Z^{(t)}, P^{(t)},  \alpha_i^{(t-1)} \sim \mathcal{N}_{q} \left((I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}({\Lambda^{(t)}}'Z_i^{\star \star}),(I_q + {\Lambda^{(t)}}'\Lambda^{(t)})^{-1}\right),$$
 $$\text{où } Z_i^{\star \star} =(Z_{i1}^{\star \star},\ldots,Z_{iJ}^{\star \star}) \text{ tel que } Z_{ij}^{\star \star } = Z_{ij}^{(t)}-\alpha_i^{(t-1)} − \beta_{j0}^{(t)} - X_i\beta_j^{(t)}.$$ On pose $D_i^{(t)} = \left(1,X_{i1},\ldots,X_{ip},W_{i1}^{(t)}, \ldots, W_{iq}^{(t)} \right)$.
 
   \item[$\bullet$] Générer les \textbf{effets sites aléatoires} $\alpha_i^{(t)}$ pour $i=1,\ldots,I$ selon :
 $$ \alpha_i | \ Z^{(t)}, P^{(t)},W_i^{(t)} \sim \mathcal{N}\left(\dfrac{ \sum_{j=1}^J Z_{ij}^{(t)} - D_i^{(t)}P_j^{(t)}}{{V_{\alpha}^{(t-1)}}^{-1} + J} , \left( \frac{1}{V_{\alpha}^{(t-1)}}+ J \right)^{-1}  \right)$$
 
-  \item[$\bullet$] Générer la \textbf{variance des effets site aléatoires} $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
+  \item[$\bullet$] Générer la \textbf{variance des effets sites aléatoires} $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
   \end{itemize}
 \end{itemize}
 
@@ -499,12 +499,12 @@ On le qualifie d'adaptatif car la variance de la densité instrumentale conditio
   \end{cases}$$
   \end{itemize}
   
-\item \textbf{Durant le burnin}, toutes les $\mathrm{DIV}$ itérations, avec 
+\item \textbf{Durant le burn-in}, toutes les $\mathrm{DIV}$ itérations, avec 
 $$\mathrm{DIV} =  \begin{cases} 
 100 & \text{ si } N_{Gibbs} \geq 1000 \\
 \dfrac{N_{Gibbs}}{10}& \text{sinon }  \\
 \end{cases}$$
-, où $N_{Gibbs}$ est le nombre total d'itération effectuées.   
+, où $N_{Gibbs}$ est le nombre total d'itérations effectuées.   
 
 On modifie les variances en fonction des nombres d'acceptation de la manière suivante pour $i=1,\ldots,m$ : 
 
@@ -519,23 +519,23 @@ On modifie les variances en fonction des nombres d'acceptation de la manière su
 \item Toutes les $\dfrac{N_{Gibbs}}{10}$ itérations, on calcule et affiche les taux d'acceptation moyen $m^A = \dfrac{1}{m}\sum\limits_{i=1,\ldots,m}r^A_i$.
 \end{itemize}
 
-### Echantilloneur de Gibbs et algorithme de Metropolis adapatatif
+### Echantillonneur de Gibbs et algorithme de Metropolis adaptatif
 
 On utilise un algorithme de Metropolis adapatatif pour échantillonner les paramètres du modèle selon leurs distributions conditionnelles *a posteriori* estimées à une constante multiplicative près.
 
 Dans un premier temps on définit la fonction $f$ permettant de calculer la vraisemblance du modèle en fonction des paramètres estimés :
 $$ f : \lambda_j,\beta_{j0},\beta_j,\alpha_i, W_i, X_i, y_{ij},n_i \rightarrow  f(\lambda_j,\beta_{j0},\beta_j,\alpha_i, W_i, X_i, y_{ij},n_i)=\mathrm{L}(\theta_{ij})$$
 \begin{itemize}
-\item Calcule de $\mathrm{logit}(\theta_{ij})= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j$.
-\item Calcule de $\theta_{ij}= \dfrac{1}{1+\exp\left(-\mathrm{logit}(\theta_{ij})\right)}$.
-\item Retourne $\mathrm{L}(\theta_{ij})= p(y_{ij} \ | \ \theta_{ij},n_i)= \dbinom{n_i}{y_{ij}}(\theta_{ij})^{y_{ij}}(1-\theta_{ij})^{n_i-y_{ij}}$.
+\item Calcul $\mathrm{logit}(\theta_{ij})= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j$.
+\item Calcul $\theta_{ij}= \dfrac{1}{1+\exp\left(-\mathrm{logit}(\theta_{ij})\right)}$.
+\item Renvoi $\mathrm{L}(\theta_{ij})= p(y_{ij} \ | \ \theta_{ij},n_i)= \dbinom{n_i}{y_{ij}}(\theta_{ij})^{y_{ij}}(1-\theta_{ij})^{n_i-y_{ij}}$.
 \end{itemize}
 On répète ces étapes pour $i=1,\ldots,I$ et $j=1,\ldots,J$, et on pose $\theta = \left(\theta{ij}\right)_{i=1,\ldots I}^{j= 1,\ldots,J}$.  
 
 On peut ainsi calculer la vraisemblance du modèle : $\mathrm{L}(\theta)= \prod\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\mathrm{L}(\theta_{ij})$.  
 
 D’après la formules de Bayes on a $$\mathrm{p}(\theta \ |  \ Y) \propto \uppi(\theta) \mathrm{L}(\theta).$$
-On utilise donc les relations suivantes pour approcher les densités conditionnelles a posteriori de chacun des paramètres avec $\uppi(.)$ les densités correspondants à leurs lois *a priori*.
+On utilise donc les relations suivantes pour approcher les densités conditionnelles *a posteriori* de chacun des paramètres avec $\uppi(.)$ les densités correspondants à leurs lois *a priori*.
 
 $$\begin{aligned}
 & p(\beta_{jk} \ |  \ \beta_{j0},\beta_{j1},\ldots,\beta_{jk-1},\beta_{jk+1},\ldots,\beta_{jp}, \lambda_j,\alpha_1,\ldots,\alpha_I, W_1,\ldots,W_I,Y) \propto \uppi(\beta_{jk})\prod\limits_{1\leq i\leq I}  \mathrm{L}(\theta_{ij})\\
@@ -551,7 +551,7 @@ L’algorithme utilisé pour estimer les paramètres du modèle logit est donc l
 
 \begin{itemize}
 \item Définition des constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ et $R_{opt}$ tels que  $N_{Gibbs}$ correspond au nombre d'itérations effectuées par l'algorithme,  $N_{burn}$ au nombre d'itérations nécessaires pour le burn-in ou temps de chauffe,   
-$N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution a posteriori pour chacun des paramètres.  
+$N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution \it{a posteriori} pour chacun des paramètres.  
 
 On fixe $R_{opt}$ le ratio d'acceptation optimal utilisé dans les algorithmes de Metropolis adaptatifs implémentés pour chacun des paramètres du modèle. 
 
@@ -562,7 +562,7 @@ On fixe $R_{opt}$ le ratio d'acceptation optimal utilisé dans les algorithmes d
 \item[$\bullet$] Générer les \textbf{effets sites aléatoires} $\alpha_i^{(t)}$ pour $i=1,\ldots,I$ selon un algorithme de Metropolis adaptatif simulant $\alpha_i^\star \sim \mathcal{N}(\alpha_i^{(t-1)},\sigma_{\alpha_i}^2)$ puis calculant le taux d'acceptation de la manière suivante :  
 $$\gamma =min\left(1, \ \dfrac{\uppi\left(\alpha_i^\star \ | \ V_{\alpha}^{(t-1)}\right)\prod\limits_{1\leq j\leq J}f\left(\alpha_i^\star, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, X_i,y_{ij},n_i\right)}{\uppi\left(\alpha_i^{(t-1)} \ | \ V_{\alpha}^{(t-1)}\right)\prod\limits_{1\leq j\leq J}f\left(\alpha_i^{(t-1)}, W_i^{(t-1)},\beta_{j0}^{(t-1)},\beta_j^{(t-1)}, \lambda_j^{(t-1)}, X_i,y_{ij},n_i\right)}\right).$$
 
-\item[$\bullet$] Générer la \textbf{variance des effets site aléatoires} $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
+\item[$\bullet$] Générer la \textbf{variance des effets sites aléatoires} $V_\alpha^{(t)}$ selon : $$V_\alpha^{(t)} \ | \ \alpha_1^{(t)},\ldots,\alpha_I^{(t)} \sim \mathcal{IG}\left( \text{shape}=0.5 + \frac{I}{2}, \text{rate}=0.005 + \frac{1}{2}\sum\limits_{i=1}^I \left(\alpha_i^{(t)}\right)^2\right)$$
 
 \item[$\bullet$] Générer les \textbf{variables latentes} (ou prédicteurs non mesurés) $W_{il}^{(t)}$ pour $i=1,\ldots,I$ et $l=1,\ldots,q$ selon un algorithme de Metropolis adaptatif  simulant $W_{il}^\star \sim \mathcal{N}(W_{il}^{(t-1)}, \sigma_{W_{il}}^2)$ puis calculant le taux d'acceptation de la manière suivante :
 
@@ -633,7 +633,7 @@ Simuler $y_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$.
 Les paramètres à estimer sont au nombre de $(p+1)J+qJ-\sum\limits_{j=1}^{q-1}(q-j)+qI+I+1=3\times100+2\times100-1+2\times500+500+1=2 000$, pour chacun d'entre eux les fonctions implémentées retournent un échantillon de $N_{samp}$ valeurs dont on fait la moyenne pour obtenir un estimateur du paramètre.  
 On note $\widehat{\beta_{jk}} = \sum\limits_{n=1}^{N_{samp}}\frac{\beta_{jk}^{(n)}}{N_{samp}}$ l'estimateur de $\beta_{jk}$ et on utilise les mêmes notations pour les autres estimateurs.  
 
-On effectue $40 000$ itérations au total dont $35 000$ de burnin puis $5 000$ durant lesquelles les fonctions implémentées enregistrent les paramètres estimés à partir des données simulées précédemment, toutes les $5$ itérations et retournent un échantillon de $N_{samp}=1 000$ valeurs pour chacun des paramètres du modèle considéré.   
+On effectue $40 000$ itérations au total dont $35 000$ de burn-in puis $5 000$ durant lesquelles les fonctions implémentées enregistrent les paramètres estimés à partir des données simulées précédemment, toutes les $5$ itérations et renvoient un échantillon de $N_{samp}=1 000$ valeurs pour chacun des paramètres du modèle considéré.   
 
 \textbf{Modèle probit :}
 
@@ -698,7 +698,7 @@ On effectue $40 000$ itérations au total dont $35 000$ de burnin puis $5 000$ d
 
 \begin{table}[H]\caption[Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que les NRMSE (Normalized Root Mean Square Error) et les pourcentages de déviance expliquée obtenus]{Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que le pourcentage de déviance expliquée et la racine de la moyenne des carrés des erreurs normalisée (NRMSE) obtenus.pour chaque modèle de la manière suivante avec une fonction de lien $g$ probit ou logit :\\
 $NRMSE_g=\frac{RMSE_g}{\overline{g(\theta)}}$ avec $\overline{g(\theta)}=\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\frac{g(\theta_{ij})}{IJ}$ et $RMSE=\sqrt{\frac{1}{IJ}\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\left(g(\theta_{ij})-\widehat{g(\theta_{ij})}\right)^2}$.\\ 
-Le pourcentage de déviance expliquée est défini par $1-\dfrac{D}{D_0}$ avec $D=-2(l(\widehat{\theta})-l_s)$ la déviance du modèle considéré avec $l_s$ la log-vraisemblance du modèle saturé comportant autant de paramètres qu'il y a d'observations et dont l'ajustement est supposé parfait par conséquent dans le cas de données binaires, les probabilités ajustées prenant les valeurs $0$ ou $1$ en fonction de celles de $Y$, on a $l_s=0$ car la vraisemblance des données observées sous le modèle saturé est de $1$.\\
+Le pourcentage de déviance expliquée est défini par $1-\dfrac{D}{D_0}$ avec $D=-2(l(\widehat{\theta})-l_s)$ la déviance du modèle considéré, où $l_s$ est la log-vraisemblance du modèle saturé comportant autant de paramètres qu'il y a d'observations et dont l'ajustement est supposé parfait par conséquent dans le cas de données binaires, les probabilités ajustées prenant les valeurs $0$ ou $1$ en fonction de celles de $Y$, on a $l_s=0$ car la vraisemblance des données observées sous le modèle saturé est de $1$.\\
 De plus la déviance nulle est définie par $D_0=-2(l(\widehat{\theta}_0)-l_s)$ avec $l(\widehat{\theta}_0)$ la log-vraisemblance du modèle nul défini par $g(\theta_{ij})=\mu$, pour lequel le seul paramètre est l'intercept $\mu$.\\
 On ajuste le modèle nul avec la fonction jSDM\_binomial() du package jSDM pour le modèle logit et avec Rcpp\_hSDM\_binomial\_probit() pour le modèle probit.\\
 Les log-vraisemblance des différents modèles sont calculées avec les paramètres estimés à chaque itération $l(\widehat{\theta})=\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\log(\mathrm{L}(\widehat{\theta_{ij}}))$ et les valeurs utilisées pour le calcul du pourcentage de déviance expliquée correspondent à la moyenne des $N_{samp}$ valeurs retournées par chacune des fonctions implémentées.}
@@ -710,7 +710,7 @@ T_logit <- as.numeric(T_logit,units="mins")
 results <- data.frame("Temps"=c(T_probit,T_logit), NRMSE=c(NRMSE_probit,NRMSE_logit), D=c(exp_dev_probit,exp_dev_logit)*100)
 colnames(results)<- c("Temps de calcul (mins)","NRMSE","Déviance expliquée (%)")
 rownames(results)<- c("Modèle probit","Modèle logit")
-knitr::kable(results, row.names=T, digits=1,booktabs=TRUE) %>%
+knitr::kable(results, row.names=T, digits=1,booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
 ```
 \end{table} 
@@ -732,13 +732,13 @@ On ajuste le modèle joint de distribution des espèces défini précèdemment �
 
 ## Description des données  
 
-On dispose d'inventaires forestiers réalisés sur $751$ sites de l'île de Madagascar et répertoriant la présence ou l'absence de $483$ espèces végétales sur chacun de ces sites. 
+On dispose d'inventaires forestiers réalisés sur $753$ sites de l'île de Madagascar et répertoriant la présence ou l'absence de $555$ espèces végétales sur chacun de ces sites. 
  
 Parmi les données climatiques et environnementales concernant Madagascar à l'heure actuelle (interpolations de données observées représentatives des années 1950-2000), disponibles sur le site \url{https://madaclim.cirad.fr}, on choisit d'utiliser les variables suivantes : 
 
 \begin{table}[H]
 \caption[Variables bioclimatiques considérées]{Variables bioclimatiques considérées affichées pour quelques sites : \\
-Les températures (temp) et précipitations (temp) moyennes annuelles qui sont exprimées respectivement en $\degre C$ et millimètres.\\
+Les températures (temp) et précipitations (prec) moyennes annuelles qui sont exprimées respectivement en $^\circ C\times 10$ et millimètres.\\
 La saisonnalité des températures (sais\_temp) correspond à l'écart type des températures mensuelles multiplié par $100$ ainsi que la saisonnalité des précipitations (sais\_prec) sous la forme d'un coefficient de variation.\\
 Le déficit hydrique climatique (cwd) annuel est calculé en fonction des précipitations et des évapotranspirations potentielles mensuelles (pet) qui sont définies comme la quantité d'évaporation qui se produirait en un mois si une source d'eau suffisante était disponible : \\$\mathrm{cwd}= \sum_{m=1}^{12}\min(0, \ \mathrm{prec}_m-\ \mathrm{pet}_m)$ , il est exprimé en millimètres.  \\
 Les trois dernières colonnes correspondent aux coordonnées du site considéré en 
@@ -790,178 +790,132 @@ scaled_data_clim2 <- as_tibble(cbind(scale(ord_data_clim2[1:nparam]),ord_data_cl
 ```
 
 ```{r head-site-data-clim, echo=F}
-knitr::kable(head(ord_data_clim), row.names=F, digits=3,booktabs=TRUE) %>%
+knitr::kable(head(ord_data_clim), row.names=F, digits=3,booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
 ```
 \end{table}
 
 On considère également les carrés de ces variables climatiques afin d'effectuer un régression quadratique, plus adaptée pour ajuster un modèle de niche qu'une régression linéaire. On centre et on réduit ces variables afin de former une matrice de design $X$ telle que 
-$X_i=(1,\mathrm{temp}_i, \mathrm{prec}_i,\mathrm{sais\_temp}_i, \mathrm{sais\_prec}_i,  \mathrm{cwd}_i,\mathrm{temp}_i^2, \mathrm{prec}_i^2,\mathrm{sais\_temp}_i^2, \mathrm{sais\_prec}_i^2, \mathrm{cwd}_i^2)$ pour $i=1,\ldots,751$.  
+$X_i=(1,\mathrm{temp}_i, \mathrm{prec}_i,\mathrm{sais\_temp}_i, \mathrm{sais\_prec}_i,  \mathrm{cwd}_i,\mathrm{temp}_i^2, \mathrm{prec}_i^2,\mathrm{sais\_temp}_i^2, \mathrm{sais\_prec}_i^2, \mathrm{cwd}_i^2)$ pour $i=1,\ldots,753$.  
 
-Les coordonnées des sites seront utilisées par la suite dans le cadre de l'interpolation spatiale des résultats. 
+Les coordonnées des sites seront utilisées par la suite dans le cadre de l'interpolation spatiale des résultats et représenter spatialement les résultats. 
 
-## Estimation des paramètres et représentation des résulats 
+\newpage
+## Estimation des paramètres et représentation des résultats 
 
-```{r fit-jSDM-Mada-data, echo=F, include=F, eval=F}
-species <- unique(trees$taxize)
-nplot <- nrow(data_clim)
-nsp <- length(species)
-nl <- 2
-# presence/absence of each species on each plot
-PA <- matrix(0,nplot,nsp)
-rownames(PA) <- sort(unique(trees$plot))
-colnames(PA) <- species
-for (i in 1:nplot){    
-  for (j in 1:nsp){
-    idx <- which(trees$taxize == species[j])
-    PA[paste(trees$plot[idx]),j] <- 1 
-  }
-}
+### Représentation des réultats pour évaluer la convergence de l'algorithme 
 
-## Design matrix
-X <- data.frame(intercept=rep(1,nplot),select(as_tibble(scaled_data_clim2),-lat,-long, -site))
-np<-ncol(X)
-write.csv(X, "data/X.csv", row.names = F)
+On ajuste un modèle joint de distribution des espèces de fonction de lien probit en considérant deux variables latentes à l'aide de la fonction *jSDM\_probit\_block()* du package jSDM à partir des données décrites précédemment, en effectuant $100 000$ itérations dont $90 000$ de burn-in et on retient $N_{samp}=1 000$ valeurs pour chaque paramètre du modèle que l'on va représenter en fonction du nombre d'itérations effectuées afin d'évaluer la convergence de l'algorithme de Gibbs.  
 
-## Call to jSDM_probit_block function
-library(jSDM)
+De plus on affiche une estimation de la densité des échantillons obtenus qui devrait correspondre aux distributions *a posteriori* définies et donc être de forme gaussienne. On met en évidence les moyennes des $N_{samp}$-échantillons en bleu, que l'on utilisera comme estimateur pour les paramètres. 
 
-T1<- Sys.time()
-mod_all <- jSDM::jSDM_probit_block (
-  # Response variable 
-  presence_site_sp = as.matrix(PA), 
-  # Explanatory variables 
-  site_suitability = ~.,   
-  site_data =X[,-1], 
-  n_latent=2,
-  # Chains
-  burnin= 90000, mcmc=10000, thin=10,
-  # Starting values
-  alpha_start=0, beta_start=0,
-  lambda_start=0, W_start=0,
-  V_alpha_start=1, 
-  # Priors
-  shape=0.5, rate=0.0005,
-  mu_beta=0, V_beta=1.0E6,
-  mu_lambda=0, V_lambda=10,
-  # Various 
-  seed=1234, verbose=1)
-T2 <- Sys.time()
-T_all <- difftime(T2,T1)
-
-## Save parameters 
-### alphas
-alphas <- summary(mod_all$mcmc.alpha)[[1]][,"Mean"]
-### Valpha
-Valpha <- mean(mod_all$mcmc.Valpha)
-### latent variables 
-W1 <- colMeans(mod_all$mcmc.latent[["lv_1"]])
-W2 <- colMeans(mod_all$mcmc.latent[["lv_2"]])
-
-params_sites <- data.frame(plot = scaled_data_clim2$site,
-                           lat = scaled_data_clim2$lat,
-                           long = scaled_data_clim2$long,
-                           alphas, Valpha = rep(Valpha,nplot),W1,W2)
-write.csv(params_sites, file = "data/params_sites.csv",row.names = F)
-
-### fixed species effect lambdas and betas 
-lambdas <- matrix(0,nsp,nl)
-betas <- matrix(0,nsp,np)
-
-for (j in 1:nsp){
-  for (l in 1:nl){
-    lambdas[j,l] <- mean(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l])
-  }
-  for (p in 1:np){
-    betas[j,p] <- mean(mod_all$mcmc.sp[[paste0("sp_",j)]][,p])
-  }
-}
-colnames(betas) <- c("beta_intercept",paste0("beta_",colnames(X[,-1])))
-params_species <- data.frame(species = colnames(PA), Id_species = c(1:nsp),
-                             betas, lambda_1 = lambdas[,1], lambda_2 = lambdas[,2])
-write.csv(params_species, file = "data/params_species.csv",row.names = F)
-
-## probit_theta_pred
-write.csv(mod_all$probit_theta_pred, file = "data/probit_theta_pred.csv", row.names = F)
+\begin{table}[H]\caption[Temps de calcul nécessaire à l'ajustement du modèle sur les données de Madagascar et nombre de paramètres à estimer]{Temps de calcul nécessaire à l'ajustement du modèle sur les données de Madagascar et nombre de paramètres à estimer}
+```{r results-mada, echo=F, include=T}
+library(dplyr)
+load("data/mada_mod.RData")
+nsp<-ncol(mod_all$model_spec$presences)
+nplot<-nrow(mod_all$model_spec$presences)
+p <- ncol(mod_all$model_spec$site_data)
+T_all <- as.numeric(T_all,units="hours")
+results <- data.frame(n_obs=nsp*nplot,n_param=(p+1)*nsp+2*nsp-1+2*nplot+nplot+1,ngibbs=as.integer(100000),"Temps"= T_all)
+colnames(results)<- c("Nombre d'observations","Paramètres à estimer","Itérations effectuées","Temps de calcul (heures)")
+knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","basic"), full_width=FALSE)
 ```
-
-On ajuste un modèle joint de distribution des espèces de fonction de lien probit et en considérant deux variables latentes à l'aide de la fonction *jSDM\_probit\_block()* du package jSDM à partir des données décrites précédemment, en effectuant $100 000$ itérations dont $90 000$ de burnin et on retient $N_{samp}=1 000$ valeurs pour chaque paramètre du modèle que l'on va représenter en fonction du nombre d'itérations effectuées afin d'évaluer la convergence de l'algorithme de Gibbs.  
-
-On représente également une estimation de la densité pour chaque échantillon obtenu qui devrait correspondre aux distributions *a posteriori* définies et donc être de forme gaussienne.   
-
-```{r plot-results-Mada, cache=T,echo=F,include=F,eval=F}
-## alpha_i of the first two sites
-plot(coda::as.mcmc(mod_all$mcmc.alpha[,1:2]))
-title(main="Effet site aléatoire alpha pour les deux premiers sites")
-## Valpha
-par(mfrow=c(1,2))
-coda::traceplot(mod_all$mcmc.Valpha)
-coda::densplot(mod_all$mcmc.Valpha)
-title(main=" Variance Valpha associée à l'effet site")
-
-## beta_j of the first two species
-par(mfrow=c(np,2))
-for (j in 1:2) {
-  for (p in 1:np) {
-      coda::traceplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,p]))
-      coda::densplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,p]), 
-main = paste(colnames(mod_all$mcmc.sp[[paste0("sp_",j)]])[p],
-", species : ",j))
-  }
-}
-title(main="Effet espèce fixe beta pour les deux premières espèces")
-
-## lambda_j of the first two species
-n_latent <- mod_all$model_spec$n_latent
-par(mfrow=c(n_latent*2,2))
-for (j in 1:2) {
-  for (l in 1:n_latent) {
-      coda::traceplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l]))
-      coda::densplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l]), 
-      main = paste(colnames(mod_all$mcmc.sp[[paste0("sp_",j)]])[np+l],
-      ", species : ",j))
-  }
-  }
-title(main="Effet espèce fixe lambda pour les deux premières espèces")
-
-## Latent variables W_i for the first two sites
-par(mfrow=c(1,2),oma=c(1, 0, 1.4, 0))
-for (l in 1:n_latent) {
-  plot(mod_all$mcmc.latent[[paste0("lv_",l)]][,1:2], main = paste0("W_", l))
-}
-title(main="Variables latentes", outer=T)
-## probit_theta
-par (mfrow=c(1,2))
-hist(mod_all$probit_theta_pred, main = "probit(theta) estimé", xlab ="probit(theta) estimé")
-## Deviance
-plot(mod_all$mcmc.Deviance,main = "Deviance")
-```
+\end{table} 
 
 \begin{figure}[H]
- \caption[Représentation spatiale des variables latentes estimés pour chaque site]{Représentation spatiale des variables latentes estimés pour chaque site}
+ \caption[Traces et densités de la déviance du modèle]{Traces et densités de la déviance du modèle}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.8\textwidth,height=0.25\textheight]{Illustrations/mada_deviance.jpeg}
+\end{figure}
+
+\begin{figure}[H]
+ \caption[Traces et densités des effets espèces fixes $(\beta_{jk})_{j=1}^{k=0,\ldots,10}$ estimés pour la deuxième espèce]{Traces et densités des effets espèces fixes $(\beta_{jk})_{j=2}^{k=0,\ldots,10}$ estimés pour la deuxième espèce}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_beta1_sp2.jpeg}
+\includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_beta2_sp2.jpeg}
+\includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_beta3_sp2.jpeg}
+\end{figure}
+
+\begin{figure}[H]
+ \caption[Traces et densités des effets espèces fixes $(\lambda_{jq})_{j=1,2}^{q=1,2}$ estimés pour les deux premières espèces]{Traces et densités des effets espèces fixes $(\lambda_{jq})_{j=1,2}^{q=1,2}$ estimés pour les deux premières espèces}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=10cm,height=10cm]{Illustrations/mada_lambda_sp1.jpeg}\\
+\includegraphics[width=10cm,height=10cm]{Illustrations/mada_lambda_sp2.jpeg}
+\end{figure}
+
+\begin{figure}[H]
+ \caption[Traces et densités des variables latentes $W_1$ et $W_2$ estimées pour un site]{Trace et densité estimées des variables latentes $W_1$ et $W_2$ estimées pour un site}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.8\textwidth,height=0.3\textheight]{Illustrations/mada_W.jpeg}
+\end{figure} 
+
+\begin{figure}[H]\caption[Trace et densité d'un effet site et de la variance associée aux effets sites estimés]{Trace et densité d'un effet site et de la variance associée aux effets sites estimés}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.8\textwidth,height=0.25\textheight]{Illustrations/mada_rand_site.jpeg}\\
+\includegraphics[width=0.8\textwidth,height=0.25\textheight]{Illustrations/mada_Valpha.jpeg}
+\end{figure}
+
+### Représentations spatiales des paramètres associés aux sites et des probabilités de présence estimées
+
+\begin{figure}[H]
+ \caption[Représentation spatiale des variables latentes $W_1$ et $W_2$ estimées pour chaque site]{Représentation spatiale des variables latentes $W_1$ et $W_2$ estimées pour chaque site}
   \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.5\textwidth,height=0.5\textwidth]{Illustrations/mada_W1.png}\includegraphics[width=0.5\textwidth,height=0.5\textwidth]{Illustrations/mada_W2.png}
+\end{figure}
+
+\begin{figure}[H]\caption[Représentation spatiale des effets sites $(\alpha_i)_{i=1,\ldots,753}$ estimés]{Représentation spatiale des effets sites estimés}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.5\textwidth,height=0.5\textheight]{Illustrations/mada_site_effect.png}
 \end{figure} 
 
 \begin{minipage}[l]{0.5\textwidth}
-\begin{figure}[H]
- \caption[Représentation spatiale des effets sites estimés]{Représentation spatiale des effets sites estimés}
+\begin{figure}[H]\caption[Représentation spatiale des probabilités de présence estimées pour l'espèce Ocotea laevis]{Représentation spatiale des probabilités de présence estimées pour l'espèce Ocotea laevis}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_site_effect.png}
+\includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_proba_sp1.png}
 \end{figure} 
 \end{minipage}
 \begin{minipage}[r]{0.5\textwidth}
-\begin{figure}[H]
- \caption[Représentation spatiale de la richesse spécifique estimée pour chaque site]{Représentation spatiale de la richesse spécifique estimée pour chaque site par $\sum\limits_ {j=1}^{483} \widehat{\theta_{ij}}$}
+\begin{figure}[H]\caption[Représentation spatiale des occurences observées de l'espèce Ocotea laevis]{Représentation spatiale des occurences observées de l'espèce Ocotea laevis}
   \label{fig:condSimApp}
   \centering
-\includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_specific_richness.png}
+\includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_presence_sp1_obs.png}
 \end{figure} 
 \end{minipage}
 
-## Comparaison de effets sites obtenus avec différentes méthodes d'interpolation spatiale
+### Estimation de la richesse spécifique propre à chaque site et comparaison à celle observée
+
+\begin{minipage}[l]{0.5\textwidth}
+\begin{figure}[H] \caption[Représentation spatiale de la richesse spécifique estimée pour chaque site]{Représentation spatiale de la richesse spécifique estimée pour chaque site par $\widehat{R_i}=\sum\limits_ {j=1}^{555} \widehat{\theta_{ij}}$}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness.png}
+\end{figure} 
+\end{minipage}
+\begin{minipage}[r]{0.5\textwidth}
+\begin{figure}[H] \caption[Représentation spatiale de la richesse spécifique observée pour chaque site]{Représentation spatiale de la richesse spécifique observée pour chaque site calculée par $R_i=\sum\limits_ {j=1}^{555} y_{ij}$}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness_obs.png}
+\end{figure} 
+\end{minipage}
+
+\begin{figure}[H]\caption[Représentation richesse spécifique estimée en fonction de celle observée]{Représentation richesse spécifique estimée en fonction de celle observée}
+  \label{fig:condSimApp}
+  \centering
+\includegraphics[width=0.4\textwidth,height=0.4\textheight]{Illustrations/mada_species_richness_obs_fit.png}
+\end{figure} 
+
+## Comparaison des effets sites obtenus avec différentes méthodes d'interpolation spatiale
 
 définition interpolation et expliquer méthodes
 

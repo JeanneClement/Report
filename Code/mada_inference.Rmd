@@ -1,0 +1,260 @@
+---
+title: "Inférence sur les données collectées à Madagascar"
+author: "Jeanne Clément"
+date: "22/08/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  fig.align = "center",
+  fig.width = 7, fig.height = 7,
+  cache = FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  highlight = TRUE
+)
+```
+
+# Estimation des paramètres  
+```{r fit-jSDM-Mada-data, echo=F, include=F, eval=F}
+species <- unique(trees$taxize)
+nplot <- nrow(data_clim)
+nsp <- length(species)
+n_latent <- 2
+# presence/absence of each species on each plot
+PA <- matrix(0,nplot,nsp)
+rownames(PA) <- sort(unique(trees$plot))
+colnames(PA) <- species
+for (i in 1:nplot){    
+  for (j in 1:nsp){
+    idx <- which(trees$taxize == species[j])
+    PA[paste(trees$plot[idx]),j] <- 1 
+  }
+}
+
+## Design matrix
+X <- data.frame(intercept=rep(1,nplot),select(as_tibble(scaled_data_clim2),-lat,-long, -site))
+np<-ncol(X)
+write.csv(X, "~/Code/Report/data/X.csv", row.names = F)
+
+## Call to jSDM_probit_block function
+library(jSDM)
+
+T1<- Sys.time()
+mod_all <- jSDM::jSDM_probit_block (
+  # Response variable 
+  presence_site_sp = as.matrix(PA), 
+  # Explanatory variables 
+  site_suitability = ~.,   
+  site_data =X[,-1], 
+  n_latent=2,
+  # Chains
+  burnin= 90000, mcmc=10000, thin=10,
+  # Starting values
+  alpha_start=0, beta_start=0,
+  lambda_start=0, W_start=0,
+  V_alpha_start=1, 
+  # Priors
+  shape=0.5, rate=0.0005,
+  mu_beta=0, V_beta=1.0E6,
+  mu_lambda=0, V_lambda=10,
+  # Various 
+  seed=1234, verbose=1)
+T2 <- Sys.time()
+T_all <- difftime(T2,T1)
+
+## Save parameters 
+### alphas
+alphas <- summary(mod_all$mcmc.alpha)[[1]][,"Mean"]
+### Valpha
+Valpha <- mean(mod_all$mcmc.Valpha)
+### latent variables 
+W1 <- colMeans(mod_all$mcmc.latent[["lv_1"]])
+W2 <- colMeans(mod_all$mcmc.latent[["lv_2"]])
+
+params_sites <- data.frame(plot = scaled_data_clim2$site,
+                           lat = scaled_data_clim2$lat,
+                           long = scaled_data_clim2$long,
+                           alphas, Valpha = rep(Valpha,nplot),W1,W2)
+write.csv(params_sites, file = "~/Code/Report/data/params_sites.csv",row.names = F)
+
+### fixed species effect lambdas and betas 
+lambdas <- matrix(0,nsp,n_latent)
+betas <- matrix(0,nsp,np)
+
+for (j in 1:nsp){
+  for (l in 1:n_latent){
+    lambdas[j,l] <- mean(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l])
+  }
+  for (p in 1:np){
+    betas[j,p] <- mean(mod_all$mcmc.sp[[paste0("sp_",j)]][,p])
+  }
+}
+colnames(betas) <- c("beta_intercept",paste0("beta_",colnames(X[,-1])))
+params_species <- data.frame(species = colnames(PA), Id_species = c(1:nsp),
+                             betas, lambda_1 = lambdas[,1], lambda_2 = lambdas[,2])
+write.csv(params_species, file ="~/Code/Report/data/params_species.csv",row.names = F)
+
+## probit_theta_pred
+write.csv(mod_all$probit_theta_pred, file = "~/Code/Report/data/probit_theta_pred.csv", row.names = F)
+
+save(mod_all,T_all,file="~/Code/Report/data/mada_mod.RData")
+```
+
+# Representation des résultats 
+```{r results-Mada, cache=T,echo=F,include=F,eval=F}
+load("~/Code/Report/data/mada_mod.RData")
+## alpha_i of the first site
+par(mfrow=c(1,2),oma=c(1, 0, 1.4, 0))
+coda::traceplot(mod_all$mcmc.alpha[,10],main="Trace alpha_10",cex.main=1.6)
+coda::densplot(mod_all$mcmc.alpha[,10],main="Densité alpha_10", cex.main=1.6)
+abline(v=mean(mod_all$mcmc.alpha[,10]),col="blue")
+title(main="Un des effets sites aléatoires",outer=T,cex.main=1.8)
+## Valpha
+coda::traceplot(mod_all$mcmc.Valpha,main="Trace Valpha",cex.main=1.6)
+coda::densplot(mod_all$mcmc.Valpha,main="Densité Valpha", cex.main=1.6)
+abline(v=mean(mod_all$mcmc.Valpha),col="blue")
+title(main=" Variance des effets sites",outer=T, cex.main=1.8)
+
+## beta_j of the first two species
+par(mfrow=c(4,2),oma=c(1, 0, 1.4, 0))
+coda::traceplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",2)]][,p]),main=paste("Trace ", colnames(mod_all$mcmc.sp[[paste0("sp_",2)]])[1]),cex.main=1.6)
+      coda::densplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,1]), 
+main=paste("Densité ", colnames(mod_all$mcmc.sp[[paste0("sp_",2)]])[1]),cex.main=1.6)
+abline(v=mean(mod_all$mcmc.sp[[paste0("sp_",j)]][,1]),col="blue")
+title(main=paste("Effet espèce fixe betas pour l'espèce ", species[2]),outer=T,cex.main=1.8)
+
+for (p in 2:np) {
+coda::traceplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",2)]][,p]),main=paste("Trace ", colnames(mod_all$mcmc.sp[[paste0("sp_",2)]])[p]),cex.main=1.6)
+      coda::densplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,p]), 
+main=paste("Densité ", colnames(mod_all$mcmc.sp[[paste0("sp_",2)]])[p]),cex.main=1.6)
+abline(v=mean(mod_all$mcmc.sp[[paste0("sp_",j)]][,p]),col="blue")
+}
+
+## lambda_j of the first two species
+n_latent <- mod_all$model_spec$n_latent
+par(mfrow=c(n_latent,2),oma=c(1, 0, 1.4, 0))
+for (j in 1:2) {
+  for (l in 1:n_latent) {
+      coda::traceplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l]),main = paste("Trace ", colnames(mod_all$mcmc.sp[[paste0("sp_",j)]])[np+l]),cex.main=1.6)
+      coda::densplot(coda::as.mcmc(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l]), main = paste("Densité ", colnames(mod_all$mcmc.sp[[paste0("sp_",j)]])[np+l]),cex.main=1.6)
+abline(v=mean(mod_all$mcmc.sp[[paste0("sp_",j)]][,np+l]),col="blue")
+  }
+title(main=paste("Effet espèce fixe lambdas pour l'espèce ", j,  species[j]),outer=T,cex.main=1.8)
+}
+
+## Latent variables W_i for one site
+par(mfrow=c(2,2),oma=c(1, 0, 1.4, 0))
+for (l in 1:n_latent) {
+coda::traceplot(mod_all$mcmc.latent[[paste0("lv_",l)]][,10], main = paste0(" Trace W", l),cex.main=1.6)
+coda::densplot(mod_all$mcmc.latent[[paste0("lv_",l)]][,10], main = paste0(" Densité W", l),cex.main=1.6)
+abline(v=mean(mod_all$mcmc.latent[[paste0("lv_",l)]][,10]),col="blue")
+}
+title(main="Variables latentes pour un site", outer=T,cex.main=1.8)
+## Deviance
+par(mfrow=c(1,2),oma=c(1, 0, 1.5, 0))
+coda::traceplot(mod_all$mcmc.Deviance,main="Trace",cex.main=1.6)
+coda::densplot(mod_all$mcmc.Deviance,main="Densité",cex.main=1.6)
+abline(v=mean(mod_all$mcmc.Deviance),col="blue")
+title(main = "Déviance",outer=T,cex.main=1.8)
+## probit_theta
+par (mfrow=c(1,2))
+hist(mod_all$probit_theta_pred, main = "probit(theta) estimé", xlab ="probit(theta) estimé")
+```
+
+# Representation spatiale des résultats 
+## Effets aléatoires des sites  
+
+```{r representation-alphas}
+library(rspatial)
+params_sites <- read.csv("~/Code/Report/data/params_sites.csv")
+alpha <- data.frame(alpha=params_sites[,"alphas"])
+longlat <- SpatialPoints(params_sites[,c("long","lat")])
+proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66 +units=m")
+# latlong to UTM38S projection 
+xy = spTransform(longlat, CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+# alpha 
+alpha_sp <- SpatialPointsDataFrame(xy, alpha) 
+# Madagascar borders
+TA <- CRS("+init=epsg:32738 +units=km")
+MADA <- readRDS("~/Code/Report/data/MADA.rds")
+MADA <- spTransform(MADA, TA)
+par(mfrow=c(1,1))
+# define groups for mapping
+cuts <- c(-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1)
+col <- c('red4','red','orange','yellow', 'yellow green', 'green3', 'forest green','dark green')
+pols <- list("sp.polygons", MADA, fill = "lightgray")
+spplot(alpha_sp, 'alpha', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space
+       ="right", main ="Effets sites aléatoires estimés", cex.main=4)
+```
+
+## Variables latentes  
+### W1
+```{r representation-W1}
+W1 <- data.frame(W1=params_sites[,"W1"])
+W1_sp <- SpatialPointsDataFrame(xy, W1) 
+par(mfrow=c(1,1))
+# define groups for mapping
+cuts <- c(-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1)
+col <- c('red4','red','orange','yellow', 'yellow green', 'green3', 'forest green','dark green')
+# define borderss 
+pols <- list("sp.polygons", MADA, fill = "lightgray")
+spplot(W1_sp, 'W1', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space
+       ="right", main ="W1 estimée",cex.main=1.8)
+```
+### W2
+```{r representation-W2}
+W2 <- data.frame(W2=params_sites[,"W2"])
+W2_sp <- SpatialPointsDataFrame(xy, W2) 
+# define groups for mapping
+par(mfrow=c(1,2))
+cuts <- c(-1,-0.75,-0.5,-0.25,0,0.25,0.5,0.75,1)
+col <- c('red4','red','orange','yellow', 'yellow green', 'green3', 'forest green','dark green')
+pols <- list("sp.polygons", MADA, fill = "lightgray")
+spplot(W2_sp, 'W2', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space
+       ="right", main ="W2 estimée", cex.main=1.8)
+```
+## Probabilités de présence
+```{r proba_representation}
+probit_theta_pred <- read.csv("~/Code/Report/data/probit_theta_pred.csv")
+theta_pred <- apply(probit_theta_pred,c(1,2),pnorm)
+theta_pred <- data.frame(theta_pred=theta_pred)
+theta_pred_sp <- SpatialPointsDataFrame(xy, theta_pred)
+
+# define groups for mapping
+cuts <- c(0,0.1,0.2,0.3,0.4,0.5,0.7,0.8,0.9)
+col <- c('red3','red','orange','yellow', 'yellow green', 'green3', 'forest green','dark green')
+pols <- list("sp.polygons", MADA, fill = "lightgray")
+spplot(theta_pred_sp, 'theta_pred.V1', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space
+       ="right", main ="Probabilités de présence d'Ocotea laevis estimées",cex.main=5)
+
+id_pres <- which(PA[,"Ocotea laevis"]==1)
+id_abs <- which(PA[,"Ocotea laevis"]==0)
+obs_pres <- data.frame(obs_pres=PA[id_pres,"Ocotea laevis"])
+obs_abs <- data.frame(obs_abs=PA[id_abs,"Ocotea laevis"])
+obs_pres <-  SpatialPointsDataFrame(xy[id_pres,], obs_pres)
+obs_abs <-  SpatialPointsDataFrame(xy[id_abs,], obs_abs)
+plot(MADA, main ="Présences d'Ocotea laevis observées",cex.main=1.4) 
+points(obs_pres,pch=16,cex=1.2)
+points(obs_abs,pch=1,cex=1.2)
+legend("right",legend=c("presence","absence") ,pch=c(16,1))
+```
+
+
+## Estimation dela richesse spécifique et comparaison avec celle observée 
+```{r species-richness-representation}
+species_richness <- data.frame(species_richness= apply(theta_pred,1,sum))
+species_richness_sp <- SpatialPointsDataFrame(xy, species_richness)
+cuts <- c(0,2,4,8,12,16,20,24,555)
+col <- c('red4','red','orange','yellow', 'yellow green', 'green3', 'forest green','dark green')
+pols <- list("sp.polygons", MADA, fill = "lightgray")
+spplot(species_richness_sp, 'species_richness', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space="right", main ="Richesse spécifique estimée")
+
+species_richness_obs <- data.frame(species_richness_obs=apply(PA,1,sum))
+plot( species_richness_obs[,1],species_richness$species_richness, main=
+"Richesse spécifique esimée en fonction de celle observée", xlab=" observeé",ylab="estimée",cex.main=1.4,cex.lab=1.3)
+abline(a=0,b=1,col='red')
+species_richness_obs_sp <- SpatialPointsDataFrame(xy, species_richness_obs)
+spplot(species_richness_obs_sp, 'species_richness_obs', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space="right", main ="Richesse spécifique observée")
+```

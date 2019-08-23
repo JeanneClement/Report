@@ -170,7 +170,7 @@ abline(a=0,b=1,col='red')
 dev_probit<-mean(mod_probit$Deviance)
 # Calcul of Null deviance (intercept only)
 # Calcul of Null deviance (intercept only)
-Rcpp::sourceCpp('Code/Rcpp_hSDM_probit.cpp')
+Rcpp::sourceCpp('Code/Rcpp_hSDM_binomial_probit.cpp')
 mod_null_probit <-Rcpp_hSDM_binomial_probit(ngibbs=40000, nthin=5, nburn=5000,          Y=c(Y_probit),T=rep(1,nsp*nsite),X=matrix(1,nrow=nsp*nsite,ncol=1),
 beta_start=0, mubeta= 0, Vbeta=as.matrix(1), 
 seed=1234, verbose=1)
@@ -255,5 +255,5 @@ SE<-(logit.theta-logit_theta_pred)^2
 RMSE_logit<-sqrt(sum(SE/(nsite*nsp)))
 NRMSE_logit <- RMSE_logit/abs(mean(logit.theta))
 
-save(T_logit, NRMSE_logit, exp_dev_logit, T_probit, NRMSE_probit, exp_dev_probit, file="probit_logit.RData")
+save(T_logit, NRMSE_logit, exp_dev_logit, T_probit, NRMSE_probit, exp_dev_probit, file="~/Code/Report/data/probit_logit.RData")
 ```

@@ -242,7 +242,7 @@ legend("right",legend=c("presence","absence") ,pch=c(16,1))
 ```
 
 
-## Estimation dela richesse spécifique et comparaison avec celle observée 
+## Estimation de la richesse spécifique et comparaison avec celle observée 
 ```{r species-richness-representation}
 species_richness <- data.frame(species_richness= apply(theta_pred,1,sum))
 species_richness_sp <- SpatialPointsDataFrame(xy, species_richness)

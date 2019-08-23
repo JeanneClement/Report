@@ -4,27 +4,342 @@ author: "Jeanne Clément"
 date: "22/08/2019"
 output: html_document
 ---
-
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  fig.align = "center",
+  fig.width = 7, fig.height = 7,
+  cache = FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  highlight = TRUE
+)
 ```
 
-## R Markdown
+## Comparison of three methods on sites random effect
+### Ordinary kriging 
+```{r OK_alpha}
+# Use of one climatic covariable to get Madagascar borders 
+s <- stack("data/current.tif")
+names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
+              paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
+              paste("pet",1:12,sep=""),"pet","cwd","ndm")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# number of dry months 
+r <- s$ndm
+# m to km 
+extent(r) <- extent(c(xmin(r), xmax(r), ymin(r), ymax(r))/1000)
+proj4string(r) <- CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km +no_defs +ellps=WGS84 +towgs84=0,0,0")
+# Spatial grid
+g <- as(r, 'SpatialGrid')
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Fit a variogram
+library(gstat)
+gs <- gstat(formula=alpha~1, locations=alpha_sp)
+v <- variogram(gs, width=10)
+head(v)
 
-```{r cars}
-summary(cars)
+## fit model variograms
+### Exponential
+par(mfrow=c(1,1))
+fve <- fit.variogram(v, vgm(0, "Exp", 25, 0))
+plot(variogramLine(fve, 400), type='l', ylim=c(0,0.06), main ="Exponential")
+points(v[,2:3], pch=20, col='red')
+
+### Spherical 
+fvs <- fit.variogram(v, vgm(0, "Sph", 25, 0))
+plot(variogramLine(fvs, 400), type='l', ylim=c(0,0.06),  main ="Spherical")
+points(v[,2:3], pch=20, col='red')
+
+### Matern 
+fvm <- fit.variogram(v, vgm(0, "Mat", 25, 0), fit.kappa=T)
+plot(variogramLine(fvm, 400), type='l', ylim=c(0,0.06), main ="Matern")
+points(v[,2:3], pch=20, col='red')
+
+# OK_alpha Ordinary Kriging using Exponential variogram
+k <- gstat(formula=alpha~1, locations=alpha_sp, model=fve)
+# predicted values 
+kp <- predict(k, g)
+## [using ordinary kriging]
+spplot(kp)
+# variance
+ok_alpha <- brick(kp)
+ok_alpha <- mask(ok_alpha, r)
+names(ok_alpha) <- c('alphas','variance')
+plot(ok_alpha$alphas, main="Effets sites interpolés par OK")
 ```
 
-## Including Plots
+### Inverse distance weighted 
+```{r IDW}
+# IDW Inverse distance weighted 
+library(gstat)
+idm <- gstat(formula=alpha~1, locations=alpha_sp)
+idp <- interpolate(r, idm)
+## [inverse distance weighted interpolation]
+idp <- mask(idp, r)
+plot(idp, main = "alphas with IDW interpolation")
 
-You can also embed plots, for example:
+## optimal IDW model
+RMSE <- function(observed, predicted) {
+  sqrt(mean((predicted - observed)^2, na.rm=TRUE))
+}
+f1 <- function(x, test, train) {
+  nmx <- x[1]
+  idp <- x[2]
+  if (nmx < 1) return(Inf)
+  if (idp < .001) return(Inf)
+  m <- gstat(formula=alpha~1, locations=train, nmax=nmx, set=list(idp=idp))
+  p <- predict(m, newdata=test, debug.level=0)$var1.pred
+  RMSE(test$alpha, p)
+}
+set.seed(20150518)
+i <- sample(nrow(alpha_sp), 0.2 * nrow(alpha_sp))
+tst <- alpha_sp[i,]
+trn <- alpha_sp[-i,]
+opt <- optim(c(8, 0.5), f1, test=tst, train=trn)
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+m <- gstat(formula=alpha~1, locations=alpha_sp, nmax=opt$par[1], set=list(idp=opt$par[2]))
+idw <- interpolate(r, m)
+## [inverse distance weighted interpolation]
+par(mfrow=c(1,1))
+idw <- mask(idw, r)
+plot(idw, main = "alphas with optimised IDW interpolation")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Thin plate spline model
+```{r TPS}
+# thin plate spline model
+library(fields)
+m <- Tps(coordinates(alpha_sp), alpha_sp$alpha)
+tps <- interpolate(r, m)
+tps <- mask(tps, r)
+plot(tps, main = "alphas with TPS interpolation")
+```
+
+### Cross-validate the three methods (IDW, Ordinary kriging, TPS) and add RMSE weighted ensemble model 
+
+```{r cross-validation}
+# Compare methods 
+library(dismo)
+nfolds <- 5
+k <- kfold(alpha_sp, nfolds)
+ensrmse <- tpsrmse <- krigrmse <- idwrmse <- rep(NA, 5)
+for (i in 1:nfolds) {
+  test <- alpha_sp[k!=i,]
+  train <- alpha_sp[k==i,]
+  m <- gstat(formula=alpha~1, locations=train, nmax=opt$par[1], set=list(idp=opt$par[2]))
+  p1 <- predict(m, newdata=test, debug.level=0)$var1.pred
+  idwrmse[i] <-  RMSE(test$alpha, p1)
+  m <- gstat(formula=alpha~1, locations=train, model=fve)
+  p2 <- predict(m, newdata=test, debug.level=0)$var1.pred
+  krigrmse[i] <-  RMSE(test$alpha, p2)
+  m <- Tps(coordinates(train), train$alpha)
+  p3 <- predict(m, coordinates(test))
+  tpsrmse[i] <-  RMSE(test$alpha, p3)
+  w <- c(idwrmse[i], krigrmse[i], tpsrmse[i])
+  weights <- w / sum(w)
+  ensemble <- p1 * weights[1] + p2 * weights[2] + p3 * weights[3]
+  ensrmse[i] <-  RMSE(test$alpha, ensemble)
+}
+
+rmi <- mean(idwrmse)
+rmk <- mean(krigrmse)
+rmt <- mean(tpsrmse)
+rms <- c(rmi, rmt, rmk)
+rms
+rme <- mean(ensrmse)
+rme
+# Weighted ensemble using rmse scores
+weights <- ( rms / sum(rms) )
+s <- stack(idw, ok_alpha[[1]], tps)
+ensemble <- sum(s * weights)
+
+# Compare maps
+s <- stack(idw, ok_alpha[[1]], tps, ensemble)
+names(s) <- c('IDW', 'OK', 'TPS', 'Ensemble')
+plot(s)
+```
+
+## Interpolation of latent variables with OK
+```{r OK-W1}
+# Fit a variogram
+library(gstat)
+gs <- gstat(formula=W1~1, locations=W1_sp)
+v <- variogram(gs, width=10)
+head(v)
+
+## fit model variograms
+### Exponential
+par(mfrow=c(1,3))
+fve <- fit.variogram(v, vgm(0, "Exp", 25, 0))
+plot(variogramLine(fve, 400), type='l', ylim=c(0,0.06), main ="Exponential")
+points(v[,2:3], pch=20, col='red')
+
+# OK Ordinary Kriging using Exponential variogram
+k <- gstat(formula=W1~1, locations=W1_sp, model=fve)
+# predicted values 
+kp <- predict(k, g)
+## [using ordinary kriging]
+spplot(kp)
+# variance
+ok_W1 <- brick(kp)
+ok_W1 <- mask(ok_W1, r)
+par(mfrow=c(1,2))
+names(ok_W1) <- c('W1 predicted', 'variance')
+plot(ok_W1)
+title("OK interpolation", outer = T)
+```
+
+```{r OK-W2}
+# Fit a variogram
+library(gstat)
+gs <- gstat(formula=W2~1, locations=W2_sp)
+v <- variogram(gs, width=10)
+
+## fit model variograms
+### Exponential
+par(mfrow=c(1,3))
+fve <- fit.variogram(v, vgm(0, "Exp", 25, 0))
+plot(variogramLine(fve, 400), type='l', ylim=c(0,0.06), main ="Exponential")
+points(v[,2:3], pch=20, col='red')
+
+# OK Ordinary Kriging using Exponential variogram
+k <- gstat(formula=W2~1, locations=W2_sp, model=fve)
+# predicted values 
+kp <- predict(k, g)
+## [using ordinary kriging]
+spplot(kp)
+# variance
+ok_W2 <- brick(kp)
+ok_W2 <- mask(ok_W2, r)
+par(mfrow=c(1,2))
+names(ok_W2) <- c('W2 predicted', 'variance')
+plot(ok_W2)
+title("OK interpolation", outer = T)
+save(ok_alpha, ok_W1, ok_W2, file="OK.RData")
+```
+
+# Calculation of probabilities of presence for each species 
+
+## Representation of species richness and probabilities of presence estimated on each site
+```{r proba-representation}
+probit_theta_pred <- read.csv("data/probit_theta_pred.csv")
+theta_pred <- apply(probit_theta_pred,c(1,2),pnorm)
+theta_pred <- data.frame(theta_pred=theta_pred*100)
+theta_pred_sp <- SpatialPointsDataFrame(xy, theta_pred)
+
+# define groups for mapping
+cuts <- c(0,10,20,30,40,50,60,70,80,90,100)
+col <- c('red4','brown3','red3','red','orange','yellow', 'light green', 'green3', 'forest green','dark green')
+pols <- list("sp.polygons", MADA, fill = "lightgray")
+spplot(theta_pred_sp, 'theta_pred.V1', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.5, key.space
+       ="right", main ="Estimated probabilities of presence for Ocotea laevis")
+
+species_richness <- data.frame(species_richness= apply(theta_pred,1,sum))
+species_richness_sp <- SpatialPointsDataFrame(xy, species_richness)
+cuts <- c(55,200,355,500,655,955,1255,1555,1855,2131)
+col <- c('red4','brown3','red3','red','orange','yellow', 'light green', 'green3', 'forest green','dark green')
+pols <- list("sp.polygons", MADA, fill = "lightgray")
+spplot(species_richness_sp, 'species_richness', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.5, key.space="right", main ="Estimated species richness fo each site")
+
+```
+
+## Calcul of probit theta with interpolated sites parameters
+
+```{r calcul-probit-theta, eval=F}
+remove(list = ls())
+# load  OK interpolation of sites parameters 
+load("OK.RData")
+
+# Covariables on Madagascar
+s <- stack("data/current.tif")
+names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
+              paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
+              paste("pet",1:12,sep=""),"pet","cwd","ndm")
+
+clim_var = dropLayer(s, c(1:36,38,39,41:47,49,50,52:67))
+names(clim_var) <- c("temp","prec","sais_temp","sais_prec","pet","cwd","ndm")
+extent(clim_var) <- extent(ok_alpha)
+proj4string(clim_var) <- proj4string(ok_alpha)
+
+
+# Species parameters 
+params_species <- read.csv(file = "data/params_species.csv")
+lambda_1 <- as.matrix(params_species[,"lambda_1"])
+lambda_2 <- as.matrix( params_species[,"lambda_2"])
+beta <- as.matrix(params_species[,3:10])
+
+# probit_theta 
+## Xbeta_1
+np <- nlayers(clim_var)
+Xbeta_1 <- raster(ncols=ncol(ok_alpha$alphas.predicted), nrows=nrow(ok_alpha$alphas.predicted))
+extent(Xbeta_1) <- extent(ok_alpha)
+proj4string(Xbeta_1) <- proj4string(ok_alpha)
+values(Xbeta_1) <- rep(beta[1,1][[1]], ncell(Xbeta_1))
+for (p in 1:np) {
+  Xbeta_1 <- Xbeta_1 + clim_var[[p]] * beta[1,p+1] 
+}
+names(Xbeta_1) <- paste0("Xbeta_",1)
+Xbeta <- Xbeta_1
+## Wlambda_1
+Wlambda_1 <- ok_W1$W1.predicted * lambda_1[1] +
+  ok_W2$W2.predicted * lambda_2[1]
+## probit_theta_1
+probit_theta_1 <- Xbeta_1 + Wlambda_1 + ok_alpha$alphas.predicted
+probit_theta <- probit_theta_1
+## Other species
+for (j in 2:483) {
+  ## Xbeta_j
+  Xbeta_j <- Xbeta_1
+  values(Xbeta_j) <- rep(beta[j,1][[1]], ncell(Xbeta_j))
+  for (p in 1:np) {
+    Xbeta_j <- Xbeta_j + clim_var[[p]] * beta[j,p+1] 
+  }
+  ## Wlambda_j
+  Wlambda_j <- ok_W1$W1.predicted * lambda_1[j] +
+    ok_W2$W2.predicted * lambda_2[j]  
+  ## probit_theta_j
+  probit_theta_j <- Xbeta_j + Wlambda_j + ok_alpha$alphas.predicted
+  probit_theta <- stack(probit_theta,probit_theta_j)
+}
+names(probit_theta) <- make.names(params_species$species)
+save(probit_theta,file="OK_probit_theta.RData")
+plot(probit_theta[[1:9]])
+```
+
+```{r representation-probit-theta, out.width = '100%',out.height = '100%'}
+knitr::include_graphics("interpolation_files/figure-html/probit_theta.jpeg")
+```
+
+
+## Representation of probabilities of presence by species 
+
+```{r calcul-theta, eval=F}
+remove(list = ls())
+load("OK_probit_theta.RData")
+theta <- probit_theta
+remove(probit_theta)
+values(theta[[1]]) <- pnorm(as.vector(values(theta[[1]])))
+for (j in 2:483){
+values(theta[[j]]) <- pnorm(as.vector(values(theta[[j]])))
+}
+names(theta) <- make.names(params_species$species)
+save(theta,file="OK_theta.RData")
+plot(theta[[1:9]])
+```
+
+```{r representation-theta, out.width = '100%',out.height = '100%'}
+knitr::include_graphics("interpolation_files/figure-html/theta.jpeg")
+```
+
+
+## Representation of species richness in Madagasar
+
+```{r species-richness, eval=F}
+species_richness <- sum(theta)
+plot(species_richness, main = "Interpolated species richness")
+```
+
+```{r representation-species_richness, out.width = '100%',out.height = '100%'}
+knitr::include_graphics("interpolation_files/figure-html/species_richness.jpeg")
+```
+

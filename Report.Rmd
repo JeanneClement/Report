@@ -639,28 +639,24 @@ On effectue $40 000$ itérations au total dont $35 000$ de burn-in puis $5 000$ 
 
 \begin{figure}[H]
  \caption[Représentation des $(\alpha_i)_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\alpha_i)_{i=1,\ldots,I}$ estimés en fonction de ceux simulés pour le modèle probit}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.9\textwidth,height=0.35\textwidth]{Illustrations/probit_site_effect.png}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle probit}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.4\textwidth]{Illustrations/probit_W.png}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.4\textwidth]{Illustrations/probit_sp_effect.png}
 \end{figure} 
 
 \begin{figure}[H]
  \caption[Représentation des $(\mathrm{probit}(\theta_{ij}),Z_{ij},\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\mathrm{probit}(\theta_{ij}))_{i=1,\ldots,500}^{j=1,\ldots,100}$, $(Z_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ et $(\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.9\textwidth,height=0.35\textwidth]{Illustrations/probit_proba.png}
 \end{figure} 
@@ -668,35 +664,31 @@ On effectue $40 000$ itérations au total dont $35 000$ de burn-in puis $5 000$ 
 \textbf{Modèle logit :}
 \begin{figure}[H]
  \caption[Représentation des $(\alpha_i)_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(\alpha_i)_{i=1,\ldots,I}$ estimés en fonction de ceux simulés pour le modèle logit}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.9\textwidth,height=0.35\textwidth]{Illustrations/logit_site_effect.png}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(W_{il})^{l=1,2}_{i=1,\ldots,500}$ estimés en fonction de ceux simulés pour le modèle logit}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.4\textwidth]{Illustrations/logit_W.png}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle logit]{Représentation des $(\beta_{jk})^{k=1,2,3}_{j=1,\ldots,100}$ et $(\lambda_{jl})^{l=1,2}_{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle logit}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.4\textwidth]{Illustrations/logit_sp_effect.png}
 \end{figure} 
 
 \begin{figure}[H]
  \caption[Représentation des $(\mathrm{logit}(\theta_{ij}),\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$  estimés en fonction de ceux simulés pour le modèle probit]{Représentation des $(\mathrm{logit}(\theta_{ij}))_{i=1,\ldots,500}^{j=1,\ldots,100}$ et $(\theta_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ estimés en fonction de ceux simulés pour le modèle probit}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.9\textwidth,height=0.35\textwidth]{Illustrations/logit_proba.png}
 \end{figure} 
 
 ### Evaluation du temps de calul et de la pertinence des résultats  
 
-\begin{table}[H]\caption[Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que les NRMSE (Normalized Root Mean Square Error) et les pourcentages de déviance expliquée obtenus]{Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que le pourcentage de déviance expliquée et la racine de la moyenne des carrés des erreurs normalisée (NRMSE) obtenus.pour chaque modèle de la manière suivante avec une fonction de lien $g$ probit ou logit :\\
+\begin{table}[H]\caption[Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que les NRMSE (Normalized Root Mean Square Error) et les pourcentages de déviance expliquée obtenus]{Temps de calcul nécessaires à l'ajustement des modèles logit et probit ainsi que le pourcentage de déviance expliquée et la racine de la moyenne des carrés des erreurs normalisée (NRMSE) obtenus pour chaque modèle de la manière suivante avec une fonction de lien $g$ probit ou logit :\\
 $NRMSE_g=\frac{RMSE_g}{\overline{g(\theta)}}$ avec $\overline{g(\theta)}=\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\frac{g(\theta_{ij})}{IJ}$ et $RMSE=\sqrt{\frac{1}{IJ}\sum\limits_{\substack{1\leq i\leq I \\   1 \leq j\leq I}}\left(g(\theta_{ij})-\widehat{g(\theta_{ij})}\right)^2}$.\\ 
 Le pourcentage de déviance expliquée est défini par $1-\dfrac{D}{D_0}$ avec $D=-2(l(\widehat{\theta})-l_s)$ la déviance du modèle considéré, où $l_s$ est la log-vraisemblance du modèle saturé comportant autant de paramètres qu'il y a d'observations et dont l'ajustement est supposé parfait par conséquent dans le cas de données binaires, les probabilités ajustées prenant les valeurs $0$ ou $1$ en fonction de celles de $Y$, on a $l_s=0$ car la vraisemblance des données observées sous le modèle saturé est de $1$.\\
 De plus la déviance nulle est définie par $D_0=-2(l(\widehat{\theta}_0)-l_s)$ avec $l(\widehat{\theta}_0)$ la log-vraisemblance du modèle nul défini par $g(\theta_{ij})=\mu$, pour lequel le seul paramètre est l'intercept $\mu$.\\
@@ -719,25 +711,130 @@ Afin d'ajuster un modèle joint de distribution des espèces à partir des donn�
 
 # Comparaison des packages boral et jSDM 
 
-## Performances sur des données simulées 
+## Description des jeux de données utilisés 
 
-On ajuste le modèle joint de distribution des espèces défini précèdemment à partir des données simulées selon le modèle probit à l'aide du package jSDM d'une part et boral d'autre part, puis on compare les résultats obtenus et les temps de calculs nécessaires.
+\begin{table}[H]\caption[Dimensions des jeux de données utilisés et nombre de paramètres à estimer]{Dimensions des jeux de données utilisés et nombre de paramètres à estimer}
+```{r data,echo=F,include=T}
+library(knitr)
+result <- data.frame(matrix(NA,4,5),row.names=c("Nombre d'espèces", "Nombre de sites","Nombre de covariables","Nombre de paramètres à estimer"))
+colnames(result) <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Champignons")
+result[1,]<- c(100,16,12,9,11)
+result[2,] <- c(300 ,167,458,104,800)
+result[3,] <- c(2,13 ,7 ,3,12 )
+result[4,] <- c((2+1)*100+2*100+2*300+300, (13+1)*16+2*16+2*167+167, (7+1)*12+2*12+3*458, (3+1)*9+2*9+3*104, (12+1)*11+2*11+3*800)
+kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+```
+\end{table} 
+## Comparaison de la pertinence des résultas obtenus et des temps de calcul nécessaires avec chacun des packages 
 
-## Comparaison des résultats sur des jeux de données réels 
-### Jeux de données utilisés 
-### Comparaison des résultats 
+On ajuste le modèle joint de distribution des espèces défini précèdemment à partir des données simulées selon le modèle probit ainsi que quatres jeux de données réels utilisés dans l'article @Wilkinson2019, à l'aide du package jSDM d'une part et boral d'autre part. Puis puis on compare les résultats obtenus après $35000$ itérations dont $30000$ de burn-in ainsi que les temps de calculs nécessaires. 
+
+\begin{table}[H]\caption[Temps de calcul nécessaire à l'ajustement du modèle pour chacun des jeux de données en minutes]{Temps de calcul nécessaire à l'ajustement du modèle pour chacun des jeux de données en minutes}
+```{r time-jDM-boral,echo=F,include=T}
+library(dplyr)
+load("~/Code/Report/data/jSDM_boral_sim.RData")
+load("~/Code/Report/data/jSDM_boral_mosquito.RData")
+load("~/Code/Report/data/jSDM_boral_eucalypts.RData")
+load("~/Code/Report/data/jSDM_boral_frogs.RData")
+load("~/Code/Report/data/boral_fungi.RData")
+load("~/Code/Report/data/jSDM_fungi.RData")
+
+result <- data.frame(matrix(NA,2,5),row.names=c("boral","jSDM "))
+colnames(result) <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Champignons")
+result[1,]=c(T_boral_sim, T_boral_Mosquito, T_boral_Eucalypts, T_boral_Frogs, T_boral_Fungi)
+result[2,]=c(T_jSDM_block_sim, T_jSDM_block_Mosquito, T_jSDM_block_Eucalypts, T_jSDM_block_Frogs, T_jSDM_block_Fungi)
+knitr::kable(result, row.names=T, digits=1,booktabs=TRUE,align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+```
+\end{table} 
+
+\begin{table}[H]\caption[RMSE obtenus  avec boral et jSDM pour les données simulées]{RMSE obtenus avec boral et jSDM pour les données simulées}
+```{r RMSE-jSDM-boral, echo=F,include=T}
+result <- data.frame(matrix(NA,1,2),row.names=  c("RMSE"))
+colnames(result) <- c("boral","jSDM")
+result$boral <- RMSE_boral_sim
+result$jSDM <- RMSE_jSDM_block_sim
+kable(result, row.names=T, digits=2,booktabs=TRUE,align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+```
+\end{table} 
+
+\begin{table}[H]\caption[Déviances calculées à partir des paramètres estimés avec chacun des packages]{Déviances calculées à partir des paramètres estimés avec chacun des packages}
+```{r deviance,echo=F,include=T}
+library(knitr)
+result <- data.frame(matrix(NA,2,5),row.names=c("boral", "jSDM"))
+colnames(result) <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Champignons")
+result[1,] <- c(Deviance_boral_sim, Deviance_boral_Mosquito, Deviance_boral_Eucalypts, Deviance_boral_Frogs, Deviance_boral_Fungi)
+result[2,] <- c( mean(mod_jSDM_block_sim$mcmc.Deviance),  mean(mod_jSDM_block_Mosquito$mcmc.Deviance),  mean(mod_jSDM_block_Eucalypts$mcmc.Deviance),  mean(mod_jSDM_block_Frogs$mcmc.Deviance),  mean(mod_jSDM_block_Fungi$mcmc.Deviance))
+kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+```
+\end{table} 
+
+## Représentation des paramètres estimés par les deux packages pour les différents jeux de données  
+
+\begin{figure}[H]
+\caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les données simulées]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les données simulées}
+\centering
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-simulation-1.pdf}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth] 
+{Illustrations/jSDM-boral-simulation-2.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-simulation-3.pdf}  \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-simulation-4.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.4\textheight, width=0.45\textwidth]{Illustrations/jSDM-boral-simulation-5.pdf} 
+\end{figure} 
+
+\begin{figure}[H]
+\caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les moustiques]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les moustiques}
+\centering
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-1.pdf} 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-2.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-3.pdf}  
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-4.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-5.pdf} 
+\end{figure} 
+
+\begin{figure}[H]
+\caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les eucalyptus]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les eucalyptus}
+\centering
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-1.pdf}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-2.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-3.pdf}  
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-4.pdf}\\ \vspace{0.5cm} 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-5.pdf} 
+\end{figure} 
+
+\begin{figure}[H]
+\caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les grenouilles]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les grenouilles}
+\centering
+ \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-1.pdf} 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-2.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-3.pdf}  
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-4.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-5.pdf} 
+\end{figure}
+
+\begin{figure}[H]
+\caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec boral pour les champignons]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les champignons}
+\centering
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-1.pdf} \ 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-2.pdf} \ 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-3.pdf}  
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-4.pdf} 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-5.pdf} 
+\end{figure}
 
 \newpage
 # Application aux données collectées à Madagascar
 
-  ## Description des données  
+## Description des données  
 
 On dispose d'inventaires forestiers réalisés sur $753$ sites de l'île de Madagascar et répertoriant la présence ou l'absence de $555$ espèces végétales sur chacun de ces sites. 
  
 Parmi les données climatiques et environnementales concernant Madagascar à l'heure actuelle (interpolations de données observées représentatives des années 1950-2000), disponibles sur le site \url{https://madaclim.cirad.fr}, on choisit d'utiliser les variables suivantes : 
 
 \begin{table}[H]
-\caption[Variables bioclimatiques considérées]{Variables bioclimatiques considérées affichées pour quelques sites : \\
+\caption[Variables bioclimatiques considérées]{Variables bioclimatiques considérées affichées pour quelques sites : \\ 
 Les températures (temp) et précipitations (prec) moyennes annuelles qui sont exprimées respectivement en $^\circ C\times 10$ et millimètres.\\
 La saisonnalité des températures (sais\_temp) correspond à l'écart type des températures mensuelles multiplié par $100$ ainsi que la saisonnalité des précipitations (sais\_prec) sous la forme d'un coefficient de variation.\\
 Le déficit hydrique climatique (cwd) annuel est calculé en fonction des précipitations et des évapotranspirations potentielles mensuelles (pet) qui sont définies comme la quantité d'évaporation qui se produirait en un mois si une source d'eau suffisante était disponible : \\$\mathrm{cwd}= \sum_{m=1}^{12}\min(0, \ \mathrm{prec}_m-\ \mathrm{pet}_m)$ , il est exprimé en millimètres.  \\
@@ -814,14 +911,12 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 
 \begin{figure}[H]
  \caption[Traces et densités de la déviance du modèle]{Traces et densités de la déviance du modèle}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.25\textheight]{Illustrations/mada_deviance.jpeg}
 \end{figure}
 
 \begin{figure}[H]
  \caption[Traces et densités des effets espèces fixes $(\beta_{jk})_{j=1}^{k=0,\ldots,10}$ estimés pour la deuxième espèce]{Traces et densités des effets espèces fixes $(\beta_{jk})_{j=2}^{k=0,\ldots,10}$ estimés pour la deuxième espèce}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_beta1_sp2.jpeg}
 \includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_beta2_sp2.jpeg}
@@ -830,7 +925,6 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 
 \begin{figure}[H]
  \caption[Traces et densités des effets espèces fixes $(\lambda_{jq})_{j=1,2}^{q=1,2}$ estimés pour les deux premières espèces]{Traces et densités des effets espèces fixes $(\lambda_{jq})_{j=1,2}^{q=1,2}$ estimés pour les deux premières espèces}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=10cm,height=10cm]{Illustrations/mada_lambda_sp1.jpeg}\\
 \includegraphics[width=10cm,height=10cm]{Illustrations/mada_lambda_sp2.jpeg}
@@ -838,13 +932,11 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 
 \begin{figure}[H]
  \caption[Traces et densités des variables latentes $W_1$ et $W_2$ estimées pour un site]{Trace et densité estimées des variables latentes $W_1$ et $W_2$ estimées pour un site}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.3\textheight]{Illustrations/mada_W.jpeg}
 \end{figure} 
 
 \begin{figure}[H]\caption[Trace et densité d'un effet site et de la variance associée aux effets sites estimés]{Trace et densité d'un effet site et de la variance associée aux effets sites estimés}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.25\textheight]{Illustrations/mada_rand_site.jpeg}\\
 \includegraphics[width=0.8\textwidth,height=0.25\textheight]{Illustrations/mada_Valpha.jpeg}
@@ -854,27 +946,23 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 
 \begin{figure}[H]
  \caption[Représentation spatiale des variables latentes $W_1$ et $W_2$ estimées pour chaque site]{Représentation spatiale des variables latentes $W_1$ et $W_2$ estimées pour chaque site}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.5\textwidth,height=0.5\textwidth]{Illustrations/mada_W1.png}\includegraphics[width=0.5\textwidth,height=0.5\textwidth]{Illustrations/mada_W2.png}
 \end{figure}
 
 \begin{figure}[H]\caption[Représentation spatiale des effets sites $(\alpha_i)_{i=1,\ldots,753}$ estimés]{Représentation spatiale des effets sites estimés}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.5\textwidth,height=0.5\textheight]{Illustrations/mada_site_effect.png}
 \end{figure} 
 
 \begin{minipage}[l]{0.5\textwidth}
 \begin{figure}[H]\caption[Représentation spatiale des probabilités de présence estimées pour l'espèce Ocotea laevis]{Représentation spatiale des probabilités de présence estimées pour l'espèce Ocotea laevis}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_proba_sp1.png}
 \end{figure} 
 \end{minipage}
 \begin{minipage}[r]{0.5\textwidth}
 \begin{figure}[H]\caption[Représentation spatiale des occurences observées de l'espèce Ocotea laevis]{Représentation spatiale des occurences observées de l'espèce Ocotea laevis}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_presence_sp1_obs.png}
 \end{figure} 
@@ -883,22 +971,20 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 ### Estimation de la richesse spécifique propre à chaque site et comparaison à celle observée
 
 \begin{minipage}[l]{0.5\textwidth}
-\begin{figure}[H] \caption[Représentation spatiale de la richesse spécifique estimée pour chaque site]{Représentation spatiale de la richesse spécifique estimée pour chaque site par $\widehat{R_i}=\sum\limits_ {j=1}^{555} \widehat{\theta_{ij}}$}
-  \label{fig:condSimApp}
+\begin{figure}[H] \caption[Représentation spatiale de la richesse spécifique estimée pour chaque site]{Représentation spatiale de la richesse spécifique estimée pour chaque site par $\widehat{R_i}=\sum\limits_ {j=1}^{555} \widehat{\theta_{ij}}$.\\
+Elle reflète le nombre d'espèces coexistant dans un milieu donné et correspond à la diversité alpha}
   \centering
 \includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness.png}
 \end{figure} 
 \end{minipage}
 \begin{minipage}[r]{0.5\textwidth}
 \begin{figure}[H] \caption[Représentation spatiale de la richesse spécifique observée pour chaque site]{Représentation spatiale de la richesse spécifique observée pour chaque site calculée par $R_i=\sum\limits_ {j=1}^{555} y_{ij}$}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness_obs.png}
 \end{figure} 
 \end{minipage}
 
 \begin{figure}[H]\caption[Représentation richesse spécifique estimée en fonction de celle observée]{Représentation richesse spécifique estimée en fonction de celle observée}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.4\textwidth,height=0.4\textheight]{Illustrations/mada_species_richness_obs_fit.png}
 \end{figure} 
@@ -926,7 +1012,6 @@ kableExtra::kable_styling(latex_options=c("HOLD_position","basic"), full_width=F
 \end{table}
 \begin{figure}[H]
  \caption[Comparaison des cartes obtenues pour les effets sites par différentes méthodes d'interpolation]{Comparaison des cartes obtenues pour les effets sites par une interpolation avec la méthode du krigeage ordinaire (OK), de l'inverse de la distance pondéré (IDW) et de thin plate spline (TPS)}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.45\textheight]{Illustrations/comparaison_site_effect.png}
 \end{figure}
@@ -936,23 +1021,33 @@ kableExtra::kable_styling(latex_options=c("HOLD_position","basic"), full_width=F
 
 \begin{figure}[H]
  \caption[Interpolation spatiale des variables latentes par krigeage ordinaire]{Interpolation spatiale des variables latentes par krigeage ordinaire}
-  \label{fig:condSimApp}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_W_OK.png}
 \end{figure} 
 
-## Analyse des résultats et mise en évidence de lieux refuges de la biodiversité
-résultats species richness theta et probit theta
+\begin{figure}[H]
+ \caption[Probabilités de présence interpolées pour deux espèces]{Probabilités de présence interpolées pour deux espèces}
+  \centering
+\includegraphics[width=1\textwidth,height=0.45\textheight]{Illustrations/mada_proba_OK.png}
+\end{figure} 
 
-## Prédictions avec auto-corrélation spatiale
-Expliqer méthode CAR + 2D spline qui sont implémentées mais pas abouties les résultats ne sont pas satisfaisants pour l'instant. 
+\begin{figure}[H]
+ \caption[Richesse spécifique interpolée sur l'ensemble de l'île et en prenant en compte le couvert forestier]{Richesse spécifique interpolée sur l'ensemble de l'île et en prenant en compte le couvert forestier}
+  \centering
+\includegraphics[width=0.5\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness_OK.png}\includegraphics[width=0.5\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness_OK_forest.png}
+\end{figure} 
 
 \newpage
 \pagestyle{simple}
 
 \section*{Conclusion}
 \addcontentsline{toc}{section}{Conclusion}
-données GIECC pour évolution biodiversité avec changement climatique, intégrer traits spécifiques dans le modèle, enrichir le package,  
+données GIECC pour évolution biodiversité avec changement climatique mise en évidence de lieux refuges de la biodiversité
+, intégrer traits spécifiques dans le modèle, enrichir le package, 
+Prédictions avec auto-corrélation spatiale :
+Expliqer méthode CAR + 2D spline qui sont implémentées mais pas abouties les résultats ne sont pas satisfaisants pour l'instant. 
+
+\newpage
 \section*{Bibliographie}
 \addcontentsline{toc}{section}{Bibliographie}
 

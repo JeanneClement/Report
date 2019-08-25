@@ -24,7 +24,7 @@ header-includes:
   - \usepackage{xassoccnt}
 
 bibliography: Biblio_master.bib
-geometry: left=1.4cm,right=1.4cm,top=1.5cm,bottom=0.3cm
+geometry: left=1.4cm,right=1.4cm,top=1.5cm,bottom=0.5cm
 fontsize : 10pt
 ---
 \renewcommand\UrlFont{\color{blue}\rmfamily\itshape}
@@ -126,6 +126,7 @@ Ces résultats seront utilisés pour des préconisations de gestion de la biodiv
 \newpage
 \pagestyle{headings}
 
+
 # Définition des modèles joints de distribution des espèces envisagés \quad
 
 Les données dont on dispose pour ajuster ce type de modèle sont les réalisations d'une variable réponse,  
@@ -165,7 +166,9 @@ $$\Lambda := \begin{pmatrix}
 \lambda_{J1} & \ldots & \lambda_{Jq}
 \end{pmatrix}$$
 
-On préferera ce dernier modèle, en effet il comporte potentiellement beaucoup moins de paramètres que le GLMM précédent car $\Lambda$ a autant de colonne qu’il y a de variables latentes ($q$) tandis que $\Sigma$ présente autant de colonnes de paramètres qu’il y a d’espèces ($J$).
+On préferera ce dernier modèle, en effet il comporte potentiellement beaucoup moins de paramètres que le GLMM précédent car $\Lambda$ a autant de colonne qu’il y a de variables latentes ($q$) tandis que $\Sigma$ présente autant de colonnes de paramètres qu’il y a d’espèces ($J$).  
+
+Dans la suite on fixera $q=2$, en effet comme @Warton2015 on considérera des modèles à deux variables latentes par analogie avec une analyse par composante principale (ACP) sur les résidus pour lesquels on utilise souvent les deux ou trois premiers axes car l'intégration de variables latentes aux modèles s'apparente à une forme d'ordination.
 
 On peut choisir de modéliser l'abondance absolue plutôt que l'abondance relative en supprimant les effets sites aléatoires  $\alpha_i$ du modèle. 
 
@@ -248,7 +251,8 @@ P \text{ tel que } \mathbb{P}(\lambda_{jl} = 0)=1  & \text{si } l>j
 \end{array}$$
 En effet pour assurer l’identifiabilité du modèle les valeurs de $\Lambda$ sont contraintes à des valeurs strictements positives sur la diagonale et nulles au dessus de celle-ci, $\Lambda$ est ainsi supposée être triangulaire inférieure d’après l’article @Warton2015. 
 
-La fonction *boral()* du package du même nom, permettant d'ajuster différents modèles utilise ces distributions *a priori* pour le modèle qui nous intéresse. Dans l'article @Warton2015 l'ajustement de modèles joints de distributions des espèces est réalisé à l'aide de boral qui fonctionne avec JAGS (Just Another Gibbs Sampler) un programme de simulation à partir de modèles hiérarchiques bayésiens utilisant des méthodes MCMC, implémenté en C++. Cependant la fonction *jSDM_probit_block()* du package jSDM que j'ai implémentée utilise une distribution *a priori* jointe pour les effets espèces fixes de la manière qui suit.
+La fonction *boral()* du package du même nom présenté dans l'article @Hui2016 et permettant d'ajuster différents JSDM utilise ces distributions *a priori* pour le modèle qui nous intéresse. 
+Cependant la fonction *jSDM_probit_block()* du package jSDM que j'ai implémentée utilise une distribution *a priori* jointe pour les effets espèces fixes de la manière qui suit.
 
 ### Propositions sur les priors conjugués  
 
@@ -407,7 +411,7 @@ a' = a + \frac{I}{2} \text{ et } b' = b + \frac{1}{2}\sum\limits_{i=1}^I \alpha_
 ### Echantillonneur de Gibbs et priors conjugués
 L’algorithme utilisé pour estimer les paramètres du modèle logit est donc le suivant :
 \begin{itemize}
-\item Définir les constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ telles que $N_{Gibbs}$ correspond au nombre d’itérations effectuées par l’échantillonneur de Gibbs,  $N_{burn}$ au nombre d’itérations nécessaires pour le burn-in ou temps de chauffe et $N_{samp} = \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations, afin d’obtenir un échantillon de $N_{samp}$ valeurs distribuées selon la distribution \it{a posteriori} pour chacun des paramètres.
+\item Définir les constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ telles que $N_{Gibbs}$ correspond au nombre d’itérations effectuées par l’échantillonneur de Gibbs,  $N_{burn}$ au nombre d’itérations nécessaires pour le burn-in ou temps de chauffe et $N_{samp} = \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations, afin d’obtenir un échantillon de $N_{samp}$ valeurs distribuées selon la distribution $a \ posteriori$ pour chacun des paramètres.
 \vspace{0.2cm}
 \item Initialiser tous les paramètres à $0$ par exemple, excepté les valeurs diagonales de $\Lambda$ initialisées à $1$ et $V_{\alpha}^{(0)}=1$.
 \vspace{0.2cm}
@@ -449,7 +453,7 @@ $$ \alpha_i | \ Z^{(t)}, P^{(t)},W_i^{(t)} \sim \mathcal{N}\left(\dfrac{ \sum_{j
 D'autre part on considère une fonction de lien $\mathrm{logit}: p \rightarrow\ln\left(\frac{p}{1-p}\right)=\mathrm{F}^{-1}(p)$, avec $\mathrm{F}:x\rightarrow \frac{1}{1+e^{-x}}$ la fonction de répartition appelée sigmoïde d’une loi logistique standard. 
  
 ### Définition du modèle logit
-De la même façon que pour le modèle probit, d’après @Givord2016 on peut définir le modèle logit par l’intermediaire d’une variable latente : $Z_{ij}= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j + \epsilon_{ij}$ pour $i=1,\ldots,I$ et $j=1,\ldots,J$, avec $\epsilon_{ij} \sim \mathrm{logistique}(0,1)$ *iid* et telle que : 
+De la même façon que pour le modèle probit, on peut définir le modèle logit par l’intermediaire d’une variable latente : $Z_{ij}= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j + \epsilon_{ij}$ pour $i=1,\ldots,I$ et $j=1,\ldots,J$, avec $\epsilon_{ij} \sim \mathrm{logistique}(0,1)$ *iid* et telle que : 
 $$y_{ij}=
 \begin{cases}
 1 & \text{ si } Z_{ij} > 0 \\
@@ -547,11 +551,11 @@ $$\begin{aligned}
 \end{aligned}$$
 
 \newpage
-L’algorithme utilisé pour estimer les paramètres du modèle logit est donc le suivant :
+L’algorithme implémenté en s'inspirant des articles @Rosenthal2009 et @Roberts2001 pour estimer les paramètres du modèle logit est le suivant :
 
 \begin{itemize}
 \item Définition des constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ et $R_{opt}$ tels que  $N_{Gibbs}$ correspond au nombre d'itérations effectuées par l'algorithme,  $N_{burn}$ au nombre d'itérations nécessaires pour le burn-in ou temps de chauffe,   
-$N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution \it{a posteriori} pour chacun des paramètres.  
+$N_{samp}= \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ correspondant au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations afin d'obtenir $N_{samp}$ valeurs, nous permettant de représenter une distribution $a \ posteriori$ pour chacun des paramètres.  
 
 On fixe $R_{opt}$ le ratio d'acceptation optimal utilisé dans les algorithmes de Metropolis adaptatifs implémentés pour chacun des paramètres du modèle. 
 
@@ -707,11 +711,16 @@ knitr::kable(results, row.names=T, digits=1,booktabs=TRUE,align = 'c') %>%
 ```
 \end{table} 
 
-Afin d'ajuster un modèle joint de distribution des espèces à partir des données collectées à Madagascar, on utilisera donc la fonction implémentée pour le modèle probit qui présente un pourcentage de déviance expliquée supérieur, un RMSE inférieur ainsi qu'un temps de calcul bien inférieur à ceux associés au modèle logit, indiquant que les paramètres estimés sont plus en acoord avec les données et proches des valeurs attendues pour le modèle logit.
+Afin d'ajuster un modèle joint de distribution des espèces à partir des données collectées à Madagascar, on utilisera donc la fonction implémentée pour le modèle probit qui présente un pourcentage de déviance expliquée supérieur, un NRMSE inférieur ainsi qu'un temps de calcul bien inférieur à ceux associés au modèle logit, indiquant que les paramètres estimés sont plus en accord avec les données et proches des valeurs attendues que pour le modèle logit.
 
-# Comparaison des packages boral et jSDM 
+\newpage
+# Comparaison des résultats obtenus avec les packages boral et jSDM 
+
+Dans l'article @Warton2015 l'ajustement de modèles joints de distributions des espèces est réalisé à l'aide de boral qui fonctionne avec JAGS (Just Another Gibbs Sampler) un programme de simulation à partir de modèles hiérarchiques bayésiens utilisant des méthodes MCMC implémentées en C++. Ce package et celui que j'ai implémenté (jSDM) permettent d'ajuster le modèle probit défini précédemment, on pourra donc comparer les résultats obtenus par chacun d'eux sur différents jeux de données. 
 
 ## Description des jeux de données utilisés 
+
+Afin de comparer ces packages on utilise un jeu de donnée simulé de la même manière que précédemment selon le modèle probit ainsi que quatre jeux de données réels issus de l'article @Wilkinson2019 qui compare l'ajustement de différents modèle joints de distribution des espèces sur ces données et en particulier ceux implémentés par les packages gjam, HMSC et boral.
 
 \begin{table}[H]\caption[Dimensions des jeux de données utilisés et nombre de paramètres à estimer]{Dimensions des jeux de données utilisés et nombre de paramètres à estimer}
 ```{r data,echo=F,include=T}
@@ -726,9 +735,10 @@ kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
 ```
 \end{table} 
+
 ## Comparaison de la pertinence des résultas obtenus et des temps de calcul nécessaires avec chacun des packages 
 
-On ajuste le modèle joint de distribution des espèces défini précèdemment à partir des données simulées selon le modèle probit ainsi que quatres jeux de données réels utilisés dans l'article @Wilkinson2019, à l'aide du package jSDM d'une part et boral d'autre part. Puis puis on compare les résultats obtenus après $35000$ itérations dont $30000$ de burn-in ainsi que les temps de calculs nécessaires. 
+On ajuste le modèle joint de distribution des espèces défini précèdemment sur des données simulées selon le modèle probit ainsi que sur quatres jeux de données réels à l'aide du package jSDM d'une part et boral d'autre part. Puis puis on compare les résultats obtenus après $35000$ itérations dont $30000$ de burn-in ainsi que les temps de calculs nécessaires. 
 
 \begin{table}[H]\caption[Temps de calcul nécessaire à l'ajustement du modèle pour chacun des jeux de données en minutes]{Temps de calcul nécessaire à l'ajustement du modèle pour chacun des jeux de données en minutes}
 ```{r time-jDM-boral,echo=F,include=T}
@@ -749,6 +759,9 @@ knitr::kable(result, row.names=T, digits=1,booktabs=TRUE,align = 'c') %>%
 ```
 \end{table} 
 
+On constate que les temps de calcul de jSDM sont largement inférieurs à ceux nécessaires à boral ce qui est dû aux méthodes d'inférence différentes ansi qu'à l'utilisation de Rcpp pour la construction de jSDM, qui permet l'intégration de fonction en C++ au sein du package. En effet le tirage selon des lois normales multivariées des paramètres par jSDM présente un gain de temps considérable par rapport à la méthode MCMC estimant chaque paramètre séparément utilisée par boral. 
+
+\newpage
 \begin{table}[H]\caption[RMSE obtenus  avec boral et jSDM pour les données simulées]{RMSE obtenus avec boral et jSDM pour les données simulées}
 ```{r RMSE-jSDM-boral, echo=F,include=T}
 result <- data.frame(matrix(NA,1,2),row.names=  c("RMSE"))
@@ -759,6 +772,8 @@ kable(result, row.names=T, digits=2,booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
 ```
 \end{table} 
+
+Le RMSE associé à jSDM est trois fois inférieur à celui de boral ce qui indique que les résultats obtenus avec jSDM sur le jeu de données simulé sont bien plus proches de ceux attendus que les paramètres estimés avec boral. On peut l'expliquer par une convergence plus rapide de l'algorithme utilisé par jSDM dûe à l'utilisation de priors conjugués et au tirage des paramètres par espèce selon une loi jointe. 
 
 \begin{table}[H]\caption[Déviances calculées à partir des paramètres estimés avec chacun des packages]{Déviances calculées à partir des paramètres estimés avec chacun des packages}
 ```{r deviance,echo=F,include=T}
@@ -772,7 +787,9 @@ kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
 ```
 \end{table} 
 
-## Représentation des paramètres estimés par les deux packages pour les différents jeux de données  
+Les déviances obtenues avec jSDM sont bien inférieures à celles calculées avec les résultats de boral ce qui suggére que les modèles ajustés par jSDM correspondent mieux aux données.  
+
+## Représentation des paramètres pour les différents jeux de données 
 
 \begin{figure}[H]
 \caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les données simulées]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les données simulées}
@@ -780,7 +797,7 @@ kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-simulation-1.pdf}
 \includegraphics[height=0.45\textheight, width=0.4\textwidth] 
 {Illustrations/jSDM-boral-simulation-2.pdf}\\ \vspace{0.5cm}
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-simulation-3.pdf}  \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-simulation-4.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-simulation-3.pdf}  \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-simulation-4.pdf}\\ 
 \includegraphics[height=0.4\textheight, width=0.45\textwidth]{Illustrations/jSDM-boral-simulation-5.pdf} 
 \end{figure} 
 
@@ -788,9 +805,9 @@ kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
 \caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les moustiques]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les moustiques}
 \centering
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-1.pdf} 
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-2.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-2.pdf}\\ 
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-3.pdf}  
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-4.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-4.pdf}\\ 
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-5.pdf} 
 \end{figure} 
 
@@ -798,9 +815,9 @@ kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
 \caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les eucalyptus]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les eucalyptus}
 \centering
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-1.pdf}
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-2.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-2.pdf}\\ \vspace{0.3cm}
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-3.pdf}  
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-4.pdf}\\ \vspace{0.5cm} 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-4.pdf}\\ \vspace{0.3cm} 
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Eucalypts-5.pdf} 
 \end{figure} 
 
@@ -808,30 +825,31 @@ kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
 \caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les grenouilles]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les grenouilles}
 \centering
  \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-1.pdf} 
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-2.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-2.pdf}\\ 
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-3.pdf}  
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-4.pdf}\\ \vspace{0.5cm}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-4.pdf} \\
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-frogs-5.pdf} 
 \end{figure}
 
 \begin{figure}[H]
 \caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec boral pour les champignons]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les champignons}
 \centering
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-1.pdf} \ 
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-2.pdf} \ 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-1.pdf}
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-2.pdf} \\ 
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-3.pdf}  
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-4.pdf} 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-4.pdf} \\ 
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-fungi-5.pdf} 
 \end{figure}
 
-\newpage
+On constate que pour le jeux de données simulées les paramètres estimés par les deux packages sont très proches en revanche pour les jeux de données réels ils sont assez différents ce qui peut être dû à un nombre insuffisant d'espèces et donc d'observations pour estimer les effets sites correctement et à la difficulté d'estimer les variables latentes. 
 # Application aux données collectées à Madagascar
 
 ## Description des données  
 
-On dispose d'inventaires forestiers réalisés sur $753$ sites de l'île de Madagascar et répertoriant la présence ou l'absence de $555$ espèces végétales sur chacun de ces sites. 
+On dispose des inventaires forestiers nationaux réalisés sur $753$ sites de l'île de Madagascar et répertoriant la présence ou l'absence de $555$ espèces végétales sur chacun de ces sites entre 1994 et 1996.  
  
-Parmi les données climatiques et environnementales concernant Madagascar à l'heure actuelle (interpolations de données observées représentatives des années 1950-2000), disponibles sur le site \url{https://madaclim.cirad.fr}, on choisit d'utiliser les variables suivantes : 
+Parmi les données climatiques et environnementales  disponibles sur le site \url{https://madaclim.cirad.fr} concernant l'ensemble de l'île de Madagascar à l'heure actuelle (interpolations de données observées représentatives des années 1950-2000),  on choisit d'utiliser les variables suivantes car elles ont un sens écologique qui les rend facilement interprétables et sont peu corrélées entre elles d'après l'article @Vieilledent2013.  
+De plus on extrait les valeurs de ces variables climatiques correspondant aux coordonnées des placettes d'inventaires pour obtenir les données suivantes. 
 
 \begin{table}[H]
 \caption[Variables bioclimatiques considérées]{Variables bioclimatiques considérées affichées pour quelques sites : \\ 
@@ -883,16 +901,19 @@ knitr::kable(head(ord_data_clim), row.names=F, digits=3,booktabs=TRUE,align = 'c
 On considère également les carrés de ces variables climatiques afin d'effectuer un régression quadratique, plus adaptée pour ajuster un modèle de niche qu'une régression linéaire. On centre et on réduit ces variables afin de former une matrice de design $X$ telle que 
 $X_i=(1,\mathrm{temp}_i, \mathrm{prec}_i,\mathrm{sais\_temp}_i, \mathrm{sais\_prec}_i,  \mathrm{cwd}_i,\mathrm{temp}_i^2, \mathrm{prec}_i^2,\mathrm{sais\_temp}_i^2, \mathrm{sais\_prec}_i^2, \mathrm{cwd}_i^2)$ pour $i=1,\ldots,753$.  
 
-Les coordonnées des sites seront utilisées par la suite dans le cadre de l'interpolation spatiale des résultats et représenter spatialement les résultats. 
+Les coordonnées des sites seront utilisées par la suite dans le cadre de l'interpolation spatiale et pour représenter spatialement les résultats. 
 
 \newpage
+
 ## Estimation des paramètres et représentation des résultats 
 
 ### Représentation des réultats pour évaluer la convergence de l'algorithme 
 
 On ajuste un modèle joint de distribution des espèces de fonction de lien probit en considérant deux variables latentes à l'aide de la fonction *jSDM\_probit\_block()* du package jSDM à partir des données décrites précédemment, en effectuant $100 000$ itérations dont $90 000$ de burn-in et on retient $N_{samp}=1 000$ valeurs pour chaque paramètre du modèle que l'on va représenter en fonction du nombre d'itérations effectuées afin d'évaluer la convergence de l'algorithme de Gibbs.  
 
-De plus on affiche une estimation de la densité des échantillons obtenus qui devrait correspondre aux distributions *a posteriori* définies et donc être de forme gaussienne. On met en évidence les moyennes des $N_{samp}$-échantillons en bleu, que l'on utilisera comme estimateur pour les paramètres. 
+De plus on affiche une estimation de la densité des échantillons obtenus qui devrait correspondre aux distributions *a posteriori* définies et donc être de forme gaussienne.  
+
+On met en évidence les moyennes des $N_{samp}$-échantillons en bleu, que l'on utilisera comme estimateur pour les paramètres. 
 
 \begin{table}[H]\caption[Temps de calcul nécessaire à l'ajustement du modèle sur les données de Madagascar et nombre de paramètres à estimer]{Temps de calcul nécessaire à l'ajustement du modèle sur les données de Madagascar et nombre de paramètres à estimer}
 ```{r results-mada, echo=F, include=T}
@@ -916,11 +937,11 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 \end{figure}
 
 \begin{figure}[H]
- \caption[Traces et densités des effets espèces fixes $(\beta_{jk})_{j=1}^{k=0,\ldots,10}$ estimés pour la deuxième espèce]{Traces et densités des effets espèces fixes $(\beta_{jk})_{j=2}^{k=0,\ldots,10}$ estimés pour la deuxième espèce}
+ \caption[Traces et densités des effets espèces fixes $(\beta_{jk})_{j=1}^{k=0,\ldots,11}$ estimés pour la deuxième espèce]{Traces et densités des effets espèces fixes $(\beta_{jk})_{j=2}^{k=0,\ldots,10}$ estimés pour la deuxième espèce}
   \centering
-\includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_beta1_sp2.jpeg}
-\includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_beta2_sp2.jpeg}
-\includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_beta3_sp2.jpeg}
+\includegraphics[width=10cm,height=12cm]{Illustrations/mada_beta1_sp2.jpeg}
+\includegraphics[width=10cm,height=12cm]{Illustrations/mada_beta2_sp2.jpeg}
+\includegraphics[width=10cm,height=12cm]{Illustrations/mada_beta3_sp2.jpeg}
 \end{figure}
 
 \begin{figure}[H]
@@ -930,6 +951,8 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 \includegraphics[width=10cm,height=10cm]{Illustrations/mada_lambda_sp2.jpeg}
 \end{figure}
 
+Dans l'ensemble les traces et les densités des paramètres indiquent la convergence de l'algorithme. En effet on observe sur les traces que les valeurs oscillent autour de moyennes sans présenter de tendance croissante ou décroissante et on consate que les densités sont assez lisses et pour la plupart de forme gaussienne mise a part celle de l'effet espèce $\lambda_{11}$ ce qui est certainement dû à la façon d'imposer des valeurs positives à ce paramètre.
+
 \begin{figure}[H]
  \caption[Traces et densités des variables latentes $W_1$ et $W_2$ estimées pour un site]{Trace et densité estimées des variables latentes $W_1$ et $W_2$ estimées pour un site}
   \centering
@@ -938,9 +961,25 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 
 \begin{figure}[H]\caption[Trace et densité d'un effet site et de la variance associée aux effets sites estimés]{Trace et densité d'un effet site et de la variance associée aux effets sites estimés}
   \centering
-\includegraphics[width=0.8\textwidth,height=0.25\textheight]{Illustrations/mada_rand_site.jpeg}\\
-\includegraphics[width=0.8\textwidth,height=0.25\textheight]{Illustrations/mada_Valpha.jpeg}
-\end{figure}
+\includegraphics[width=0.6\textwidth,height=0.25\textheight]{Illustrations/mada_rand_site.jpeg}\\
+\includegraphics[width=0.6\textwidth,height=0.25\textheight]{Illustrations/mada_Valpha.jpeg}
+\end{figure}  
+
+\newpage
+### Matrice de corrélation résiduelle entre les espèces estimée 
+
+On ajuste le modèle avec les mêmes données bioclimatiques mais en considérant seulement les $50$ espèces qui sont présentes sur le plus de placettes d'inventaire afin de pouvoir représenter la matrice des corrélation résiduelle des probabilités d'occurence de ces $50$ espèces calculée de la même manière que dans les articles  @Warton2015 et @Tobler2019 à l'aide de la fonction *get_residual_corr()*, du package jSDM.
+\begin{figure}[H]
+ \caption[Matrice de corrélation entre les $50$ espèces les plus présentes estimée]{Matrice de corrélation entre les $50$ espèces les plus présentes estimée dont les coefficients sont les $(\rho_{ij})^{i=1,\ldots,50}_{j=1,\ldots, 50}$ qui sont calculés par $\rho_{i,j} = \dfrac{\Sigma_{ij}}{\sqrt{\Sigma _{ii}\Sigma _{jj}}}$ avec 
+$\Sigma_{ij} = \begin{cases}
+\lambda_i .\lambda_j' & \text{ si } i \neq j \\
+\lambda_i .\lambda_j' + 1 & \text{ si } i=j
+\end{cases}$, la matrice de variance covariance.\\}
+  \centering
+\includegraphics[width=1.0\textwidth,height=1.0\textwidth]{Illustrations/mada_mat_corr_50.png}
+\end{figure}  
+
+Cette matrice de corrélation résiduelle permet d'observer les corrélations positives ou négatives entre les espèces qui sont interprétables en terme d'influence positive ou négative de la présence d'un espèce sur la probabilité d'occurence d'une autre.
 
 ### Représentations spatiales des paramètres associés aux sites et des probabilités de présence estimées
 
@@ -968,11 +1007,12 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 \end{figure} 
 \end{minipage}
 
-### Estimation de la richesse spécifique propre à chaque site et comparaison à celle observée
+### Estimation de la richesse spécifique pour les placettes d'inventaire et comparaison à celle observée
+
+La richesse spécifique aussi appelée diversité $\alpha$ reflète le nombre d'espèces coexistant dans un milieu donné, on l'estime en additionnant les probabilités de présence estimées.  
 
 \begin{minipage}[l]{0.5\textwidth}
-\begin{figure}[H] \caption[Représentation spatiale de la richesse spécifique estimée pour chaque site]{Représentation spatiale de la richesse spécifique estimée pour chaque site par $\widehat{R_i}=\sum\limits_ {j=1}^{555} \widehat{\theta_{ij}}$.\\
-Elle reflète le nombre d'espèces coexistant dans un milieu donné et correspond à la diversité alpha}
+\begin{figure}[H] \caption[Représentation spatiale de la richesse spécifique estimée pour chaque site]{Représentation spatiale de la richesse spécifique estimée pour chaque site par $\widehat{R_i}=\sum\limits_ {j=1}^{555} \widehat{\theta_{ij}}$.}
   \centering
 \includegraphics[width=1.0\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness.png}
 \end{figure} 
@@ -991,7 +1031,7 @@ Elle reflète le nombre d'espèces coexistant dans un milieu donné et correspon
 
 ## Comparaison des effets sites obtenus avec différentes méthodes d'interpolation spatiale
 
-définition interpolation et expliquer méthodes Thin plate spline Ordinary kriging Inverse distance weighted 
+définition interpolation et expliquer méthodes Thin plate spline Ordinary kriging Inverse distance weighted + données bioclimatques centrées réduites pour l'ensemble de l'île. 
 
 \begin{table}[H]\caption[RMSE obtenus par validation croisée entre les effets sites estimés et ceux prédits par différentes méthodes d'interpolation]{RMSE obtenus par validation croisée entre les effets sites estimés et ceux prédits par interpolation avec OK, TPS et IDW.\\
 Dans le cadre de la validation croisée, on divise l'échantillon original d'effets sites estimés en $k=5$ échantillons, puis on sélectionne un des $k$ échantillons comme ensemble d'apprentissage et les $k-1$ autres échantillons constitueront l'ensemble de validation. On répète $k$ fois cette opération afin qu'en fin de compte chaque sous-échantillon ait été utilisé exactement une fois pour la phase d'apprentissage qui consite à ajuster les modèles correspondant à chaque méthode d'interpolation. Puis les effets sites sont interpolés suivant ces modèles pour les localisations correspondant à l'ensemble de validation.\\
@@ -1010,11 +1050,14 @@ knitr::kable(cv_alphas, row.names=T, digits=3,booktabs=TRUE,align = 'c') %>%
 kableExtra::kable_styling(latex_options=c("HOLD_position","basic"), full_width=FALSE)
 ```
 \end{table}
+
 \begin{figure}[H]
  \caption[Comparaison des cartes obtenues pour les effets sites par différentes méthodes d'interpolation]{Comparaison des cartes obtenues pour les effets sites par une interpolation avec la méthode du krigeage ordinaire (OK), de l'inverse de la distance pondéré (IDW) et de thin plate spline (TPS)}
   \centering
 \includegraphics[width=0.8\textwidth,height=0.45\textheight]{Illustrations/comparaison_site_effect.png}
 \end{figure}
+
+On choisiras donc d'interpoler les variables latentes et les effets sites estimés pour les placettes d'inventaires par krigeage ordinaire car cette méthode présente un RMSE inférieur aux autres.  
 
 
 ## Résultats de l'interpolation spatiale par krigeage ordinaire
@@ -1025,16 +1068,43 @@ kableExtra::kable_styling(latex_options=c("HOLD_position","basic"), full_width=F
 \includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_W_OK.png}
 \end{figure} 
 
+Les paramètres interpolés permettent de calculer les probabilités de présence pour chacune des espèces en fonction des variables climatiques définies précédemment dont les valeurs sont connues pour l'ensemble de l'île.
+
 \begin{figure}[H]
  \caption[Probabilités de présence interpolées pour deux espèces]{Probabilités de présence interpolées pour deux espèces}
   \centering
-\includegraphics[width=1\textwidth,height=0.45\textheight]{Illustrations/mada_proba_OK.png}
+\includegraphics[width=30cm,height=10cm]{Illustrations/mada_proba_OK.png}
 \end{figure} 
 
+## Estimation de la richesse spécifique à Madagascar
+
+On additonne les probabilités de présence interpolées pour chacune des espèces obtenir la richesse spécifique.   
+Cependant le modèle utilisé ne prend pas en compte la présence humaine qui se manifeste en particulier par la déforestation de l'île, on utilise donc les données sur le couvert forestier restant en 2000 provenant de l'article @Vieilledent2018 afin de remplacer par des valeurs nulles les richesses spécifiques interpolées à des endroits où on sait qu'il n'y a pas de forêt.  
+
 \begin{figure}[H]
- \caption[Richesse spécifique interpolée sur l'ensemble de l'île et en prenant en compte le couvert forestier]{Richesse spécifique interpolée sur l'ensemble de l'île et en prenant en compte le couvert forestier}
+ \caption[Richesse spécifique interpolée sur l'ensemble de l'île et restreinte au couvert forestier]{Richesse spécifique interpolée sur l'ensemble de l'île et restreinte au couvert forestier}
   \centering
-\includegraphics[width=0.5\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness_OK.png}\includegraphics[width=0.5\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness_OK_forest.png}
+\includegraphics[width=0.5\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness_OK.png}
+\includegraphics[width=0.5\textwidth,height=0.5\textheight]{Illustrations/mada_species_richness_OK_forest.png}
+\end{figure} 
+
+\newpage
+
+## Estimation de la diversité $\beta$ à Madagascar
+
+La diversité $\beta$ est une mesure de la biodiversité qui consiste à comparer la diversité des espèces entre écosystèmes ou le long de gradients environnementaux, en utilisant le nombre de taxons qui sont uniques à chacun des écosystèmes.  
+
+Afin d'estimer cet indicateur, on procède de la même façon que dans l'article @Allnutt2008 en effectuant une ACP normée sur les probabilités de présences des espèces interpolées pour chaque pixel de l'image affichée. On utilise les coordonnées obtenus pour les trois premiers axes de l'ACP qui reflètent la composition de la communauté d'espèces occupant probablement le pixel correspondant. Ces coordonnées sont mises à l'échelle $[0,255]$ afin d'être représentables par des niveaux de couleur rouge pour le premier axe, verte pour le deuxième et bleue pour le troisième, l'association de ces trois niveaux de couleur détermine la coloration de chaque pixel de la carte de diversité $\beta$ affichée. Par conséquent une différence de couleur entre deux pixels indique que les espèces présentes ne sont pas les mêmes tandis que des pixels de couleur identiques hébergent des communautés d'espèces similaires.  
+
+De la même manière que précédemment, on restreint les valeurs obtenues pour la diversité $\beta$ aux couvert forestier restant en 2000 provenant de l'article @Vieilledent2018 en remplacant par des valeurs nulles les résultats obtenus à des endroits où on sait qu'il n'y a pas de forêt.  
+
+On utilise le modèle ajusté sur les 50 espèces les plus présente pour estimer la diversité $\beta$ après avoir interpolé les paramètres estimés pour les placettes d'inventaire par krigeage ordinaire. On n'est pas en mesure d'effectuer l'ACP avec toutes les espèces en raison du temps de calcul et de la mémoire néscessaire qui sont trop importants. 
+
+\begin{figure}[H]
+ \caption[Diversité $\beta$ interpolée sur l'ensemble de l'île et restreinte au couvert forestier]{Diversité $\beta$ interpolée sur l'ensemble de l'île et restreinte au couvert forestier connu en 2000}
+  \centering
+\includegraphics[width=0.45\textwidth,height=0.45\textheight]{Illustrations/mada_div_beta.png}
+\includegraphics[width=0.45\textwidth,height=0.45\textheight]{Illustrations/mada_div_beta_forest.png}
 \end{figure} 
 
 \newpage
@@ -1045,12 +1115,11 @@ kableExtra::kable_styling(latex_options=c("HOLD_position","basic"), full_width=F
 données GIECC pour évolution biodiversité avec changement climatique mise en évidence de lieux refuges de la biodiversité
 , intégrer traits spécifiques dans le modèle, enrichir le package, 
 Prédictions avec auto-corrélation spatiale :
-Expliqer méthode CAR + 2D spline qui sont implémentées mais pas abouties les résultats ne sont pas satisfaisants pour l'instant. 
+Expliqer méthode CAR + 2D spline qui sont implémentées mais pas abouties les résultats ne sont pas satisfaisants pour l'instant. @Guelat2018 @Latimer2006
 
 \newpage
 \section*{Bibliographie}
 \addcontentsline{toc}{section}{Bibliographie}
-
 <div id="refs"></div>
 
 \newpage
@@ -1093,13 +1162,11 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
                                   const int seed,
                                   const int verbose) {
   
-  ///////////////////////////////////////
- // Defining and initializing objects//
-  
   // Initialize random number generator 
   gsl_rng *s = gsl_rng_alloc(gsl_rng_mt19937);
   gsl_rng_set(s, seed);
   
+   // Defining and initializing objects
   // Redefining constants 
   const int NGIBBS = ngibbs;
   const int NTHIN = nthin;
@@ -1110,8 +1177,7 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
   const int NSP = Y.n_cols;
   const int NL = W_start.n_cols; 
   
-  /////////////////////////////////////////////
-  // Declaring new objects to store results //
+  // Declaring new objects to store results 
   /* Parameters */
   arma::Cube<double> param; param.zeros(NSAMP, NSP, NP+NL);
   arma::Cube<double> W; W.zeros(NSAMP, NSITE, NL);
@@ -1123,9 +1189,7 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
   /* Deviance */
   arma::vec Deviance; Deviance.zeros(NSAMP);
   
-   /////////////////////////////////////
-  // Initializing running parameters //
-  
+  // Initializing running parameters 
   //  mat of species effects parameters and coefficients for latent variables (nl+np,nsp)
   arma::mat param_run = param_start;
   // alpha vec of sites effects (nsite)
@@ -1139,9 +1203,7 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
   arma::mat probit_theta_run; probit_theta_run.zeros(NSITE,NSP);
   // data 
   arma::mat data = arma::join_rows(X,W_run);
-  
-  ////////////
-  // Message//
+  // Message
   Rprintf("\nRunning the Gibbs sampler. It may be long, please keep cool :)\n\n");
   R_FlushConsole();
   
@@ -1151,9 +1213,7 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
   
   for (int g=0; g < NGIBBS; g++) {
     
-    ////////////////////////
-    // latent variable Z // 
-    
+    // latent variable Z 
     for (int j=0; j<NSP; j++) {
       for (int i=0; i<NSITE; i++) {
         // Actualization
@@ -1165,9 +1225,7 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
       } // loop on sites
     }// loop on species
   
-    //////////////////////////////////
-    // mat param: Gibbs algorithm //
-    
+    // mat param: Gibbs algorithm 
     // Loop on species
     for (int j=0; j<NSP; j++) {
       // small_v
@@ -1225,17 +1283,11 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
       alpha_run(i) = big_V*small_v + gsl_ran_gaussian_ziggurat(s, std::sqrt(big_V));
       sum += alpha_run(i)*alpha_run(i);
     }
-    
-    ////////////////////////////////////////////////
     // Valpha
     double shape_posterior = shape + 0.5*NSITE;
     double rate_posterior = rate + 0.5*sum;
-    
     Valpha_run = rate_posterior/gsl_ran_gamma_mt(s, shape_posterior, 1.0);
-    
-     //////////////
-    // Deviance //
-    
+    // Deviance 
     // logLikelihood
     double logL = 0.0;
     for ( int i = 0; i < NSITE; i++ ) {
@@ -1248,11 +1300,9 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
         logL += R::dbinom(Y(i,j), T(i,j), theta, 1);
       } // loop on species
     } // loop on sites
-    
     // Deviance
     double Deviance_run = -2 * logL;
     
-    //////////////////////////////////////////////////
     // Output
     if (((g+1)>NBURN) && (((g+1)%(NTHIN))==0)) {
       int isamp=((g+1)-NBURN)/(NTHIN);
@@ -1282,16 +1332,12 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
         //R_ProcessEvents(); for windows
       }
     } 
-    
     ///////////////////
   // User interrupt //
     R_CheckUserInterrupt(); // allow user interrupts 	    
-    
   } // Gibbs sampler
-  
   // Free memory
   gsl_rng_free(s);
-  
   // Return results as a Rcpp::List
   Rcpp::List results = Rcpp::List::create(Rcpp::Named("param") = param,
                                           Rcpp::Named("W") = W,
@@ -1299,9 +1345,7 @@ Rcpp::List Rcpp_jSDM_probit_block(const int ngibbs, int nthin, int nburn,
                                           Rcpp::Named("Valpha") = Valpha,
                                           Rcpp::Named("Deviance") = Deviance,
                                           Rcpp::Named("Z_latent") = Z_latent,
-                                          Rcpp::Named("probit_theta_pred") = probit_theta_pred);  
+                                          Rcpp::Named("probit_theta_pred") =  probit_theta_pred);  
   return results;
-  
 } // end Rcpp_jSDM_probit_block
 ```
-

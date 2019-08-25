@@ -22,7 +22,26 @@ library(raster)
 library(rgdal)
 library(readr)
 library(dplyr)
-s <- stack("data/current.tif")
+
+# foresr inventory
+trees <- read_csv("~/Code/Report/data/forest_inventory_Madagascar.csv")
+trees <- trees[-which(is.na(trees$sp)),]
+nplot <- length(unique(trees$plot))
+species <- unique(trees$taxize)
+nsp <- length(species)
+# presence/absence of each species on each plot
+PA <- matrix(0,nplot,nsp)
+rownames(PA) <- sort(unique(trees$plot))
+colnames(PA) <- species
+for (i in 1:nplot){    
+  for (j in 1:nsp){
+    idx <- which(trees$taxize == species[j])
+    PA[paste(trees$plot[idx]),j] <- 1 
+  }
+}
+
+# climatic variables 
+s <- stack("~/Code/Report/data/current.tif")
 names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
               paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
               paste("pet",1:12,sep=""),"pet","cwd","ndm")
@@ -30,8 +49,6 @@ names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
 clim_var <- dropLayer(s, c(1:36,38,39,41:47,49,50,52:68,70))
 names(clim_var) <- c("temp","prec","sais_temp","sais_prec","cwd")
 
-# foresr inventory
-trees <- read_csv("data/forest_inventory_Madagascar.csv")
 # spatial points of each plot
 longlat <- SpatialPoints(unique(cbind(trees$long,trees$lat)))
 proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66")
@@ -40,7 +57,7 @@ proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66")
 xy <- spTransform(longlat, CRS("+init=epsg:32738"))
 
 # extract climatic data on each plot
-clim <-  extract(clim_var,xy)
+clim <-  raster::extract(clim_var,xy)
 clim2 <- clim^2
 colnames(clim2)<-paste(colnames(clim),rep("2",ncol(clim)),sep="")
 pos = unique(trees[,c("long","lat","plot")])
@@ -49,7 +66,6 @@ colnames(pos) <- c("long","lat","site")
 # Add squared data
 data_clim2 <- cbind(clim,clim2,pos)
 nparam <- ncol(data_clim2) -3
-
 library(tidyverse)
 # order plot
 ord_data_clim2 <- data_clim2[sort(data_clim2$site, index.return=TRUE)$ix,]
@@ -61,17 +77,6 @@ scaled_data_clim2 <- as_tibble(cbind(scale(ord_data_clim2[1:nparam]),ord_data_cl
 X <- data.frame(intercept=rep(1,nplot),select(as_tibble(scaled_data_clim2),-lat,-long, -site))
 np<-ncol(X)
 write.csv(X, "~/Code/Report/data/X.csv", row.names = F)
-
-# presence/absence of each species on each plot
-PA <- matrix(0,nplot,nsp)
-rownames(PA) <- sort(unique(trees$plot))
-colnames(PA) <- species
-for (i in 1:nplot){    
-  for (j in 1:nsp){
-    idx <- which(trees$taxize == species[j])
-    PA[paste(trees$plot[idx]),j] <- 1 
-  }
-}
 
 ```
 
@@ -110,7 +115,7 @@ T_all <- difftime(T2,T1)
 
 ## Save parameters 
 ### alphas
-alphas <- summary(mod_all$mcmc.alpha)[[1]][,"Mean"]
+alphas <- apply(mod_all$mcmc.alpha,2,mean)
 ### Valpha
 Valpha <- mean(mod_all$mcmc.Valpha)
 ### latent variables 
@@ -247,6 +252,7 @@ pols <- list("sp.polygons", MADA, fill = "lightgray")
 spplot(W1_sp, 'W1', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space
        ="right", main ="W1 estimée",cex.main=1.8)
 ```
+
 ### W2
 ```{r representation-W2}
 W2 <- data.frame(W2=params_sites[,"W2"])
@@ -259,6 +265,7 @@ pols <- list("sp.polygons", MADA, fill = "lightgray")
 spplot(W2_sp, 'W2', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space
        ="right", main ="W2 estimée", cex.main=1.8)
 ```
+
 ## Probabilités de présence
 ```{r proba_representation}
 probit_theta_pred <- read.csv("~/Code/Report/data/probit_theta_pred.csv")
@@ -302,3 +309,51 @@ abline(a=0,b=1,col='red')
 species_richness_obs_sp <- SpatialPointsDataFrame(xy, species_richness_obs)
 spplot(species_richness_obs_sp, 'species_richness_obs', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space="right", main ="Richesse spécifique observée")
 ```
+
+## Matrice de corrélation entre les 50 espèces les plus présentes 
+
+```{r fit-mod-50-species, eval=F}
+# Keep the 50 species present on larger number of plots
+npres = sort(apply(PA,2,sum))
+PA_50 = as.data.frame(PA[,names(npres)[(nsp-49):nsp]])
+
+# Fit the model with 50 species 
+## Iterations
+nsamp <- 10000
+nburn <- 90000
+nthin <- 10
+ngibbs <- nsamp+nburn
+
+T1<- Sys.time()
+mod_50 <- jSDM::jSDM_probit_block (
+  # Response variable 
+  presence_site_sp = as.matrix(PA_50), 
+  # Explanatory variables 
+  site_suitability = ~.,   
+  site_data =X[,-1], 
+  n_latent=2,
+  # Chains
+  burnin= 90000, mcmc=10000, thin=10,
+  # Starting values
+  alpha_start=0, beta_start=0,
+  lambda_start=0, W_start=0,
+  V_alpha_start=1, 
+  # Priors
+  shape=0.5, rate=0.0005,
+  mu_beta=0, V_beta=1.0E6,
+  mu_lambda=0, V_lambda=10,
+  # Various 
+  seed=1234, verbose=1)
+T2 <- Sys.time()
+T_50 <- difftime(T2,T1)
+save(mod_50, file="~/Code/Report/data/mada_mod_50.RData")
+```
+
+```{r matrice de corrélation}
+lv2.cor <- jSDM::get_residual_cor(mod_50)
+lv2.cor$reorder.cor.mean <- corrplot::corrMatOrder(lv2.cor$cor.mean, order = "FPC", hclust.method = "average")
+rownames(lv2.cor$cor.mean) <- colnames(lv2.cor$cor.mean) <- rownames(lv2.cor$cor.mean) <- colnames(lv2.cor$cor.mean) <- colnames(mod_50$model_spec$presences)
+par(cex=1, cex.main=1.1)
+corrplot::corrplot(lv2.cor$cor.mean[lv2.cor$reorder.cor.mean,lv2.cor$reorder.cor.mean], diag = F, type = "lower", title = "Matrice de corrélation résiduelle entre les espèces", mar=c(1,1,2,1),oma=c(0,0,1,0),method = "color", tl.srt = 45, tl.cex = 0.5,cex.main=1)
+```
+

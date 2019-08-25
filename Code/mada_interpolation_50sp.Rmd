@@ -1,0 +1,389 @@
+---
+title: "Interpolation des paramètres estimés pour Madagascar avec 50 espèces"
+author: "Jeanne Clément"
+date: "22/08/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  fig.align = "center",
+  fig.width = 7, fig.height = 7,
+  cache = FALSE,
+  collapse = TRUE,
+  comment = "#>",
+  highlight = TRUE
+)
+```
+
+
+### Ordinary kriging 
+```{r OK_alpha}
+load("~/Code/Report/data/mada_mod_50.RData")
+library(rspatial)
+library(raster)
+library(rgdal)
+library(readr)
+library(dplyr)
+library(sp)
+
+trees <- read_csv("~/Code/Report/data/forest_inventory_Madagascar.csv")
+trees <- trees[-which(is.na(trees$sp)),]
+# climatic variables 
+s <- stack("~/Code/Report/data/current.tif")
+names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
+              paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
+              paste("pet",1:12,sep=""),"pet","cwd","ndm")
+# get intersting covariables 
+clim_var <- dropLayer(s, c(1:36,38,39,41:47,49,50,52:68,70))
+names(clim_var) <- c("temp","prec","sais_temp","sais_prec","cwd")
+
+# spatial points of each plot
+longlat <- SpatialPoints(unique(cbind(trees$long,trees$lat)))
+proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66")
+
+# latlong to UTM38S projection 
+xy <- spTransform(longlat, CRS("+init=epsg:32738"))
+
+# extract climatic data on each plot
+clim <-  raster::extract(clim_var,xy)
+nplot<- nrow(clim)
+clim2 <- clim^2
+colnames(clim2)<-paste(colnames(clim),rep("2",ncol(clim)),sep="")
+pos = unique(trees[,c("long","lat","plot")])
+colnames(pos) <- c("long","lat","site")
+
+# Add squared data
+data_clim2 <- cbind(clim,clim2,pos)
+nparam <- ncol(data_clim2) -3
+library(tidyverse)
+# order plot
+ord_data_clim2 <- data_clim2[sort(data_clim2$site, index.return=TRUE)$ix,]
+
+# reduced centered data
+scaled_data_clim2 <- as_tibble(cbind(scale(ord_data_clim2[1:nparam]),ord_data_clim2[(nparam+1):ncol(ord_data_clim2)]))
+
+## Design matrix
+X <- data.frame(intercept=rep(1,nplot),select(as_tibble(scaled_data_clim2),-lat,-long, -site))
+np<-ncol(X)
+
+PA_50 <- mod_50$model_spec$presences
+nsp<-ncol(PA_50)
+np <- ncol(mod_50$model_spec$site_data)+1
+n_latent<-2
+### fixed species effect lambdas and betas 
+lambdas <- matrix(0,nsp,n_latent)
+betas <- matrix(0,nsp,np)
+
+for (j in 1:nsp){
+  for (l in 1:n_latent){
+    lambdas[j,l] <- mean(mod_50$mcmc.sp[[paste0("sp_",j)]][,np+l])
+  }
+  for (p in 1:np){
+    betas[j,p] <- mean(mod_50$mcmc.sp[[paste0("sp_",j)]][,p])
+  }
+}
+colnames(betas) <- c("beta_intercept",paste0("beta_",colnames(X[,-1])))
+params_species <- data.frame(species = colnames(PA_50), Id_species = c(1:nsp),
+                             betas, lambda_1 = lambdas[,1], lambda_2 = lambdas[,2])
+### alphas
+alphas <- apply(mod_50$mcmc.alpha,2,mean)
+### Valpha
+Valpha <- mean(mod_50$mcmc.Valpha)
+
+### latent variables 
+W1 <- colMeans(mod_50$mcmc.latent[["lv_1"]])
+W2 <- colMeans(mod_50$mcmc.latent[["lv_2"]])
+
+params_sites <- data.frame(plot = scaled_data_clim2$site,
+                           lat = scaled_data_clim2$lat,
+                           long = scaled_data_clim2$long,
+                           alphas, Valpha = rep(Valpha,nplot),W1,W2)
+
+# sites effect 
+alpha <- data.frame(alpha=params_sites[,"alphas"])
+longlat <- SpatialPoints(params_sites[,c("long","lat")])
+proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66 +units=m")
+# latlong to UTM38S projection 
+xy = spTransform(longlat, CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+# alpha 
+alpha_sp <- SpatialPointsDataFrame(xy, alpha) 
+# Use of one climatic covariable to get Madagascar borders 
+s <- stack("~/Code/Report/data/current.tif")
+names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
+              paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
+              paste("pet",1:12,sep=""),"pet","cwd","ndm")
+
+# number of dry months 
+r <- s$ndm
+# m to km 
+extent(r) <- extent(c(xmin(r), xmax(r), ymin(r), ymax(r))/1000)
+proj4string(r) <- CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km +no_defs +ellps=WGS84 +towgs84=0,0,0")
+# Spatial grid
+g <- as(r, 'SpatialGrid')
+
+# Fit a variogram
+library(gstat)
+gs <- gstat(formula=alpha~1, locations=alpha_sp)
+v <- variogram(gs, width=20)
+head(v)
+
+## fit model variograms
+### Exponential
+par(mfrow=c(1,1))
+fve <- fit.variogram(v, vgm(2, "Exp", 3, 4))
+plot(variogramLine(fve, 400), type='l', main ="Exponential")
+points(v[,2:3], pch=20, col='red')
+
+### Spherical 
+fvs <- fit.variogram(v, vgm(2, "Sph", 3, 4))
+plot(variogramLine(fvs, 400), type='l',  main ="Spherical")
+points(v[,2:3], pch=20, col='red')
+
+### Matern 
+fvm <- fit.variogram(v, vgm(2, "Mat", 3, 4), fit.kappa=T)
+plot(variogramLine(fvm, 400), type='l', main ="Matern")
+points(v[,2:3], pch=20, col='red')
+
+# OK_alpha Ordinary Kriging using Exponential variogram
+k <- gstat(formula=alpha~1, locations=alpha_sp, model=fve)
+# predicted values 
+kp <- predict(k, g)
+## [using ordinary kriging]
+spplot(kp)
+# variance
+ok_alpha <- brick(kp)
+ok_alpha <- mask(ok_alpha, r)
+names(ok_alpha) <- c('alphas','variance')
+plot(ok_alpha$alphas, main="Effets sites interpolés par OK")
+```
+
+## Interpolation of latent variables with OK
+```{r OK-W1}
+W1 <- data.frame(W1=params_sites[,"W1"])
+W1_sp <- SpatialPointsDataFrame(xy, W1) 
+# Fit a variogram
+library(gstat)
+gs <- gstat(formula=W1~1, locations=W1_sp)
+v <- variogram(gs, width=10)
+head(v)
+
+## fit model variograms
+### Exponential
+par(mfrow=c(1,3))
+fve <- fit.variogram(v, vgm(0, "Exp", 25, 0))
+plot(variogramLine(fve, 400), type='l', ylim=c(0,0.06), main ="Exponential")
+points(v[,2:3], pch=20, col='red')
+
+# OK Ordinary Kriging using Exponential variogram
+k <- gstat(formula=W1~1, locations=W1_sp, model=fve)
+# predicted values 
+kp <- predict(k, g)
+## [using ordinary kriging]
+spplot(kp)
+# variance
+ok_W1 <- brick(kp)
+ok_W1 <- mask(ok_W1, r)
+names(ok_W1) <- c('W1','variance')
+```
+
+```{r OK-W2}
+W2 <- data.frame(W2=params_sites[,"W2"])
+W2_sp <- SpatialPointsDataFrame(xy, W2) 
+# Fit a variogram
+library(gstat)
+gs <- gstat(formula=W2~1, locations=W2_sp)
+v <- variogram(gs, width=10)
+
+## fit model variograms
+### Exponential
+par(mfrow=c(1,3))
+fve <- fit.variogram(v, vgm(0, "Exp", 25, 0))
+plot(variogramLine(fve, 400), type='l', ylim=c(0,0.06), main ="Exponential")
+points(v[,2:3], pch=20, col='red')
+
+# OK Ordinary Kriging using Exponential variogram
+k <- gstat(formula=W2~1, locations=W2_sp, model=fve)
+# predicted values 
+kp <- predict(k, g)
+## [using ordinary kriging]
+spplot(kp)
+# variance
+ok_W2 <- brick(kp)
+ok_W2 <- mask(ok_W2, r)
+names(ok_W2) <- c('W2', 'variance')
+
+# plot results
+par(mfrow=c(1,2),oma=c(1, 0, 1.4,1))
+plot(ok_W1[[1]],main="W1")
+plot(ok_W2[[1]],main="W2")
+title("Variables latentes interpolées par OK", outer = T)
+
+save(ok_alpha, ok_W1, ok_W2, file="~/Code/Report/data/OK_50.RData")
+```
+
+
+## Calcul of probit theta with interpolated sites parameters
+
+```{r calcul-probit-theta}
+# means and standard deviations of observed sites 
+means <- colMeans(data_clim2)
+sd <- apply(data_clim2,2,sd)
+clim_var2 <- stack(clim_var,clim_var^2)
+
+# scale the raster 
+scaled_clim_var2 <- (clim_var2 - means)/sd
+extent(scaled_clim_var2) <- extent(ok_alpha)
+proj4string(scaled_clim_var2) <- proj4string(ok_alpha)
+
+# Species parameters 
+lambda_1 <- as.matrix(params_species[,"lambda_1"])
+lambda_2 <- as.matrix( params_species[,"lambda_2"])
+beta <- as.matrix(params_species[,3:13])
+
+# Calcul of probit_theta in two parts because it's too large
+## First half of species
+## Xbeta_1
+np <- nlayers(scaled_clim_var2)
+Xbeta_1 <- raster(ncols=ncol(ok_alpha$alphas), nrows=nrow(ok_alpha$alphas))
+extent(Xbeta_1) <- extent(ok_alpha)
+proj4string(Xbeta_1) <- proj4string(ok_alpha)
+values(Xbeta_1) <- rep(beta[1,1][[1]], ncell(Xbeta_1))
+for (p in 1:np) {
+  Xbeta_1 <- Xbeta_1 + scaled_clim_var2[[p]] * beta[1,p+1] 
+}
+names(Xbeta_1) <- paste0("Xbeta_",1)
+## Wlambda_1
+Wlambda_1 <- ok_W1$W1  * lambda_1[1] +
+  ok_W2$W2  * lambda_2[1]
+## probit_theta_1
+probit_theta_1 <- Xbeta_1 + Wlambda_1 + ok_alpha$alphas
+probit_theta <- probit_theta_1
+## Other species
+for (j in 2:nrow(beta)) {
+  ## Xbeta_j
+  Xbeta_j <- Xbeta_1
+  values(Xbeta_j) <- rep(beta[j,1][[1]], ncell(Xbeta_j))
+  for (p in 1:np) {
+    Xbeta_j <- Xbeta_j + scaled_clim_var2[[p]] * beta[j,p+1] 
+  }
+  ## Wlambda_j
+  Wlambda_j <- ok_W1$W1  * lambda_1[j] +
+    ok_W2$W2  * lambda_2[j]  
+  ## probit_theta_j
+  probit_theta_j <- Xbeta_j + Wlambda_j + ok_alpha$alphas
+  probit_theta <- stack(probit_theta,probit_theta_j)
+}
+names(probit_theta) <- make.names(params_species$species[1:nrow(beta)])
+save(probit_theta,file="~/Code/Report/data/OK_probit_theta_50.RData")
+plot(probit_theta[[1]])
+```
+
+## Representation of probabilities of presence by species 
+
+```{r calcul-theta}
+# First half
+nsp<-nrow(params_species)
+theta<- probit_theta
+values(theta[[1]]) <- pnorm(as.vector(values(probit_theta[[1]])))
+for (j in 2:nsp){
+  values(theta[[j]]) <- pnorm(as.vector(values(probit_theta[[j]])))
+}
+names(theta) <- make.names(params_species$species[1:nsp])
+save(theta,file="~/Code/Report/data/OK_theta_50.RData")
+par(mfrow=c(1,2),oma=c(1, 0, 1.4,1))
+plot(theta[[1:2]],cex.main=0.7)
+title(main="Probabilités de présence interpolées",outer=T,cex.main=0.9)
+```
+
+## Representation of species richness in Madagasar
+
+```{r species-richness}
+species_richness <- sum(theta)
+save(species_richness,file="~/Code/Report/data/specific_richness_50.RData")
+plot(species_richness, main = "Richesse spécifique interpolée")
+```
+
+```{r specific_richness_forest}
+forest <- raster("~/Code/Report/data/for2000.tif")
+# unit m to km
+extent(forest) <- extent(c(xmin(forest), xmax(forest), ymin(forest), ymax(forest))/1000)
+proj4string(forest) <- CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km +no_defs +ellps=WGS84 +towgs84=0,0,0")
+# change resolution 30x30m to 1000x1000m
+forest_res <- resample(forest,species_richness, method="bilinear")
+save(forest_res,file="~/Code/Report/data/forest_res.RData")
+
+species_richness_deforest <- mask(species_richness,forest_res)
+par(mfrow=c(1,1),mar=c(2,3,3,3))
+plot(species_richness_deforest,main="Richesse spécifique interpolée en fonction du couvert forestier en 2000",cex.main=1.1)
+```
+
+# Representation of diversity bêta or species turn over 
+```{r diversité-beta}
+library(ade4)
+# Jeu de données pour ACP sur la dissimilarité des pixels
+theta_df <- data.frame(values(theta))
+# Enlever NA 
+data_theta <- theta_df[complete.cases(theta_df),]
+# ACP
+pca_theta <- dudi.pca(data_theta, center=TRUE, scale=TRUE)
+save(pca_theta, file="~/Code/Report/data/PCA_theta.RData")
+str(pca_theta)
+
+# Coordonnées sur les 3 axes retenus pour l'ACP
+pca.df_theta <- as.data.frame(pca_theta$li)
+# Changer l'échelle des coordonnées pour [0,255] 
+## Min ramené à 0
+Min <- apply(pca.df_theta,2,min)
+Min
+pca.df_theta_origin<-pca.df_theta
+for (i in 1:3) {
+  pca.df_theta_origin[,i] <- pca.df_theta[,i] - Min[i]
+}
+
+Min2 <- apply(pca.df_theta_origin,2,min)
+Min2
+## Max à 255
+Max <- apply(pca.df_theta_origin,2,max)
+Max
+pca.df_theta_scale<-pca.df_theta_origin
+for (i in 1:3) {
+  pca.df_theta_scale[,i] <- (pca.df_theta_origin[,i] / Max[i])*255
+}
+
+Max2 <- apply(pca.df_theta_scale,2,max)
+Max2
+
+# Reconstruction des raster avec les NA retirés pourl'ACP
+pca.df_theta_rast <- matrix(NA,nrow=nrow(theta_df),ncol=3)
+pca.df_theta_rast[complete.cases(theta_df),] <- as.matrix(pca.df_theta_scale)
+
+# Coloration RGB
+coords_axe1_rast <- coords_axe2_rast <- coords_axe3_rast <- theta[[1]]
+values(coords_axe1_rast) <- pca.df_theta_rast[,1]
+values(coords_axe2_rast) <- pca.df_theta_rast[,2]
+values(coords_axe3_rast) <- pca.df_theta_rast[,3]
+plot(coords_axe1_rast)
+plot(coords_axe2_rast)
+plot(coords_axe3_rast)
+beta_div_rgb <-stack(coords_axe1_rast,coords_axe2_rast,coords_axe3_rast)
+
+par(mfrow=c(1,1), mar=c(1,1,2,1))
+plotRGB(beta_div_rgb, margins=T, stretch="hist")
+title(main="Diversité bêta estimée pour 50 espèces")
+
+forest <- raster("~/Code/Report/data/for2000.tif")
+# unit m to km
+extent(forest) <- extent(c(xmin(forest), xmax(forest), ymin(forest), ymax(forest))/1000)
+proj4string(forest) <- CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km +no_defs +ellps=WGS84 +towgs84=0,0,0")
+# change resolution 30x30m to 1000x1000m
+forest_res <- resample(forest,beta_div_rgb, method="bilinear")
+save(forest_res, file="~/Code/Report/data/forest_res.RData")
+beta_div_rgb_deforest <- mask(beta_div_rgb,forest_res)
+par(mfrow=c(1,1),mar=c(1,1,2,1))
+plotRGB(beta_div_rgb_deforest,margins=T, stretch="hist")
+title(main="Diversité bêta estimée restreinte au couvert forestier")
+```
+

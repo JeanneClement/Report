@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (MiKTeX 2.9.7000 64-bit) (preloaded format=xelatex 2019.7.25)  26 AUG 2019 11:26
+This is XeTeX, Version 3.14159265-2.6-0.999991 (MiKTeX 2.9.7000 64-bit) (preloaded format=xelatex 2019.7.25)  26 AUG 2019 16:42
 entering extended mode
 **./Report.tex
 (Report.tex
@@ -1401,7 +1401,7 @@ File: Illustrations/mada_proba_sp1.png Graphic file (type bmp)
 File: Illustrations/mada_presence_sp1_obs.png Graphic file (type bmp)
 <Illustrations/mada_presence_sp1_obs.png>
 
-Overfull \hbox (2.21999pt too wide) in paragraph at lines 1463--1475
+Overfull \hbox (2.21999pt too wide) in paragraph at lines 1466--1478
 []$[]$ $[]$ 
  []
 
@@ -1411,7 +1411,7 @@ File: Illustrations/mada_species_richness.png Graphic file (type bmp)
 File: Illustrations/mada_species_richness_obs.png Graphic file (type bmp)
 <Illustrations/mada_species_richness_obs.png>
 
-Overfull \hbox (2.21999pt too wide) in paragraph at lines 1485--1497
+Overfull \hbox (2.21999pt too wide) in paragraph at lines 1488--1500
 []$[]$ $[]$ 
  []
 
@@ -1433,129 +1433,129 @@ File: Illustrations/mada_species_richness_OK_forest.png Graphic file (type bmp)
 <Illustrations/mada_species_richness_OK_forest.png>
 [34]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 1640.
+(Font)              <12> on input line 1643.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 1640.
+(Font)              <8> on input line 1643.
 File: Illustrations/mada_div_beta.png Graphic file (type bmp)
 <Illustrations/mada_div_beta.png>
 File: Illustrations/mada_div_beta_forest.png Graphic file (type bmp)
 <Illustrations/mada_div_beta_forest.png>
 [35] [36] [37]
 
-Package xcolor Warning: Incompatible color definition on input line 1884.
+Package xcolor Warning: Incompatible color definition on input line 1887.
 
 LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 1896.
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 1899.
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
-
-
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Underfull \vbox (badness 5050) detected at line 2106
+Package xcolor Warning: Incompatible color definition on input line 2109.
+
+
+Underfull \vbox (badness 5050) detected at line 2109
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 [38]
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Underfull \vbox (badness 10000) detected at line 2106
+Underfull \vbox (badness 10000) detected at line 2109
  []
 
 
-Underfull \vbox (badness 10000) detected at line 2106
+Underfull \vbox (badness 10000) detected at line 2109
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 [39]
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Underfull \vbox (badness 10000) detected at line 2106
+Underfull \vbox (badness 10000) detected at line 2109
  []
 
 
-Underfull \vbox (badness 10000) detected at line 2106
+Underfull \vbox (badness 10000) detected at line 2109
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 [40]
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Underfull \vbox (badness 10000) detected at line 2106
+Underfull \vbox (badness 10000) detected at line 2109
  []
 
 
-Overfull \vbox (1.16548pt too high) detected at line 2106
+Overfull \vbox (1.16548pt too high) detected at line 2109
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 [41]
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Underfull \vbox (badness 10000) detected at line 2106
+Underfull \vbox (badness 10000) detected at line 2109
  []
 
 
-Underfull \vbox (badness 10000) detected at line 2106
+Underfull \vbox (badness 10000) detected at line 2109
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 [42]
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2106.
+Package xcolor Warning: Incompatible color definition on input line 2109.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2109.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2112.
 [43]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 2109.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 2112.
 (Report.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 2109.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2109.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 2112.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2112.
 
 Package rerunfilecheck Info: File `Report.out' has not changed.
-(rerunfilecheck)             Checksum: 6B0C6284A98F73A76155502F87595C17.
+(rerunfilecheck)             Checksum: 763B01B0160A50FF72A1C6F95C6E8E87.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 30676 strings out of 427667
- 566884 string characters out of 3149150
- 739415 words of memory out of 3000000
- 34293 multiletter control sequences out of 15000+200000
+ 30678 strings out of 427667
+ 566944 string characters out of 3149150
+ 739592 words of memory out of 3000000
+ 34295 multiletter control sequences out of 15000+200000
  563274 words of font info for 92 fonts, out of 3000000 for 9000
  1348 hyphenation exceptions out of 8191
  53i,23n,92p,805b,513s stack positions out of 5000i,500n,10000p,200000b,50000s

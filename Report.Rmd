@@ -854,6 +854,7 @@ Les déviances obtenues avec jSDM sont bien inférieures à celles calculées av
 \end{figure}
 
 On constate que pour le jeux de données simulées les paramètres estimés par les deux packages sont très proches en revanche pour les jeux de données réels ils sont assez différents ce qui peut être dû à un nombre insuffisant d'espèces et donc d'observations pour estimer les effets sites correctement et à la difficulté d'estimer les variables latentes. 
+
 # Application aux données collectées à Madagascar
 
 ## Description des données  

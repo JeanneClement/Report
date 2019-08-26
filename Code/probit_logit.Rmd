@@ -51,7 +51,7 @@ for (j in 2:ncol(beta.target)){
 }
 ```
 
-```{r fit-simulated-data, echo=F,include=F,eval=F}
+```{r fit-simulated-data, echo=F,include=F}
 # Iterations
 nsamp <- 5000
 nburn <- 35000
@@ -65,7 +65,7 @@ for (i in 1:nl){
 }
 T1<-Sys.time() 
 ngibbs <- nsamp+nburn
-Rcpp::sourceCpp('~/Code/Rcpp_jSDM_probit_block.cpp')
+Rcpp::sourceCpp('Rcpp_jSDM_probit_block.cpp')
 mod_probit <- Rcpp_jSDM_probit_block(
   ngibbs=ngibbs, nthin=nthin, nburn=nburn,
   Y=Y_probit, T=visits, X=X, param_start=param_start,
@@ -84,7 +84,7 @@ for (i in 1:nrow(lambda.target)){
 Vlambda = matrix(10,ncol(lambda.target),nrow(lambda.target))
 mulambda = matrix(0,ncol(lambda.target),nrow(lambda.target))
 # Call to C++ function
-Rcpp::sourceCpp('~/Code/Rcpp_jSDM_gibbs_logit.cpp')
+Rcpp::sourceCpp('Rcpp_jSDM_gibbs_logit.cpp')
 T1<-Sys.time() 
 mod_logit <-  Rcpp_jSDM_gibbs_logit(
   ngibbs=ngibbs, nthin=nthin, nburn=nburn,
@@ -101,7 +101,7 @@ T2<-Sys.time()
 T_logit=difftime(T2, T1)
 ```
 
-```{r params-probit,echo=F,eval=F}
+```{r params-probit,echo=F}
 # Parameter estimates
 
 ## Modèle probit
@@ -182,7 +182,7 @@ RMSE_probit <-sqrt(sum(SE/(nsite*nsp)))
 NRMSE_probit <- RMSE_probit/abs(mean(probit_theta))
 ```
 
-```{r params-logit, echo=F, eval=F}
+```{r params-logit, echo=F}
 
 # Modèle logit
 ##logit_theta

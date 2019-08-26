@@ -1031,7 +1031,19 @@ La richesse spécifique aussi appelée diversité $\alpha$ reflète le nombre d'
 
 ## Comparaison des effets sites obtenus avec différentes méthodes d'interpolation spatiale
 
-définition interpolation et expliquer méthodes Thin plate spline Ordinary kriging Inverse distance weighted + données bioclimatques centrées réduites pour l'ensemble de l'île. 
+La présence d'une structure spatiale où les observations proches les unes des autres sont plus semblables que celles qui sont éloignées (auto-corrélation spatiale) est une condition préalable à l'application de la géostatistique et d'après les représentations spatiales précédentes elles semble être remplie. 
+
+On est ainsi en mesure d'interpoler les effets sites pour l'ensemble de l'île à partir de ceux estimés pour les placettes d'inventaire à l'aide du package gstat selon trois méthodes d'interpolation spatiales afin de choisir celle qui donne les meilleurs résultats en s'inspirant de l'article @Robinson2006. 
+
+D'une part on utilise la méthode déterministe de pondération par distance inverse, nommée **IDW** pour l'interpolation multivariée à partir de l'ensemble connu de points dispersés. Les valeurs attribuées à des points inconnus sont calculées avec une moyenne pondérée des valeurs disponibles aux sites connus qui fait appel à l'inverse de la distance par rapport à chaque point connu lors de l'attribution des poids.  
+
+D'autre part on procède par krigeage ordinaire (**OK**) ce qui consiste à considérer les valeurs des sites inconnus comme une combinaison linéaire des valeurs connues dont les coefficients $\lambda_i$ sont estimés en minimisant la variance $\sigma^2_e$ de l'erreur d'estimation théorique définie par $e=Z_v -Z_v^*$, avec $Z_v$ la variable aléatoire que l'on veut estimer et $Z_v^*=\sum_{i=1^n}\lambda_i Z_i$ son estimateur, où les $(Z_i)_{i=1}^n$ sont les valeurs des sites connus.  
+La variance $\sigma^2_e$ dépend des coefficients ainsi que du variogramme de experimental qui tient compte non seulement de la distance entre les données et les point d'estimation, mais également des distances entre les données deux-à-deux.
+En effet le variogramme expérimental mesure le degré moyen de dissimilitude entre des valeurs non échantillonnées et une valeur connue voisine et peut donc représenter l'auto-corrélation à différentes distances.  
+La valeur du variogramme expérimental pour une distance de séparation de $h$ est $\hat{\gamma}(h)= \frac{1}{2N(h)}\sum\limits_{i=1}^{N(h)}(z(x_i)-z(x_i+h))^2$ où $N(h)$ est le nombre de paires de données séparées de la distance $h$. Si les valeurs de $z(x_i)$ et $z(xi + h)$ sont auto-corrélées, le résultat sera faible par rapport à une paire de points non corrélés. A partir du variogramme expérimental un modèle approprié par exemple exponentiel est ensuite ajusté, habituellement par les moindres carrés pondérés dont les paramètres seront ensuite utilisés dans la procédure de krigeage.    
+Cette méthode linéaire est sans biais et de variance minimale par construction, de plus elle tient compte de la taille du champ a estimer et de la continuité spatiale du phénomène étudié.   
+
+Finalement on applique la méthode **TPS** pour thin plate spline pour laquelle une fonction thin plate spline en deux dimensions est ajustée sur les coordonnées et les valeurs des points connus afin d'interpoler les valeurs non observées en fonction de leurs positions. Les splines qui sont définis par morceau par différents polynômes donnent de bons résultats avec des surfaces légèrement variable mais ne sont souvent pas approprié lorsqu'il y a des variations importantes entre les valeurs à une courte distance comme c'est le cas pour nos effets sites estimés.
 
 \begin{table}[H]\caption[RMSE obtenus par validation croisée entre les effets sites estimés et ceux prédits par différentes méthodes d'interpolation]{RMSE obtenus par validation croisée entre les effets sites estimés et ceux prédits par interpolation avec OK, TPS et IDW.\\
 Dans le cadre de la validation croisée, on divise l'échantillon original d'effets sites estimés en $k=5$ échantillons, puis on sélectionne un des $k$ échantillons comme ensemble d'apprentissage et les $k-1$ autres échantillons constitueront l'ensemble de validation. On répète $k$ fois cette opération afin qu'en fin de compte chaque sous-échantillon ait été utilisé exactement une fois pour la phase d'apprentissage qui consite à ajuster les modèles correspondant à chaque méthode d'interpolation. Puis les effets sites sont interpolés suivant ces modèles pour les localisations correspondant à l'ensemble de validation.\\
@@ -1068,7 +1080,7 @@ On choisiras donc d'interpoler les variables latentes et les effets sites estim�
 \includegraphics[width=0.8\textwidth,height=0.35\textheight]{Illustrations/mada_W_OK.png}
 \end{figure} 
 
-Les paramètres interpolés permettent de calculer les probabilités de présence pour chacune des espèces en fonction des variables climatiques définies précédemment dont les valeurs sont connues pour l'ensemble de l'île.
+Les paramètres interpolés permettent de calculer les probabilités de présence pour chacune des espèces en fonction des variables climatiques définies précédemment dont les valeurs sont connues pour l'ensemble de l'île et sont centrées et réduites pour le calcul. 
 
 \begin{figure}[H]
  \caption[Probabilités de présence interpolées pour deux espèces]{Probabilités de présence interpolées pour deux espèces}
@@ -1110,12 +1122,24 @@ On utilise le modèle ajusté sur les 50 espèces les plus présente pour estime
 \newpage
 \pagestyle{simple}
 
-\section*{Conclusion}
-\addcontentsline{toc}{section}{Conclusion}
-données GIECC pour évolution biodiversité avec changement climatique mise en évidence de lieux refuges de la biodiversité
-, intégrer traits spécifiques dans le modèle, enrichir le package, 
-Prédictions avec auto-corrélation spatiale :
-Expliqer méthode CAR + 2D spline qui sont implémentées mais pas abouties les résultats ne sont pas satisfaisants pour l'instant. @Guelat2018 @Latimer2006
+\section*{Discussion}
+\addcontentsline{toc}{section}{Discussion}
+
+Dans un premier temps, on relève que sur les cartes de diversité $\alpha$ et $\beta$ obtenues, le centre de l'île présente une grande richesse spécifique et un écosystème propre (en bleu foncé) ce qui est incohérent avec l'absence de forêt avérée à cet endroit. Ces résultats aberrants peuvent provenir d'une erreur de ma part lors de la manipulation des données ou de l'utilisation des différentes méthodes d'interpolation, que je n'ai pas encore trouvée ou bien de la méthode d'interpolation elle même et par exemple du variogramme utilisé car ces valeurs incohérentes sont situées assez loin des placettes d'inventaires. 
+
+De plus il serait préferable de vérifier la convergence de l'algorithme autrement qu'en observant juste les traces et densité des résultats obtenus, on pourrait pas exemple générer différentes chaînes de Markov en initialisant les paramètres par de valeurs différentes pour chacune puis calculer l'indice de Gelman Rubin en fonction des variances intra et inter chaînes estimées qui si il est proche 1 suggére que l'algorithme a convergé.  
+
+Par la suite afin de compléter l'analyse des données concernant Madagascar, on pourra utiliser les mêmes méthodes et les paramètres estimés précédemment afin de réaliser des cartes de diversité $\alpha$ et $\beta$ à partir des données climatiques prévisionnelles pour les années 2050 et 2080, disponibles sur le site \url{https://madaclim.cirad.fr}, afin d'évaluer l'évolution de la biodiversité en fonction des changements climatiques prédits et ainsi de mettre en évidence de lieux refuges de la biodiversité.  
+
+D'autre part le package jSDM que j'ai implémenté est pour l'instant assez limité, il ne permet d'ajuster que deux types de modèles assez contraints avec les fonction *jSDM_probit_block()* et *jSDM_binomial()*, la prédiction n'est possible que sur les placettes d'inventaire et les données en format long ne sont pas prises en charge. 
+Il est prévu d'enrichir le package afin qu'il permette l'ajustement de différents types de modèles avec des effets aléatoires ou fixes, avec ou sans variables latentes ainsi que de modèles intégrant des traits spécifiques tels que la surface foliaire spécifique (SLA) comme variables explicatives pour lesquels une fonction est en cours de développement.  
+L'utilisation de données en format long, c'est à dire sous forme de vecteur de taille $I\times J$ plutôt que de matrices avec autant de colonnes que d'espèces et autant de lignes que de sites serait plus conventionnel et permettrait la gestion de données manquantes au sein des inventaires forestiers, on modifiera donc cet aspect de la fonction *jSDM_probit_block()*.  
+De plus on a relevé qu'un nombre insuffisant d'observations et en particulier d'espèce détériore gravement la qualité de l'estimation des effets sites, on devrait donc préconiser un nombre minimmum d'espèce en fonction du nombre de site considérés pour utiliser la fonction.   
+On a expliqué que le tirage en bloc des effets espèces fixes présente des avantages mais il engendre des difficultés pour imposer proprement les contraintes sur les effets espèces liés aux variables latentes ce qui pourrait être amélioré en générant séparément les $\widehat{\lambda_{jl}}$ pour $j=1,\ldots,J$ et $l=1,\ldots,q$ pour lesquels on utiliserait les mêmes priors que boral.  
+Enfin il est essentiel d'intégrer au package un fonction permettant de prédire des probabilités de présence pour des sites sur lesquels on ne dispose pas de données de présence absence, pour ce faire j'ai envisagé deux méthodes explicitées dans les articles @Guelat2018 @Latimer2006 afin d'intégrer une auto-corrélation spatiale dans le modèle.  
+Dans un premier temps j'ai développé un fonction ajustant un modèle gaussien auto-régressif conditionnel (CAR) intrinsèque en utilisant une grille sur l'ensemble du territoire considéré dont chacune des cellules possède au plus huit voisines. On estimera ainsi les valeurs des effets sites et des variables latentes pour chacune des cellules en fonction de ceux estimés pour les cellules voisines, en effet dans le contexte des modèles de répartition des espèces, on suppose que la présence ou l'absence d'une espèce à un endroit est associée à sa présence ou son absence dans le voisinage. Afin de prendre en compte les voisinage, les distributions *a priori* des paramètres liés aux sites sont centrées sur la moyenne des valeurs prises par ces paramètres dans les cellules voisines et leurs variances dépendent du nombre de cellules partageant des frontières avec la cellule considérée. Cependant cette méthode induit un temps de calcul important et présente des difficultés à converger car les paramètres à estimer sont trop nombreux en raison du nombre conséquent de cellules constituant la grille utilisée.  
+Par la suite, j'ai essayé d'intégrer un 2D splines dans le modèle en redéfinissant les effets sites par une matrice calculée en fonction de la distance du site par rapports à des noeuds répartis uniformément sur le territoire étudié, multipliée par des paramètres à estimer qui sont aussi nombreux que les noeuds choisis et en ajoutant les coordonnées des sites dans les variables explicatives ce qui induit deux paramètres supplémentaires à estimer.  
+Finalement ces fonctions intégrant une auto-corrélation spatiale dans le modèle qui renddrait possible la prédiction sur des sites non observés sont implémentées mais ne sont pas abouties, en effet les résultats obtenus ne sont pas absoluments pas satisfaisants pour l'instant.
 
 \newpage
 \section*{Bibliographie}

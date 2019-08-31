@@ -1,0 +1,115 @@
+%\usepackage{pslatex} % to see correctly a .pdf file on the computer screen
+\usepackage{pgf}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{amssymb} %symbole de maths
+\usepackage{amsmath} %idem
+\usepackage{upgreek} %idem
+\usepackage[utf8]{inputenc}
+\usepackage{listings} % code display
+\usepackage{marvosym} %\MVRightarrow
+%\usepackage{fancyvrb} %give size to verbatim
+%\usepackage{hyperref}
+\usepackage[english,francais]{babel}
+\usepackage{tabularx} % varier la largeur du tableau
+\usepackage{layout}
+\usepackage{longtable}
+\setlength{\LTleft}{-5cm plus 1 fill}
+\setlength{\LTright}{-5cm plus 1 fill}
+\usepackage{booktabs}
+\usepackage{arydshln} %% dashlines for tabular
+\newcommand{\logit}{\text{logit}}
+\newcommand{\bs}[1]{\boldsymbol{#1}}
+\newcommand{\R}{\textnormal{\sffamily\bfseries R}}
+\newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+%% Natbib is a popular style for formatting references.
+%\usepackage{natbib} %doesn't work with beamer
+
+\title[Développement d’un modèle joint de distribution des espèces pour la réalisation de cartes de biodiversité à Madagascar]{\textbf{Développement d’un modèle joint de distribution des espèces pour la réalisation de cartes de biodiversité à Madagascar}}
+%\subtitle{} 
+
+\date{}
+
+% Theme
+% \usetheme{AnnArbor}
+% \usetheme{Dresden}
+ \usetheme{Copenhagen}
+% \usetheme{Frankfurt}
+% \usetheme{Berlin}
+% \usetheme{Madrid}
+% \usetheme{Montpellier}
+% \usetheme{Singapore}
+% \usetheme{Antibes}
+\useinnertheme{rounded} %% bullets
+\setbeamertemplate{footline}[frame number]
+
+% Set beamer colors
+\definecolor{Vert}{RGB}{51,110,23} % UBC Blue (primary)
+\definecolor{Grey}{rgb}{0.3686, 0.5255, 0.6235} % UBC Grey (secondary)
+\setbeamercolor{palette primary}{bg=Vert,fg=white}
+\setbeamercolor{palette secondary}{bg=Vert,fg=white}
+\setbeamercolor{palette tertiary}{bg=Vert,fg=white}
+\setbeamercolor{palette quaternary}{bg=Vert,fg=white}
+\setbeamercolor{structure}{fg=Vert} % itemize, enumerate, etc
+\setbeamercolor{section in toc}{fg=Vert} % TOC sections
+
+% Override palette coloring with secondary
+\setbeamercolor{subsection in head/foot}{bg=Vert,fg=white}
+
+% Ignore ignorenonframetext class option in default template
+\makeatletter
+\beamer@ignorenonframefalse
+\makeatother
+
+%Call table of contents at the beginning of each section
+\AtBeginSection[]{
+  \begin{frame}[plain, noframenumbering]
+    \frametitle{Plan}
+    \begin{columns}[c]
+      \begin{column}{0.5\textwidth}
+        \tableofcontents[sections=1, currentsection]
+        \vspace{0.5cm}
+        \tableofcontents[sections=2, currentsection]
+      \end{column}
+      \begin{column}{0.5\textwidth}
+        \tableofcontents[sections=3, currentsection]
+      \end{column}
+    \end{columns}
+  \end{frame}
+}
+
+\AtBeginSubsection[]{}
+% \AtBeginSubsection[]{
+% \placelogotrue
+%   \begin{frame}
+%     \frametitle{Plan}
+%     \begin{columns}[c]
+%       \begin{column}{0.5\textwidth}
+%         \tableofcontents[sections={1-2},currentsection,currentsubsection]
+%       \end{column}
+%       \begin{column}{0.5\textwidth}
+%         \tableofcontents[sections={3-4},currentsection,currentsubsection]
+%       \end{column}
+%     \end{columns}
+%   \end{frame}
+% \placelogofalse
+% }
+
+% Two-columns slides
+\def\bcols{\begin{columns}}
+\def\bcol{\begin{column}}
+\def\ecol{\end{column}}
+\def\ecols{\end{columns}}
+
+% Change fontsize of R code
+\let\oldShaded\Shaded
+\let\endoldShaded\endShaded
+\renewenvironment{Shaded}{\footnotesize\oldShaded}{\endoldShaded}
+
+% Change fontsize of output
+\let\oldverbatim\verbatim
+\let\endoldverbatim\endverbatim
+\renewenvironment{verbatim}{\footnotesize\oldverbatim}{\endoldverbatim}

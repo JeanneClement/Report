@@ -1,0 +1,6 @@
+"dataset","nsite","nsp","nX","nlat","nmcmc"
+"Simulated",300,100,2,2,35000
+"Mosquitos",167,16,13,2,35000
+"Eucalyptus",458,12,7,2,35000
+"Frogs",104,9,3,2,35000
+"Fungi",800,11,12,2,35000

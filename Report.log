@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.14159265-2.6-0.999991 (MiKTeX 2.9.7000 64-bit) (preloaded format=xelatex 2019.7.25)  26 AUG 2019 16:42
+This is XeTeX, Version 3.14159265-2.6-0.999991 (MiKTeX 2.9.7000 64-bit) (preloaded format=xelatex 2019.7.25)  30 AUG 2019 17:41
 entering extended mode
 **./Report.tex
 (Report.tex
@@ -1224,73 +1224,83 @@ Missing character: There is no − in font rm-lmr7!
 Missing character: There is no − in font rm-lmr7!
 Missing character: There is no − in font rm-lmr7!
 Missing character: There is no − in font rm-lmr10!
-[7] [8] [9]
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 788--790
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 930.
+ []
 
+[8]
+Underfull \hbox (badness 10000) in paragraph at lines 854--859
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 930.
+ []
 
+[9]
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 930.
-
-
-LaTeX Font Warning: Command \small invalid in math mode on input line 930.
-
-
-LaTeX Font Warning: Command \small invalid in math mode on input line 930.
+LaTeX Font Warning: Command \small invalid in math mode on input line 902.
 
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 930.
+LaTeX Font Warning: Command \small invalid in math mode on input line 902.
 
 
-Overfull \hbox (30.4029pt too wide) detected at line 930
+LaTeX Font Warning: Command \small invalid in math mode on input line 902.
+
+
+LaTeX Font Warning: Command \small invalid in math mode on input line 902.
+
+
+LaTeX Font Warning: Command \small invalid in math mode on input line 902.
+
+
+LaTeX Font Warning: Command \small invalid in math mode on input line 902.
+
+
+Overfull \hbox (30.4029pt too wide) detected at line 902
 \OML/lmm/m/it/10 ^^M \OT1/lmr/m/n/10 = \OML/lmm/m/it/10 min [] :
  []
 
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 933.
+LaTeX Font Warning: Command \small invalid in math mode on input line 905.
 
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 933.
+LaTeX Font Warning: Command \small invalid in math mode on input line 905.
 
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 933.
+LaTeX Font Warning: Command \small invalid in math mode on input line 905.
 
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 933.
+LaTeX Font Warning: Command \small invalid in math mode on input line 905.
 
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 933.
+LaTeX Font Warning: Command \small invalid in math mode on input line 905.
 
 
-LaTeX Font Warning: Command \small invalid in math mode on input line 933.
+LaTeX Font Warning: Command \small invalid in math mode on input line 905.
 
 
-Overfull \hbox (37.48988pt too wide) detected at line 933
+Overfull \hbox (37.48988pt too wide) detected at line 905
 \OML/lmm/m/it/10 ^^M \OT1/lmr/m/n/10 = \OML/lmm/m/it/10 min [] :
  []
 
 [10]
-Overfull \hbox (109.15205pt too wide) in paragraph at lines 974--1000
+Overfull \hbox (109.15205pt too wide) in paragraph at lines 943--961
 []$[]$ $[]$ 
  []
 
 
 LaTeX Font Warning: Font shape `TU/lmr/bx/sc' undefined
-(Font)              using `TU/lmr/bx/n' instead on input line 1025.
+(Font)              using `TU/lmr/bx/n' instead on input line 984.
 
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 1025.
+(Font)              <9> on input line 984.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 1025.
+(Font)              <6> on input line 984.
 File: Illustrations/probit_site_effect.png Graphic file (type bmp)
 <Illustrations/probit_site_effect.png>
 File: Illustrations/probit_W.png Graphic file (type bmp)
 <Illustrations/probit_W.png>
-[11]
 File: Illustrations/probit_sp_effect.png Graphic file (type bmp)
 <Illustrations/probit_sp_effect.png>
+[11]
 File: Illustrations/probit_proba.png Graphic file (type bmp)
 <Illustrations/probit_proba.png>
 File: Illustrations/logit_site_effect.png Graphic file (type bmp)
@@ -1300,11 +1310,10 @@ File: Illustrations/logit_W.png Graphic file (type bmp)
 <Illustrations/logit_W.png>
 File: Illustrations/logit_sp_effect.png Graphic file (type bmp)
 <Illustrations/logit_sp_effect.png>
-[13]
 File: Illustrations/logit_proba.png Graphic file (type bmp)
 <Illustrations/logit_proba.png>
-
-Underfull \hbox (badness 6691) in paragraph at lines 1083--1083
+[13]
+Underfull \hbox (badness 6691) in paragraph at lines 1036--1036
 \TU/lmr/m/sl/9 On ajuste le modèle nul avec la fonction jSDM_binomial() du pack
 age jSDM pour le modèle logit et avec
  []
@@ -1320,7 +1329,6 @@ File: Illustrations/jSDM-boral-simulation-4.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-simulation-4.pdf>
 File: Illustrations/jSDM-boral-simulation-5.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-simulation-5.pdf>
-[17]
 File: Illustrations/jSDM-boral-mosquito-1.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-mosquito-1.pdf>
 File: Illustrations/jSDM-boral-mosquito-2.pdf Graphic file (type pdf)
@@ -1331,7 +1339,7 @@ File: Illustrations/jSDM-boral-mosquito-4.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-mosquito-4.pdf>
 File: Illustrations/jSDM-boral-mosquito-5.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-mosquito-5.pdf>
-[18]
+[17]
 File: Illustrations/jSDM-boral-Eucalypts-1.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-Eucalypts-1.pdf>
 File: Illustrations/jSDM-boral-Eucalypts-2.pdf Graphic file (type pdf)
@@ -1342,7 +1350,7 @@ File: Illustrations/jSDM-boral-Eucalypts-4.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-Eucalypts-4.pdf>
 File: Illustrations/jSDM-boral-Eucalypts-5.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-Eucalypts-5.pdf>
-[19]
+[18]
 File: Illustrations/jSDM-boral-frogs-1.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-frogs-1.pdf>
 File: Illustrations/jSDM-boral-frogs-2.pdf Graphic file (type pdf)
@@ -1353,7 +1361,7 @@ File: Illustrations/jSDM-boral-frogs-4.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-frogs-4.pdf>
 File: Illustrations/jSDM-boral-frogs-5.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-frogs-5.pdf>
-[20]
+[19]
 File: Illustrations/jSDM-boral-fungi-1.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-fungi-1.pdf>
 File: Illustrations/jSDM-boral-fungi-2.pdf Graphic file (type pdf)
@@ -1364,7 +1372,7 @@ File: Illustrations/jSDM-boral-fungi-4.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-fungi-4.pdf>
 File: Illustrations/jSDM-boral-fungi-5.pdf Graphic file (type pdf)
 <use Illustrations/jSDM-boral-fungi-5.pdf>
-[21] [22] [23]
+[20] [21] [22] [23]
 File: Illustrations/mada_deviance.jpeg Graphic file (type bmp)
 <Illustrations/mada_deviance.jpeg>
 File: Illustrations/mada_beta1_sp2.jpeg Graphic file (type bmp)
@@ -1373,50 +1381,52 @@ File: Illustrations/mada_beta2_sp2.jpeg Graphic file (type bmp)
 <Illustrations/mada_beta2_sp2.jpeg>
 File: Illustrations/mada_beta3_sp2.jpeg Graphic file (type bmp)
 <Illustrations/mada_beta3_sp2.jpeg>
-[24]
 File: Illustrations/mada_lambda_sp1.jpeg Graphic file (type bmp)
 <Illustrations/mada_lambda_sp1.jpeg>
 File: Illustrations/mada_lambda_sp2.jpeg Graphic file (type bmp)
 <Illustrations/mada_lambda_sp2.jpeg>
-[25]
+[24] [25]
 File: Illustrations/mada_W.jpeg Graphic file (type bmp)
 <Illustrations/mada_W.jpeg>
-[26]
 File: Illustrations/mada_rand_site.jpeg Graphic file (type bmp)
 <Illustrations/mada_rand_site.jpeg>
 File: Illustrations/mada_Valpha.jpeg Graphic file (type bmp)
 <Illustrations/mada_Valpha.jpeg>
-[27]
+[26] [27]
 File: Illustrations/mada_mat_corr_50.png Graphic file (type bmp)
 <Illustrations/mada_mat_corr_50.png>
 File: Illustrations/mada_W1.png Graphic file (type bmp)
 <Illustrations/mada_W1.png>
 File: Illustrations/mada_W2.png Graphic file (type bmp)
 <Illustrations/mada_W2.png>
-[28]
 File: Illustrations/mada_site_effect.png Graphic file (type bmp)
 <Illustrations/mada_site_effect.png>
+[28]
 File: Illustrations/mada_proba_sp1.png Graphic file (type bmp)
 <Illustrations/mada_proba_sp1.png>
 File: Illustrations/mada_presence_sp1_obs.png Graphic file (type bmp)
 <Illustrations/mada_presence_sp1_obs.png>
 
-Overfull \hbox (2.21999pt too wide) in paragraph at lines 1466--1478
+Overfull \hbox (2.21999pt too wide) in paragraph at lines 1404--1416
 []$[]$ $[]$ 
  []
 
 [29]
+Underfull \hbox (badness 10000) in paragraph at lines 1422--1425
+
+ []
+
 File: Illustrations/mada_species_richness.png Graphic file (type bmp)
 <Illustrations/mada_species_richness.png>
 File: Illustrations/mada_species_richness_obs.png Graphic file (type bmp)
 <Illustrations/mada_species_richness_obs.png>
+File: Illustrations/mada_species_richness_obs_fit.png Graphic file (type bmp)
+<Illustrations/mada_species_richness_obs_fit.png>
 
-Overfull \hbox (2.21999pt too wide) in paragraph at lines 1488--1500
+Overfull \hbox (2.21999pt too wide) in paragraph at lines 1426--1441
 []$[]$ $[]$ 
  []
 
-File: Illustrations/mada_species_richness_obs_fit.png Graphic file (type bmp)
-<Illustrations/mada_species_richness_obs_fit.png>
 [30] [31]
 File: Illustrations/comparaison_site_effect.png Graphic file (type bmp)
 <Illustrations/comparaison_site_effect.png>
@@ -1433,131 +1443,131 @@ File: Illustrations/mada_species_richness_OK_forest.png Graphic file (type bmp)
 <Illustrations/mada_species_richness_OK_forest.png>
 [34]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 1643.
+(Font)              <12> on input line 1578.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 1643.
+(Font)              <8> on input line 1578.
 File: Illustrations/mada_div_beta.png Graphic file (type bmp)
 <Illustrations/mada_div_beta.png>
 File: Illustrations/mada_div_beta_forest.png Graphic file (type bmp)
 <Illustrations/mada_div_beta_forest.png>
 [35] [36] [37]
 
-Package xcolor Warning: Incompatible color definition on input line 1887.
+Package xcolor Warning: Incompatible color definition on input line 1822.
 
 LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 1899.
+(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 1832.
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
-
-
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Underfull \vbox (badness 5050) detected at line 2109
+Package xcolor Warning: Incompatible color definition on input line 2040.
+
+
+Underfull \vbox (badness 5050) detected at line 2040
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 [38]
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Underfull \vbox (badness 10000) detected at line 2109
+Underfull \vbox (badness 10000) detected at line 2040
  []
 
 
-Underfull \vbox (badness 10000) detected at line 2109
+Overfull \vbox (1.16548pt too high) detected at line 2040
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 [39]
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Underfull \vbox (badness 10000) detected at line 2109
+Underfull \vbox (badness 10000) detected at line 2040
  []
 
 
-Underfull \vbox (badness 10000) detected at line 2109
+Underfull \vbox (badness 10000) detected at line 2040
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 [40]
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Underfull \vbox (badness 10000) detected at line 2109
+Underfull \vbox (badness 10000) detected at line 2040
  []
 
 
-Overfull \vbox (1.16548pt too high) detected at line 2109
+Overfull \vbox (1.15549pt too high) detected at line 2040
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 [41]
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Underfull \vbox (badness 10000) detected at line 2109
+Underfull \vbox (badness 10000) detected at line 2040
  []
 
 
-Underfull \vbox (badness 10000) detected at line 2109
+Overfull \vbox (1.09549pt too high) detected at line 2040
  []
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 [42]
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
 
-Package xcolor Warning: Incompatible color definition on input line 2109.
+Package xcolor Warning: Incompatible color definition on input line 2040.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2112.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 2043.
 [43]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 2112.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 2043.
 (Report.aux)
-Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 2112.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2112.
+Package atveryend Info: Empty hook `AtVeryEndDocument' on input line 2043.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 2043.
 
 Package rerunfilecheck Info: File `Report.out' has not changed.
-(rerunfilecheck)             Checksum: 763B01B0160A50FF72A1C6F95C6E8E87.
+(rerunfilecheck)             Checksum: F180912296E9F56A95155264FDF0556D.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
  30678 strings out of 427667
- 566944 string characters out of 3149150
- 739592 words of memory out of 3000000
+ 566963 string characters out of 3149150
+ 739630 words of memory out of 3000000
  34295 multiletter control sequences out of 15000+200000
  563274 words of font info for 92 fonts, out of 3000000 for 9000
  1348 hyphenation exceptions out of 8191
- 53i,23n,92p,805b,513s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 53i,23n,92p,805b,577s stack positions out of 5000i,500n,10000p,200000b,50000s
 
 Output written on Report.pdf (47 pages).

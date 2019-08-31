@@ -1,0 +1,621 @@
+---
+classoption: table, dvipsname
+colorlinks: no
+fontsize: 10pt
+link-citations: yes
+linkcolor: Black
+output:
+  beamer_presentation:
+    includes:
+      after_body: doc_suffix.tex
+      before_body: doc_prefix.tex
+      in_header: header.tex
+    slide_level: 3
+urlcolor: Maroon
+bibliography: Biblio_master.bib
+biblio-style: "apalike"
+---
+
+```{r options, include=FALSE}
+library(knitr)
+library(kableExtra)
+opts_chunk$set(echo=TRUE, cache=FALSE,
+               #results="hide", 
+               warning=FALSE,
+               message=FALSE, highlight=TRUE,
+               fig.show="hide", size="small",
+               fig.align="center",
+               tidy=FALSE)
+options(knitr.kable.NA="-")
+```
+
+### Plan
+\vspace{0.4cm}
+\begin{columns}[c]
+    \begin{column}{0.5\textwidth}
+      \tableofcontents[sections=1]
+      \vspace{0.5cm}
+      \tableofcontents[sections=2]
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \tableofcontents[sections=3]
+      \vspace{0.5cm}
+      \tableofcontents[sections=4]
+    \end{column}
+\end{columns}
+<!-- ================================================================= -->
+<!-- PART 1: Rcpp* packages -->
+<!-- ================================================================= -->
+
+
+# Construction d'un package R autour d'un Gibbs sampler en C++ 
+
+## Echantillonneur de Gibbs 
+
+### Principe d'un échantillonneur de Gibbs 
+
+L'échantillonage de Gibbs est souvent utilisé dans le cadre de **l'inférence statistique**.
+
+$\Theta=(\theta_1,\ldots,\theta_n)$ selon la distribution jointe $p(\theta_1,\ldots,\theta_n)$.  
+
+1. Initialisation de $\Theta^{(0)}$ par des valeurs arbitraires.  
+
+2. Connaissant $\Theta^{(t)}=(\theta_1^{(t)},\ldots,\theta_n^{(t)})$ l'échantillon obtenu à l'itération $t$, à l'itération $t+1$ on génère $\theta_i^{(t+1)} \sim p(\theta_i^{(t+1)}|\theta_0^{(t+1)},\ldots,\theta_{i-1}^{(t+1)},\theta_{i+1}^{(t)},\ldots,\theta_{n}^{(t)})$ pour $i=0,\ldots,n$.  
+
+3. On répète l'étape précédente $N_{Gibbs}$ fois (Markov chain Monte Carlo).  
+
+\vspace{0.2cm}
+Les échantillons obtenus approchent la distribution jointe de toutes les variables. 
+
+On peut intégrer différents algorithmes (eg. Metropolis-Hastings adaptatif) pour implémenter une ou plusieurs étapes de l'échantillonneur de Gibbs. 
+
+### Echantillonneur de Gibbs
+
+- Implique plusieurs boucles sur les $N_{Gibbs}$ itérations (MCMC) et le nombre de paramètres.
+
+- Utilise des tirages aléatoires pour générer selon les lois conditionnelles. 
+
+- Nécessite des calculs matriciels dans le cas où on utilise une approche bayesienne avec des piors conjugués.
+
+Rcpp (C++), RcppGSL (tirages aléatoires) et RcppArmadillo (calcul matriciel), peuvent donc être utiles pour implémenter un échantillonneur de Gibbs performant.   
+
+## Utilisation du package Rcpp 
+
+### Utilisation du package Rcpp
+
+- **Rcpp** est un package R permettant d'implémenter et compiler facilement du code en C++ avec RStudio. 
+- Principal avantage : fonctions en C++ plus rapides que celles en R.
+- Implémenté par **Dirk EDDELBUETTEL** et **Romain FRANCOIS**
+- <http://www.rcpp.org/>
+
+### Exemple simple d'utilisation de Rcpp
+
+**Code C++** (in file `Code/addition.cpp`)
+```{Rcpp Rcpp-addition, eval=FALSE}
+#include <Rcpp.h>
+using namespace Rcpp;
+
+// [[Rcpp::export]]
+int addition(int a, int b) {
+  return a + b;
+}
+```
+
+**Code R**
+```{r addition-r}
+Rcpp::sourceCpp("~/Code/Report/Code/addition.cpp")
+addition(2, 2)
+```
+
+### Avantages de Rcpp 
+
+**La fonction `Rcpp::sourceCpp()`**
+
+- Compile le code en C++
+- Exporte la fonction vers la session R 
+- Interchange automatiquement les types d'objets entre R et C++
+- ... (et bien d'autres, voir `vignette("Rcpp-package")`)
+
+**Pour construire un package R**
+
+- `Rcpp.package.skeleton()` pour générer un nouveau package Rcpp ( en modifiant `DESCRIPTION` and `NAMESPACE`)
+- `Rcpp::compileAttributes()` examine les fichiers en C++ afin que `Rcpp::exportAttribute` génère le code requis pour rendre les fonctions en C++ disponibles depuis R.
+
+## RcppGSL pour les tirages aléatoires
+
+### RcppGSL pour les tirages aléatoires
+
+\bcols
+\bcol{0.1\textwidth}
+\includegraphics[height=1.5cm]{figs/logo_GNU.png}
+\ecol
+\bcol{0.9\textwidth}
+
+**GNU Scientific Library**
+
+- Librairie numérique pour programmeurs C++ et C
+- Algorithmes de génération de nombres aléatoires fiables
+- Echantillonnages selon diverses distributions aléatoires performants.
+- Algèbre linéaire (matrices et vecteurs)
+- <https://www.gnu.org/software/gsl/>
+
+\vspace{0.5cm}
+
+**RcppGSL**
+
+- Interface entre R et GSL
+- Utilisant Rcpp pour intégrer du C dans R 
+- <http://dirk.eddelbuettel.com/code/rcpp.gsl.html>
+
+\ecol
+\ecols
+
+### RcppGSL pour les tirages aléatoires
+
+**Avantages de GSL** 
+
+- GSL v2.6 inclus **38 distributions aléatoires** (see [GNU GSL](https://www.gnu.org/software/gsl/doc/html/randist.html)) alors que R API inclus "seulement" 24 distributions aléatoires (cf [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Distribution-functions)).
+- Il est facile d'implémenter des distributions supplémentaires à partir des distributions de base de GSL (e.g distributions normale tronquée et inverse gamma).
+- Les tirages aléatoires sont plus rapides avec GSL qu'avec R (eg. `gsl_ran_gamma()` vs. `R::rgamma()`).
+
+## RcppArmadillo pour les calculs matriciels
+
+### RcppArmadillo pour les calculs matriciels 
+
+\bcols
+\bcol{0.1\textwidth}
+\includegraphics[height=1.5cm]{figs/logo_Armadillo.png}  
+\ecol
+\bcol{0.9\textwidth}
+
+**Armadillo**
+
+- Librairie C+++ pour l'algèbre linéaire et le calcul scientifique
+- Fournit une syntaxe et des fonctionnalités de haut niveau : rapidité et facilité d'utilisation
+- Classes pour vecteurs, matrices et cubes
+- Opérations matricielles, décomposition de matrices, etc.
+- <http://arma.sourceforge.net/>
+
+\vspace{0.5cm}
+
+**RcppArmadillo**
+
+- Interface entre R et Armadillo
+- Utilisant Rcpp pour intégrer du C++ dans R 
+- <http://dirk.eddelbuettel.com/code/rcpp.armadillo.html>
+
+\ecol
+\ecols
+
+### RcppArmadillo pour les calculs matriciels 
+
+**Avantages de Armadillo ** 
+
+- Il est facile de manipuler les vecteurs, matrices et cubes définis par Armadillo et de passer d'un type à l'autre. 
+- Les objets définis avec Armadillo sont convertis automatiquement en objets pris en charge par R lorsqu'ils sont renvoyés par une fonction en C++ compilée avec Rcpp.   
+- Les calculs matriciels sont plus performants avec Armadillo qu'avec R.
+
+<!-- ================================================================= -->
+<!-- PART 3: jSDM R package -->
+<!-- ================================================================= -->
+
+# Modèles joints de distribution des espèces (JSDM)
+
+## Utilité des JSDM 
+### Utilité des JSDM 
+
+- Utiliser l'information apportée par les autres espèces pour estimer les paramètres de celles pour lesquelles on a peu d'observations
+
+- Prendre en compte les intéractions entre les espèces 
+\begin{center}
+\includegraphics[width=0.55\textwidth]{figs/allfrogs1.jpg}
+\end{center}
+
+\vspace{0.1cm}
+
+- Peuvent être utilisés pour expliquer/prédire la richesse spécifique des sites et produire différentes cartes de biodiversité. 
+\begin{center}
+\includegraphics[width=0.6\textwidth]{figs/SDM.jpg}
+\end{center}
+
+## Description des données utilisés
+
+### Description des données utilisées
+
+- Présence/absence de chaque espèce sur les sites
+- Variables environnementales pour chaque site
+
+\vspace{0.5cm}
+
+```{r jSDM_data, echo=FALSE}
+df <- read.csv("tabs/jSDM_tab.csv")
+colnames <- c("Sites","Sp1","Sp2","...","Sp_nsp","X1","X2","...","X_nvar")
+knitr::kable(df, col.names=colnames, booktabs=TRUE,align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+```
+
+## Définition du modèle
+
+### Définition du modèle 
+
+$\blue{Y}=\{\blue{y_{ij}}\}^{i=1,\ldots,nsite}_{j=1,\ldots,nsp}$, avec:
+
+$$\blue{y_{ij}}=\begin{cases}
+    0 & \text{ si l'espèce $j$ est absente du site $i$}\\
+    1 &  \text{ si l'espèce  $j$ est présente sur le site $i$}.
+    \end{cases}$$
+    
+On suppose que $\blue{y_{ij}} \ | \ \red{W_i}, \red{\alpha_i} \sim \mathcal{B}ernoulli(\theta_{ij})$, avec :  
+
+$$\text{probit}(\theta_{ij}) =\red{\alpha_i} + \red{\beta_{0j}} + \blue{X_i}\red{\beta_j} + \red{W_i\lambda_j}$$
+$\red{\alpha_i}$: effet site aléatoire tel que $\red{\alpha_i} \sim \mathcal{N}(0,\red{V_{\alpha}}) \ iid$,      
+$\blue{X_i}$: variables environnementales connue pour le site $i$   
+$\red{W_i}$: variables latentes pour le site $i$ telles que $\red{W_i} \sim \mathcal{N}(0,I_{nlat}) \ iid$,  
+$\red{\beta_j, \lambda_j}$ : effets espèce fixes.  
+
+Variables latentes $\red{W_i}$: prédicteurs non mesurés ou non mesurables $+$ principaux axes de covariation entre les taxons (cf Warton et al. 2015).
+
+### Complexité du modèle 
+
+\bcols
+\bcol{0.6\textwidth}
+
+- Modèle linéaire généralisé de fonction de lien probit : variable réponse binaire
+
+- Multivarié : paramètres $\red{\alpha_i}$ pour les sites et $\red{\beta_j, \lambda_j}$ pour les espèces
+
+- Modèle mixte avec effets sites aléatoires et effets espèces fixes
+
+- Variables latentes : $\red{W_i}$
+
+\ecol
+\bcol{0.4\textwidth}
+
+\includegraphics[width=\textwidth]{figs/complexity.jpg} 
+\ecol
+\ecols
+
+## Comparaison de deux packages permettant d'ajuster ce modèle 
+
+### Package R `jSDM`
+
+\includegraphics[width=\textwidth]{figs/jSDM-website.png}
+
+\vspace{0.1cm}
+
+- <https://ecology.ghislainv.fr/jSDM>
+
+- Construit à l'aide des packages `Rcpp`, `RcppGSL` et `RcppArmadillo`. 
+
+### Package R `boral` 
+
+- `boral` associe R et `JAGS` un programme de simulation à partir de modèles hiérarchiques bayésiens, implémenté en C++ permettant d'ajuster des JSDM. 
+
+- `JAGS` pour Just Another Gibbs Sampler: <http://mcmc-jags.sourceforge.net/>
+
+- Approche utilisée dans l'article @Warton2015 
+
+- `boral` par Francis K.C. Hui et `JAGS` de Martyn Plummer
+
+### Jeux de données utilisés
+
+```{r data-sets, echo=FALSE}
+library(dplyr)
+datasets <- read.table("tabs/data-sets.csv", header=TRUE, sep=",")
+datasets$dataset <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Champignons")
+datasets <- datasets %>%
+	dplyr::mutate(npar=nsite*(1+nlat)+1+nsp*(1+nX+nlat)-1, nobs=nsite*nsp) %>%
+	dplyr::select(dataset,nsite,nsp,nobs,nX,nlat,npar,nmcmc)
+colnames(datasets) <-c("données","nsite","nsp","nobs","nX","nlat","npar","ngibbs")
+
+knitr::kable(datasets, booktabs=TRUE,align = 'l') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+```
+
+\vspace{0.5cm}
+
+\begin{center}
+\begin{tabular}{cccc}
+\includegraphics[width=2cm]{figs/Mosquitos_.jpg} &
+\includegraphics[width=2cm]{figs/Eucalyptus_.jpg} &
+\includegraphics[width=2cm]{figs/Frogs_.jpg} &
+\includegraphics[width=2cm]{figs/Fungi_.jpg} \\
+\textbf{Moustiques} & \textbf{Eucalyptus} & \textbf{Grenouilles} & \textbf{Champignons}
+\end{tabular}
+\end{center}
+
+### Comparaison des résultats 
+
+#### Temps de calcul (en minutes)
+```{r time, echo=FALSE}
+load("~/Code/Report/data/jSDM_boral_sim.RData")
+load("~/Code/Report/data/jSDM_boral_mosquito.RData")
+load("~/Code/Report/data/jSDM_boral_eucalypts.RData")
+load("~/Code/Report/data/jSDM_boral_frogs.RData")
+load("~/Code/Report/data/boral_fungi.RData")
+load("~/Code/Report/data/jSDM_fungi.RData")
+
+result <- data.frame(matrix(NA,2,5), row.names=c("boral","jSDM "))
+colnames(result) <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Champignons")
+result[1,] <- c(T_boral_sim, T_boral_Mosquito, T_boral_Eucalypts, T_boral_Frogs, T_boral_Fungi)
+result[2,] <- c(T_jSDM_block_sim, T_jSDM_block_Mosquito, T_jSDM_block_Eucalypts, T_jSDM_block_Frogs, T_jSDM_block_Fungi)
+ratio_speed <- round(mean(as.numeric(result[1,]/result[2,])))
+min_ratio <- round(min(as.numeric(result[1,]/result[2,])))
+max_ratio <- round(max(as.numeric(result[1,]/result[2,])))
+knitr::kable(result, digits =1, booktabs=TRUE,align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE,font_size
+=8)
+```
+
+\vspace{0.1cm}
+
+jSDM est **`r min_ratio` à `r max_ratio`** fois plus rapide que boral.  
+
+\vspace{0.5cm}
+
+#### Root-mean-square error 
+\vspace{0.1cm}
+Calculé pour $\text{probit}(\theta_{ij})$ sur les données simulées :  
+\vspace{0.1cm}
+```{r RMSE, echo=FALSE}
+library(knitr)
+result <- data.frame(matrix(NA,1,2),row.names=c("RMSE"))
+colnames(result) <- c("boral","jSDM")
+result$boral <- RMSE_boral_sim
+result$jSDM <- RMSE_jSDM_block_sim
+knitr::kable(result, digits=1, booktabs=TRUE,align = 'c') %>%
+	kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+```
+
+### Comparaison des résultats
+#### Deviance
+```{r deviance, echo=FALSE}
+library(knitr)
+result <- data.frame(matrix(NA,2,5),row.names=c("boral", "jSDM"))
+colnames(result) <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Champignons")
+result[1,] <- c(Deviance_boral_sim, Deviance_boral_Mosquito, Deviance_boral_Eucalypts, Deviance_boral_Frogs, Deviance_boral_Fungi)
+result[2,] <- c( mean(mod_jSDM_block_sim$mcmc.Deviance),  mean(mod_jSDM_block_Mosquito$mcmc.Deviance),  mean(mod_jSDM_block_Eucalypts$mcmc.Deviance),  mean(mod_jSDM_block_Frogs$mcmc.Deviance), mean(mod_jSDM_block_Fungi$mcmc.Deviance))
+knitr::kable(result, digits=0, booktabs=TRUE,align = 'c') %>%
+	kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE,font_size
+=8)
+```
+
+\vspace{0.5cm}
+
+#### Conclusion
+
+- Petits jeux de données **et** modèles simples : R, *BUGS, JAGS, Stan, INLA, MCMCglmm
+- Larges jeux de données **ou** modèles hierarchiques complexes : R $+$ Rcpp $+$ RcppGSL $+$ RcppArmadillo
+
+# Application aux données collectées à Madagascar
+
+## Description des données 
+
+### Description des données 
+
+- Inventaires forestiers nationaux réalisés entre 1994 et 1996 et répertoriant la présence ou l'absence de $555$ espèces végétales sur $751$ placettes d'inventaire.
+ 
+- Données climatiques et environnementales  disponibles sur le site \url{https://madaclim.cirad.fr}, on choisit d'utiliser $5$ variables pour lesquelles on extrait les valeurs correspondant aux coordonnées des placettes d'inventaires. 
+
+```{r site-data-clim, echo=F,include=F}
+library(raster)
+library(rgdal)
+library(readr)
+library(dplyr)
+s <- stack("~/Code/Report/data/current.tif")
+names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
+              paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
+              paste("pet",1:12,sep=""),"pet","cwd","ndm")
+
+# get intersting covariables 
+clim_var <- dropLayer(s, c(1:36,38,39,41:47,49,50,52:68,70))
+
+# foresr inventory
+trees <- read_csv("~/Code/Report/data/forest_inventory_Madagascar.csv")
+species <- unique(trees$taxize)
+nsp <- length(species)
+nplot <- length(unique(trees$plot))
+
+# presence/absence of each species on each plot
+load("~/Code/Report/data/mada_mod.RData")
+PA <- mod_all$model_spec$presences
+
+# spatial points of each plot
+longlat <- SpatialPoints(unique(cbind(trees$long,trees$lat)))
+proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66")
+# latlong to UTM38S projection 
+xy <- spTransform(longlat, CRS("+init=epsg:32738"))
+# extract climatic data on each plot
+clim <-  extract(clim_var,xy)
+
+pos = unique(trees[,c("long","lat","plot")])
+colnames(pos) <- c("long","lat","site")
+data_clim <- cbind(pos[,3],clim,pos[,1:2])
+colnames(data_clim) <- c("site",colnames(clim),"long","lat")
+# order plot
+ord_data_clim <- data_clim[sort(data_clim$site, index.return=TRUE)$ix,]
+
+sp <- cbind(PA[,1],rep("...",nplot),PA[,175])
+colnames(sp) <- c(species[1],"...",species[175])
+data <- cbind(ord_data_clim$site,sp,ord_data_clim[,-1])
+colnames(data) <- c("site",colnames(sp),"temp","prec","sais.temp","sais.prec","cwd","long","lat")
+
+```
+
+\vspace{0.2cm}
+
+#### Données
+\begin{center}
+```{r head-site-data-clim, echo=F}
+knitr::kable(head(data), row.names=F, digits=1,booktabs=TRUE,align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE,font_size =5)
+```
+\end{center}
+
+## Ajustement du JSDM défini précédemment sur ces données
+
+### Ajustement du JSDM défini précédemment sur ces données
+
+On ajuste un modèle joint de distribution des espèces de fonction de lien probit à l'aide de la fonction `jSDM_probit_block` du package `jSDM`.  
+
+\vspace{0.3cm}
+
+#### Temps de calcul nécessaire à l'ajustement du modèle et nombre de paramètres à estimer  
+
+\begin{center}
+```{r results-mada, echo=F, include=T}
+library(dplyr)
+load("~/Code/Report/data/mada_mod.RData")
+nsp<-ncol(mod_all$model_spec$presences)
+nplot<-nrow(mod_all$model_spec$presences)
+p <- ncol(mod_all$model_spec$site_data)
+T_all <- as.numeric(T_all,units="hours")
+results <- data.frame(nplot,nsp,nobs=nsp*nplot,nX=p,nlat=2,npar=(p+1)*nsp+2*nsp-1+2*nplot+nplot+1,ngibbs="100000","Temps"= paste0(trunc(T_all),"h"))
+colnames(results)<- c("nsite","nsp","nobs","nX","nlat","npar","ngibbs","temps")
+knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","basic"), full_width=FALSE)
+```
+\end{center}
+
+## Représentation des réultats 
+
+### Traces et densité *a posteriori* des paramètres estimés
+
+
+On met en évidence les \blue{moyennes} des échantillons de $N_{samp}=1000$ valeurs obtenus, que l'on utilisera comme estimateur pour les paramètres.     
+\vspace{0.5cm}
+
+- Effets sites aléatoires et variance associée  
+
+\vspace{0.2cm}
+\begin{center}
+\includegraphics[width=0.4\textwidth,height=0.3\textheight]{figs/mada_rand_site.jpeg}
+\includegraphics[width=0.4\textwidth,height=0.3\textheight]{figs/mada_Valpha.jpeg}
+\end{center}
+
+### Trace et densité *a posteriori* des paramètres estimés
+
+- Effets espèces fixes associés aux variables climatiques  
+
+\begin{center}
+\includegraphics[width=0.4\textwidth,height=0.45\textheight]{figs/mada_beta1_sp2.jpeg}  
+\includegraphics[width=0.4\textwidth,height=0.45\textheight]{figs/mada_beta2_sp2.jpeg} 
+\includegraphics[width=0.4\textwidth,height=0.45\textheight]{figs/mada_beta3_sp2.jpeg}  
+\end{center}
+
+### Trace et densité *a posteriori* des paramètres estimés
+
+\bcols
+\bcol{0.5\textwidth}
+\begin{itemize}
+\item Effets espèces fixes associés aux variables latentes  
+\vspace{0.2cm}
+\begin{center}
+\includegraphics[width=0.8\textwidth,height=0.3\textheight]{figs/mada_lambda_sp1.jpeg}  
+\includegraphics[width=0.8\textwidth,height=0.3\textheight]{figs/mada_lambda_sp2.jpeg}
+\end{center}
+\end{itemize}
+\ecol
+\bcol{0.5\textwidth}
+\begin{itemize}
+\item Variables latentes $W_1$ et $W_2$\\
+\vspace{0.1cm}
+\begin{center}
+\includegraphics[width=0.8\textwidth,height=0.3\textheight]{figs/mada_W.jpeg}
+\end{center}
+\item Déviance calculée à partir des paramètres estimés \\   
+\vspace{0.1cm}
+\begin{center}
+\includegraphics[width=0.8\textwidth,height=0.3\textheight]{figs/mada_deviance.jpeg}
+\end{center}
+\end{itemize}
+\ecol
+\ecols
+
+### Probabilitées de présence estimées comparées aux occurences observées pour une espèce
+
+\bcols
+\bcol{0.5\textwidth}
+\includegraphics[width=1.0\textwidth,height=0.7\textheight]{figs/mada_proba_sp1.png}
+\ecol
+\bcol{0.6\textwidth}
+\vspace{0.5cm}
+\includegraphics[width=1.0\textwidth,height=0.8\textheight]{figs/mada_presence_sp1_obs.png}
+\ecol
+\ecols
+
+### Richesse spécifique estimée comparée à celle observée
+
+\bcols
+\bcol{0.5\textwidth} 
+\vspace{0.1cm}
+Richesse spécifique estimée pour chaque site par $\widehat{R_i}=\sum\limits_ {j=1}^{555} \widehat{\theta_{ij}}$.  
+
+\begin{center}
+\includegraphics[width=1.0\textwidth]{figs/mada_species_richness.png}
+\end{center}
+\ecol
+\bcol{0.5\textwidth}
+\vspace{0.1cm}
+Richesse spécifique observée pour chaque site calculée par $R_i=\sum\limits_ {j=1}^{555} y_{ij}$.  
+
+\begin{center}
+\includegraphics[width=1.0\textwidth]{figs/mada_species_richness_obs.png}
+\end{center}
+\ecol
+\ecols
+
+## Obtention de cartes de biodiversité par interpolation spatiale des paramètres estimés
+
+### Interpolation spatiale par krigeage ordinaire
+
+### Probabilités de présence interpolées pour quatre espèces
+
+\begin{center}
+\includegraphics[height=0.85\textheight]{figs/mada_proba_OK.png}
+\end{center}
+
+### Estimation de la richesse spécifique à Madagascar
+
+\bcols
+\bcol{0.5\textwidth}
+Couvert forestier issu de l'article @Vieilledent2018   
+\vspace{0.1cm}
+\begin{center}
+\includegraphics[width=1.0\textwidth,height=0.7\textheight]{figs/mada_forest.png}
+\end{center}
+\ecol
+\bcol{0.5\textwidth}
+\begin{center}
+\includegraphics[width=1.0\textwidth,height=0.7\textheight]{figs/mada_species_richness_OK_forest_30.png}
+\end{center}
+\ecol
+\ecols
+
+### Estimation de la diversité $\beta$ à Madagascar
+
+\bcols
+\bcol{0.5\textwidth}
+Méthode article @Allnutt2008  
+\vspace{0.2cm}
+\begin{itemize}
+\item
+ACP normée sur les probabilités de présence des espèces interpolées pour chaque pixel de la carte affichée
+\item
+Mise à l'échelle $[0,255]$ des coordonnées obtenues pour les trois premiers axes de l'ACP  
+\item
+`plotRGB` en utilisant ces coordonnées en tant que niveaux de couleur rouge verte et bleue déterminant la coloration de chaque pixel
+\end{itemize} 
+\vspace{0.1cm}
+Les couleurs identiques représentent des communautés d'espèces similaires.  
+\ecol
+\bcol{0.5\textwidth}
+\begin{center}
+\includegraphics[width=1.0\textwidth,height=0.7\textheight]{figs/mada_div_beta_forest.png}
+\end{center}
+\ecol
+\ecols
+
+### Discussion
+
+### Références

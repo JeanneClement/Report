@@ -382,7 +382,7 @@ values(theta[[j]]) <- pnorm(as.vector(values(theta[[j]])))
 names(theta) <- make.names(params_species$species[1:floor(nsp/2)])
 save(theta,file="~/Code/Report/data/OK_theta1.RData")
 par(mfrow=c(1,2),oma=c(1, 0, 1.4,1))
-plot(theta[[1:2]],cex.main=0.7)
+plot(theta[[c(1,175)]],cex.main=0.7)
 title(main="Probabilités de présence interpolées",outer=T,cex.main=0.9)
 # Second half
 remove(theta)
@@ -413,14 +413,20 @@ plot(species_richness, main = "Richesse spécifique interpolée")
 
 ```{r specific_richness_forest}
 load(file="~/Code/Report/data/specific_richness.RData")
-forest <- raster("~/Code/Report/data/for2000.tif")
-# unit m to km
-extent(forest) <- extent(c(xmin(forest), xmax(forest), ymin(forest), ymax(forest))/1000)
-proj4string(forest) <- CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km +no_defs +ellps=WGS84 +towgs84=0,0,0")
-# change resolution 30x30m to 1000x1000m
-forest_res <- resample(forest,species_richness, method="bilinear")
+load(file="~/Code/Report/data/forest_res.RData")
+
+# forest <- raster("~/Code/Report/data/for2000.tif")
+# # unit m to km
+# extent(forest) <- extent(c(xmin(forest), xmax(forest), ymin(forest), ymax(forest))/1000)
+# proj4string(forest) <- CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km +no_defs +ellps=WGS84 +towgs84=0,0,0")
+# # change resolution 30x30m to 1000x1000m
+# forest_res <- resample(forest,species_richness, method="bilinear")
 species_richness_deforest <- mask(species_richness,forest_res)
+species_richness_deforest [species_richness_deforest >= 30]<- 30
 par(mfrow=c(1,1),mar=c(2,3,3,3))
-plot(species_richness_deforest,main="Richesse spécifique interpolée en fonction du couvert forestier en 2000",cex.main=1.1)
+plot(species_richness_deforest,main="Richesse spécifique estimée restreinte au couvert forestier",cex.main=1.1)
+
+par(mfrow=c(1,1))
+plot(forest_res,main="Couvert forestier en 2000",legend=F)
 ```
 

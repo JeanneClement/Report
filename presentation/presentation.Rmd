@@ -88,6 +88,20 @@ Rcpp (C++), RcppGSL (tirages aléatoires) et RcppArmadillo (calcul matriciel), p
 - Implémenté par **Dirk EDDELBUETTEL** et **Romain FRANCOIS**
 - <http://www.rcpp.org/>
 
+### Utilisation du package Rcpp  
+
+**Fonction `Rcpp::sourceCpp()`**
+
+- Compile le code en C++
+- Exporte la fonction vers la session R 
+- Interchange automatiquement les types d'objets entre R et C++
+- ... (et bien d'autres, voir `vignette("Rcpp-package")`)
+
+**Construction d'un package R**
+
+- `Rcpp.package.skeleton()` pour générer un nouveau package Rcpp (`DESCRIPTION` et `NAMESPACE`)
+- `Rcpp::compileAttributes()` examine les fonctions en C++ afin que `Rcpp::exportAttribute` génère le code requis pour les rendre disponibles depuis R.
+
 ### Exemple simple d'utilisation de Rcpp
 
 **Code C++** (in file `Code/addition.cpp`)
@@ -106,20 +120,6 @@ int addition(int a, int b) {
 Rcpp::sourceCpp("~/Code/Report/Code/addition.cpp")
 addition(2, 2)
 ```
-
-### Avantages de Rcpp 
-
-**La fonction `Rcpp::sourceCpp()`**
-
-- Compile le code en C++
-- Exporte la fonction vers la session R 
-- Interchange automatiquement les types d'objets entre R et C++
-- ... (et bien d'autres, voir `vignette("Rcpp-package")`)
-
-**Pour construire un package R**
-
-- `Rcpp.package.skeleton()` pour générer un nouveau package Rcpp ( en modifiant `DESCRIPTION` and `NAMESPACE`)
-- `Rcpp::compileAttributes()` examine les fichiers en C++ afin que `Rcpp::exportAttribute` génère le code requis pour rendre les fonctions en C++ disponibles depuis R.
 
 ## RcppGSL pour les tirages aléatoires
 
@@ -199,12 +199,12 @@ addition(2, 2)
 <!-- PART 3: jSDM R package -->
 <!-- ================================================================= -->
 
-# Modèles joints de distribution des espèces (JSDM)
+# Ajustement d'un modèle joint de distribution des espèces (JSDM)
 
 ## Utilité des JSDM 
 ### Utilité des JSDM 
 
-- Utiliser l'information apportée par les autres espèces pour estimer les paramètres de celles pour lesquelles on a peu d'observations
+- Utiliser l'information apportée par l'ensemble des espèces pour l'estimation des paramètres liés aux sites
 
 - Prendre en compte les intéractions entre les espèces 
 \begin{center}
@@ -213,7 +213,7 @@ addition(2, 2)
 
 \vspace{0.1cm}
 
-- Peuvent être utilisés pour expliquer/prédire la richesse spécifique des sites et produire différentes cartes de biodiversité. 
+- Peuvent être utilisés pour expliquer/prédire la richesse spécifique des sites et produire différentes cartes de biodiversité
 \begin{center}
 \includegraphics[width=0.6\textwidth]{figs/SDM.jpg}
 \end{center}
@@ -604,10 +604,8 @@ ACP normée sur les probabilités de présence des espèces interpolées pour ch
 \item
 Mise à l'échelle $[0,255]$ des coordonnées obtenues pour les trois premiers axes de l'ACP  
 \item
-`plotRGB` en utilisant ces coordonnées en tant que niveaux de couleur rouge verte et bleue déterminant la coloration de chaque pixel
+\textsf{plotRGB()} en utilisant ces coordonnées en tant que niveaux de couleur rouge verte et bleue déterminant la coloration de chaque pixel
 \end{itemize} 
-\vspace{0.1cm}
-Les couleurs identiques représentent des communautés d'espèces similaires.  
 \ecol
 \bcol{0.5\textwidth}
 \begin{center}
@@ -615,7 +613,15 @@ Les couleurs identiques représentent des communautés d'espèces similaires.
 \end{center}
 \ecol
 \ecols
+\vspace{0.2cm}
+Les couleurs identiques représentent des communautés d'espèces similaires.
 
 ### Discussion
+
+- **Perspectives écologiques** : utiliser les paramètres estimés et les données climatiques prévisionnelles pour les années 2050 et 2080 afin de mettre en évidence des lieux refuges de la biodiversité. 
+
+- **Limitations du packages `jSDM`** : nombre d'espèces suffisant, tirage en bloc des effets espèces fixes et prise en compte des contraintes, prédiction seulement sur les placettes d'inventaire
+
+- **Perspectives de développement** : ajustement de modèles avec traits spécifiques, prédiction sur l'ensemble du territoire considéré en intégrant une auto-corrélation spatiale (CAR ou 2D spline) au modèle. 
 
 ### Références

@@ -256,18 +256,25 @@ $\red{\beta_j, \lambda_j}$ : effets espèce fixes.
 ### Complexité du modèle 
 
 \bcols
-\bcol{0.6\textwidth}
+\bcol{0.7\textwidth}
 \begin{itemize}
-\item Modèle linéaire généralisé de fonction de lien probit : variable réponse binaire
-\vspace{0.2cm}
-\item Multivarié : paramètres $\red{\alpha_i}$ pour les sites et $\red{\beta_j, \lambda_j}$ pour les espèces
-\vspace{0.2cm}
-\item Modèle mixte avec effets sites aléatoires et effets espèces fixes
-\vspace{0.2cm}
+\item Modèle linéaire généralisé de fonction de lien probit : variable réponse binaire.
+\vspace{0.15cm}
+\item Multivarié : paramètres $\red{\alpha_i}$ pour les sites et $\red{\beta_j, \lambda_j}$ pour les espèces.
+\vspace{0.15cm}
+\item Modèle mixte avec effets sites aléatoires et effets espèces fixes.
+\vspace{0.15cm}
 \item Variables latentes : $\red{W_i}$ prédicteurs non mesurés ou non mesurables $+$ principaux axes de covariation entre les taxons (cf @Warton2015).
+\vspace{0.15cm}
+\item Contrainte sur les $\red{\lambda_j}$ assurant l'identifiabilité du modèle d'après @Warton2015 :    
+$\begin{cases}
+\red{\lambda_{jl}}=0 & \text{si } l > j \\
+\red{\lambda_{jl}}>0  &  \text{si } l=j, \\
+\end{cases}$
+pour $j=1,\ldots,nsp$ et $l=1,\ldots,nlat$.
 \end{itemize}
 \ecol
-\bcol{0.4\textwidth}
+\bcol{0.3\textwidth}
 \includegraphics[width=\textwidth]{figs/complexity.jpg} 
 \ecol
 \ecols
@@ -441,7 +448,7 @@ colnames(data) <- c("site",colnames(sp),"temp","prec","sais.temp","sais.prec","c
 
 \vspace{0.2cm}
 
-#### Données
+#### Jeu de données utilisé
 \begin{center}
 ```{r head-site-data-clim, echo=F}
 knitr::kable(head(data), row.names=F, digits=1,booktabs=TRUE,align = 'c') %>%
@@ -562,7 +569,7 @@ Richesse spécifique observée pour chaque site calculée par $R_i=\sum\limits_ 
 \ecol
 \ecols
 
-## Obtention de cartes de biodiversité par interpolation spatiale des paramètres estimés
+## Obtention de cartes de biodiversité par interpolation spatiale 
 
 ### Probabilités de présence interpolées par krigeage ordinaire pour quatre espèces
 
@@ -613,8 +620,8 @@ Les couleurs identiques représentent des communautés d'espèces similaires.
 
 - **Perspectives écologiques** : utiliser les paramètres estimés et les données climatiques prévisionnelles pour les années 2050 et 2080 afin de mettre en évidence des lieux refuges de la biodiversité. 
 
-- **Limitations du packages `jSDM`** : nombre d'espèces suffisant, tirage en bloc des effets espèces fixes et prise en compte des contraintes, prédiction seulement sur les placettes d'inventaire
+- **Limitations du packages `jSDM`** : tirage en bloc des effets espèces fixes et prise en compte des contraintes, manière d'évaluer la convergence de l'algorithme, prédiction seulement sur les placettes d'inventaire
 
-- **Perspectives de développement** : ajustement de modèles avec traits spécifiques, prédiction sur l'ensemble du territoire considéré en intégrant une auto-corrélation spatiale (CAR ou 2D spline) au modèle. 
+- **Perspectives de développement** : indice de Gelman-Rubin pour évaluer la convergence, ajustement de modèles avec traits spécifiques, prédiction sur l'ensemble du territoire considéré en intégrant une auto-corrélation spatiale (CAR ou 2D spline) au modèle. 
 
 ### Références

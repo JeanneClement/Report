@@ -54,28 +54,24 @@ options(knitr.kable.NA="-")
 
 ### Principe d'un échantillonneur de Gibbs 
 
-L'échantillonage de Gibbs est souvent utilisé dans le cadre de **l'inférence statistique**.
-
-$\Theta=(\theta_1,\ldots,\theta_n)$ selon la distribution jointe $p(\theta_1,\ldots,\theta_n)$.  
+L'échantillonnage de Gibbs est une approche d'inférence bayesienne permettant d'obtenir une réalisation de $\Theta=(\theta_1,\ldots,\theta_n)$ selon la distribution jointe *a posteriori* $p(\theta_1,\ldots,\theta_n|x)$.  
 
 1. Initialisation de $\Theta^{(0)}$ par des valeurs arbitraires.  
 
-2. Connaissant $\Theta^{(t)}=(\theta_1^{(t)},\ldots,\theta_n^{(t)})$ l'échantillon obtenu à l'itération $t$, à l'itération $t+1$ on génère $\theta_i^{(t+1)} \sim p(\theta_i^{(t+1)}|\theta_0^{(t+1)},\ldots,\theta_{i-1}^{(t+1)},\theta_{i+1}^{(t)},\ldots,\theta_{n}^{(t)})$ pour $i=0,\ldots,n$.  
+2. Connaissant $\Theta^{(t)}=(\theta_1^{(t)},\ldots,\theta_n^{(t)})$ l'échantillon obtenu à l'itération $t$, à l'itération $t+1$ on génère pour $i=0,\ldots,n$ :   
+$$\theta_i^{(t+1)} \sim p(\theta_i^{(t+1)}|\theta_0^{(t+1)},\ldots,\theta_{i-1}^{(t+1)},\theta_{i+1}^{(t)},\ldots,\theta_{n}^{(t)},x)$$.  
 
-3. On répète l'étape précédente $N_{Gibbs}$ fois (Markov chain Monte Carlo).  
-
-\vspace{0.2cm}
-Les échantillons obtenus approchent la distribution jointe de toutes les variables. 
+3. On répète l'étape précédente $N_{Gibbs}$ fois (Markov chain Monte Carlo) et les échantillons ainsi obtenus permettent d'approcher la distribution jointe *a posteriori*. 
 
 On peut intégrer différents algorithmes (eg. Metropolis-Hastings adaptatif) pour implémenter une ou plusieurs étapes de l'échantillonneur de Gibbs. 
 
-### Echantillonneur de Gibbs
+### Implémentation d'un échantillonneur de Gibbs
 
-- Implique plusieurs boucles sur les $N_{Gibbs}$ itérations (MCMC) et le nombre de paramètres.
+- Implique plusieurs boucles sur les $N_{Gibbs}$ itérations (MCMC) et le nombre de paramètres (Gibbs sampler).
 
 - Utilise des tirages aléatoires pour générer selon les lois conditionnelles. 
 
-- Nécessite des calculs matriciels dans le cas où on utilise une approche bayesienne avec des piors conjugués.
+- Nécessite des calculs matriciels dans le cas où on utilise une approche d'inférence bayesienne avec des piors conjugués.
 
 Rcpp (C++), RcppGSL (tirages aléatoires) et RcppArmadillo (calcul matriciel), peuvent donc être utiles pour implémenter un échantillonneur de Gibbs performant.   
 
@@ -83,9 +79,14 @@ Rcpp (C++), RcppGSL (tirages aléatoires) et RcppArmadillo (calcul matriciel), p
 
 ### Utilisation du package Rcpp
 
+**Rcpp**  
+
 - **Rcpp** est un package R permettant d'implémenter et compiler facilement du code en C++ avec RStudio. 
+
 - Principal avantage : fonctions en C++ plus rapides que celles en R.
+
 - Implémenté par **Dirk EDDELBUETTEL** et **Romain FRANCOIS**
+
 - <http://www.rcpp.org/>
 
 ### Utilisation du package Rcpp  
@@ -135,11 +136,11 @@ addition(2, 2)
 
 - Librairie numérique pour programmeurs C++ et C
 - Algorithmes de génération de nombres aléatoires fiables
-- Echantillonnages selon diverses distributions aléatoires performants.
+- Echantillonnages selon diverses distributions aléatoires.
 - Algèbre linéaire (matrices et vecteurs)
 - <https://www.gnu.org/software/gsl/>
 
-\vspace{0.5cm}
+\vspace{0.15cm}
 
 **RcppGSL**
 
@@ -147,16 +148,16 @@ addition(2, 2)
 - Utilisant Rcpp pour intégrer du C dans R 
 - <http://dirk.eddelbuettel.com/code/rcpp.gsl.html>
 
+\vspace{0.15cm}
+
+**Avantages** 
+
+- Diversité : GSL v2.6 inclus **38 distributions aléatoires** alors que R API en inclus "seulement" 24.
+- Facilité à échantillonner selon des distributions construites à partir des distributions de base de GSL (e.g inverse gamma).
+- Rapidité : certains tirages aléatoires plus performants avec GSL qu'avec R (eg. `gsl_ran_gamma()` vs. `R::rgamma()`).
+
 \ecol
 \ecols
-
-### RcppGSL pour les tirages aléatoires
-
-**Avantages de GSL** 
-
-- GSL v2.6 inclus **38 distributions aléatoires** (see [GNU GSL](https://www.gnu.org/software/gsl/doc/html/randist.html)) alors que R API inclus "seulement" 24 distributions aléatoires (cf [Writing R Extensions](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#Distribution-functions)).
-- Il est facile d'implémenter des distributions supplémentaires à partir des distributions de base de GSL (e.g distributions normale tronquée et inverse gamma).
-- Les tirages aléatoires sont plus rapides avec GSL qu'avec R (eg. `gsl_ran_gamma()` vs. `R::rgamma()`).
 
 ## RcppArmadillo pour les calculs matriciels
 
@@ -170,30 +171,28 @@ addition(2, 2)
 
 **Armadillo**
 
-- Librairie C+++ pour l'algèbre linéaire et le calcul scientifique
-- Fournit une syntaxe et des fonctionnalités de haut niveau : rapidité et facilité d'utilisation
+- Librairie C++ pour l'algèbre linéaire et le calcul scientifique
 - Classes pour vecteurs, matrices et cubes
 - Opérations matricielles, décomposition de matrices, etc.
 - <http://arma.sourceforge.net/>
 
-\vspace{0.5cm}
+\vspace{0.4cm}
 
 **RcppArmadillo**
 
-- Interface entre R et Armadillo
+- Interface entre R et Armadillo : objets définis avec `Armadillo` convertis automatiquement en objets pris en charge par `R` 
 - Utilisant Rcpp pour intégrer du C++ dans R 
 - <http://dirk.eddelbuettel.com/code/rcpp.armadillo.html>
 
+\vspace{0.4cm}
+ 
+**Avantages** 
+
+- Facilité d'utilisation : syntaxe et fonctionnalités de haut niveau pour la manipulation de vecteurs, matrices et cubes.  
+- Rapidité : calculs matriciels plus performants avec Armadillo qu'avec R.
+
 \ecol
 \ecols
-
-### RcppArmadillo pour les calculs matriciels 
-
-**Avantages de Armadillo ** 
-
-- Il est facile de manipuler les vecteurs, matrices et cubes définis par Armadillo et de passer d'un type à l'autre. 
-- Les objets définis avec Armadillo sont convertis automatiquement en objets pris en charge par R lorsqu'ils sont renvoyés par une fonction en C++ compilée avec Rcpp.   
-- Les calculs matriciels sont plus performants avec Armadillo qu'avec R.
 
 <!-- ================================================================= -->
 <!-- PART 3: jSDM R package -->
@@ -248,29 +247,27 @@ $$\blue{y_{ij}}=\begin{cases}
 On suppose que $\blue{y_{ij}} \ | \ \red{W_i}, \red{\alpha_i} \sim \mathcal{B}ernoulli(\theta_{ij})$, avec :  
 
 $$\text{probit}(\theta_{ij}) =\red{\alpha_i} + \red{\beta_{0j}} + \blue{X_i}\red{\beta_j} + \red{W_i\lambda_j}$$
+où $\text{probit} : p \rightarrow \Phi^{-1}(p)$ avec $\Phi$ la fonction de répartition d'une loi normale centrée réduite,  
 $\red{\alpha_i}$: effet site aléatoire tel que $\red{\alpha_i} \sim \mathcal{N}(0,\red{V_{\alpha}}) \ iid$,      
-$\blue{X_i}$: variables environnementales connue pour le site $i$   
-$\red{W_i}$: variables latentes pour le site $i$ telles que $\red{W_i} \sim \mathcal{N}(0,I_{nlat}) \ iid$,  
+$\blue{X_i}$: variables environnementales connue pour le site $i$,  
+$\red{W_i}$: variables latentes pour le site $i$ telles que $\red{W_i} \sim \mathcal{N}_{nlat}(0,I_{nlat}) \ iid$,  
 $\red{\beta_j, \lambda_j}$ : effets espèce fixes.  
-
-Variables latentes $\red{W_i}$: prédicteurs non mesurés ou non mesurables $+$ principaux axes de covariation entre les taxons (cf Warton et al. 2015).
 
 ### Complexité du modèle 
 
 \bcols
 \bcol{0.6\textwidth}
-
-- Modèle linéaire généralisé de fonction de lien probit : variable réponse binaire
-
-- Multivarié : paramètres $\red{\alpha_i}$ pour les sites et $\red{\beta_j, \lambda_j}$ pour les espèces
-
-- Modèle mixte avec effets sites aléatoires et effets espèces fixes
-
-- Variables latentes : $\red{W_i}$
-
+\begin{itemize}
+\item Modèle linéaire généralisé de fonction de lien probit : variable réponse binaire
+\vspace{0.2cm}
+\item Multivarié : paramètres $\red{\alpha_i}$ pour les sites et $\red{\beta_j, \lambda_j}$ pour les espèces
+\vspace{0.2cm}
+\item Modèle mixte avec effets sites aléatoires et effets espèces fixes
+\vspace{0.2cm}
+\item Variables latentes : $\red{W_i}$ prédicteurs non mesurés ou non mesurables $+$ principaux axes de covariation entre les taxons (cf @Warton2015).
+\end{itemize}
 \ecol
 \bcol{0.4\textwidth}
-
 \includegraphics[width=\textwidth]{figs/complexity.jpg} 
 \ecol
 \ecols
@@ -346,8 +343,8 @@ knitr::kable(result, digits =1, booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE,font_size
 =8)
 ```
-
-\vspace{0.1cm}
+  
+\vspace{0.2cm}  
 
 jSDM est **`r min_ratio` à `r max_ratio`** fois plus rapide que boral.  
 
@@ -382,7 +379,7 @@ knitr::kable(result, digits=0, booktabs=TRUE,align = 'c') %>%
 
 \vspace{0.5cm}
 
-#### Conclusion
+#### Conséquences   
 
 - Petits jeux de données **et** modèles simples : R, *BUGS, JAGS, Stan, INLA, MCMCglmm
 - Larges jeux de données **ou** modèles hierarchiques complexes : R $+$ Rcpp $+$ RcppGSL $+$ RcppArmadillo
@@ -567,9 +564,7 @@ Richesse spécifique observée pour chaque site calculée par $R_i=\sum\limits_ 
 
 ## Obtention de cartes de biodiversité par interpolation spatiale des paramètres estimés
 
-### Interpolation spatiale par krigeage ordinaire
-
-### Probabilités de présence interpolées pour quatre espèces
+### Probabilités de présence interpolées par krigeage ordinaire pour quatre espèces
 
 \begin{center}
 \includegraphics[height=0.85\textheight]{figs/mada_proba_OK.png}
@@ -596,20 +591,18 @@ Couvert forestier issu de l'article @Vieilledent2018
 
 \bcols
 \bcol{0.5\textwidth}
-Méthode article @Allnutt2008  
+Différents types de forêt sur l'île d'après l'article @Vieilledent2018 :
 \vspace{0.2cm}
-\begin{itemize}
-\item
-ACP normée sur les probabilités de présence des espèces interpolées pour chaque pixel de la carte affichée
-\item
-Mise à l'échelle $[0,255]$ des coordonnées obtenues pour les trois premiers axes de l'ACP  
-\item
-\textsf{plotRGB()} en utilisant ces coordonnées en tant que niveaux de couleur rouge verte et bleue déterminant la coloration de chaque pixel
-\end{itemize} 
+\begin{center}
+\includegraphics[width=0.45\textwidth,height=0.55\textheight]{figs/mada_forest_type.jpg}
+\end{center}
 \ecol
 \bcol{0.5\textwidth}
+\vspace{0.2cm}
+Diversité $\beta$ estimée selon la méthode de l'article @Allnutt2008 : 
+\vspace{0.2cm}
 \begin{center}
-\includegraphics[width=1.0\textwidth,height=0.7\textheight]{figs/mada_div_beta_forest.png}
+\includegraphics[width=1.0\textwidth,height=0.65\textheight]{figs/mada_div_beta_forest.png}
 \end{center}
 \ecol
 \ecols

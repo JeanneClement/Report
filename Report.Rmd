@@ -594,23 +594,23 @@ $$\begin{aligned}
 Les variables latentes $W_{il} \sim \mathcal{N}(0,1) \text{ pour } i=1,\ldots,500 \text{ et } l=1,2$.  
 Les effets sites aléatoires générés selon $\alpha_i \sim \mathcal{N}(0,V_{alpha})$ avec $V_{alpha}$ fixé à $0.5$.
 Puis on simule les données de présence absence $Y=(y_{ij})_{i=1,\ldots,500}^{j=1,\ldots,100}$ de la manière apropriée pour chacun des modèles envisagés en fonction des paramètres établis : 
-\begin{minipage}[l]{0.6\textwidth}
-\textbf{Modèle probit :}   
-Pour $i=1,\ldots,500$ et $j=1,\ldots,100$ :   
-Générer $\epsilon_{ij} \sim \mathcal{N}(0,1) \ iid$.  
-Calculer $Z_{ij}= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j + \epsilon_{ij}$ 
+\begin{minipage}[l]{0.5\textwidth}
+\textbf{Modèle probit :}\\
+Pour $i=1,\ldots,500$ et $j=1,\ldots,100$ :\\
+Générer $\epsilon_{ij} \sim \mathcal{N}(0,1) \ iid$.\\  
+Calculer $Z_{ij}= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j + \epsilon_{ij}$\\
 Simuler $y_{ij}=
 \begin{cases}
 1 & \text{ si } Z_{ij} > 0 \\
 0 &  \text{sinon.}
 \end{cases}$
 \end{minipage}
-\begin{minipage}[r]{0.6\textwidth}
-\textbf{Modèle logit :}   
-Pour $i=1,\ldots,500$ et $j=1,\ldots,100$ :   
-Calculer $\mathrm{logit}(\theta_{ij})= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j$.  
-Calculer $\theta_{ij}= \dfrac{1}{1+\exp\left(-\mathrm{logit}(\theta_{ij})\right)}$.  
-Simuler $y_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$.
+\begin{minipage}[r]{0.5\textwidth}
+\textbf{Modèle logit :}\\  
+Pour $i=1,\ldots,500$ et $j=1,\ldots,100$ :\\  
+Calculer $\mathrm{logit}(\theta_{ij})= \alpha_i + \beta_{j0} + X_i\beta_j + W_i\lambda_j$.\\ 
+Calculer $\theta_{ij}= \dfrac{1}{1+\exp\left(-\mathrm{logit}(\theta_{ij})\right)}$.\\ 
+Simuler $y_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$.\\
 \end{minipage}
 
 ### Représentation des paramètres estimés 

@@ -15,7 +15,6 @@ urlcolor: Maroon
 bibliography: Biblio_master.bib
 biblio-style: "apalike"
 ---
-
 ```{r options, include=FALSE}
 library(knitr)
 library(kableExtra)
@@ -29,26 +28,37 @@ opts_chunk$set(echo=TRUE, cache=FALSE,
 options(knitr.kable.NA="-")
 ```
 
+### Introduction
+
+- Les jeux de données disponibles sont de taille de plus en plus importante et répertorient de nombreuse espèces.
+
+- On s'intéresse depuis quelques années aux modèles joints de distribution des espèces (JSDM) plutôt que de considérer les espèces comme indépendantes et ajuster un modèle pour chacune, ce qui présente les avantages que l'on verra par la suite. 
+
+- Les packages R déjà existants qui permettent d'ajuster ce types de modèles sont peu nombreux : boral, gjam, HMSC, BayesComm.  
+Ils nécessitent des temps de calcul assez important et sont pour certains difficiles d'utilisation. 
+
+- L'objectif de mon stage était donc d'implémenter une fonction optimisée permettant d'ajuster ce type de modèle en choisissant un algorithme d'inférence performant atteignant assez rapidement la convergence, puis de construire un package R autour de cette fonction.
+
 ### Plan
 \vspace{0.4cm}
 \begin{columns}[c]
     \begin{column}{0.5\textwidth}
-      \tableofcontents[sections=1]
+      \tableofcontents[sections=1,currentsubsection]
       \vspace{0.5cm}
-      \tableofcontents[sections=2]
+      \tableofcontents[sections=2,currentsubsection]
     \end{column}
     \begin{column}{0.5\textwidth}
-      \tableofcontents[sections=3]
+      \tableofcontents[sections=3,currentsubsection]
       \vspace{0.5cm}
-      \tableofcontents[sections=4]
+      \tableofcontents[sections=4,currentsubsection]
     \end{column}
 \end{columns}
+
 <!-- ================================================================= -->
 <!-- PART 1: Rcpp* packages -->
 <!-- ================================================================= -->
 
-
-# Construction d'un package R autour d'un Gibbs sampler en C++ 
+# Construction du package R jSDM autour d'un Gibbs sampler en C++ 
 
 ## Echantillonneur de Gibbs 
 
@@ -61,17 +71,17 @@ L'échantillonnage de Gibbs est une approche d'inférence bayesienne permettant 
 2. Connaissant $\Theta^{(t)}=(\theta_1^{(t)},\ldots,\theta_n^{(t)})$ l'échantillon obtenu à l'itération $t$, à l'itération $t+1$ on génère pour $i=0,\ldots,n$ :   
 $$\theta_i^{(t+1)} \sim p(\theta_i^{(t+1)}|\theta_0^{(t+1)},\ldots,\theta_{i-1}^{(t+1)},\theta_{i+1}^{(t)},\ldots,\theta_{n}^{(t)},x)$$.  
 
-3. On répète l'étape précédente $N_{Gibbs}$ fois (Markov chain Monte Carlo) et les échantillons ainsi obtenus permettent d'approcher la distribution jointe *a posteriori*. 
+3. On répète l'étape précédente $N_{Gibbs}$ fois (Markov Chain Monte Carlo) et les échantillons ainsi obtenus permettent d'approcher la distribution jointe *a posteriori*. 
 
 On peut intégrer différents algorithmes (eg. Metropolis-Hastings adaptatif) pour implémenter une ou plusieurs étapes de l'échantillonneur de Gibbs. 
 
 ### Implémentation d'un échantillonneur de Gibbs
 
-- Implique plusieurs boucles sur les $N_{Gibbs}$ itérations (MCMC) et le nombre de paramètres (Gibbs sampler).
-
 - Utilise des tirages aléatoires pour générer selon les lois conditionnelles. 
 
-- Nécessite des calculs matriciels dans le cas où on utilise une approche d'inférence bayesienne avec des piors conjugués.
+- Nécessite des calculs matriciels dans le cas où on utilise une approche d'inférence bayesienne avec des priors conjugués.
+
+- Implique boucles imbriquées sur les $N_{Gibbs}$ itérations (MCMC) et le nombre de paramètres (Gibbs sampler).
 
 Rcpp (C++), RcppGSL (tirages aléatoires) et RcppArmadillo (calcul matriciel), peuvent donc être utiles pour implémenter un échantillonneur de Gibbs performant.   
 
@@ -98,7 +108,7 @@ Rcpp (C++), RcppGSL (tirages aléatoires) et RcppArmadillo (calcul matriciel), p
 - Interchange automatiquement les types d'objets entre R et C++
 - ... (et bien d'autres, voir `vignette("Rcpp-package")`)
 
-**Construction d'un package R**
+**Fonctions pour construire un package R**
 
 - `Rcpp.package.skeleton()` pour générer un nouveau package Rcpp (`DESCRIPTION` et `NAMESPACE`)
 - `Rcpp::compileAttributes()` examine les fonctions en C++ afin que `Rcpp::exportAttribute` génère le code requis pour les rendre disponibles depuis R.
@@ -194,9 +204,16 @@ addition(2, 2)
 \ecol
 \ecols
 
-<!-- ================================================================= -->
-<!-- PART 3: jSDM R package -->
-<!-- ================================================================= -->
+
+### Package R `jSDM`
+
+\includegraphics[width=\textwidth]{figs/jSDM-website.png}
+
+\vspace{0.1cm}
+
+- <https://ecology.ghislainv.fr/jSDM>
+
+- Construit à l'aide des packages `Rcpp`, `RcppGSL` et `RcppArmadillo`. 
 
 # Ajustement d'un modèle joint de distribution des espèces (JSDM)
 
@@ -205,7 +222,7 @@ addition(2, 2)
 
 - Utiliser l'information apportée par l'ensemble des espèces pour l'estimation des paramètres liés aux sites
 
-- Prendre en compte les intéractions entre les espèces 
+- Prendre en compte les interactions entre les espèces 
 \begin{center}
 \includegraphics[width=0.55\textwidth]{figs/allfrogs1.jpg}
 \end{center}
@@ -230,12 +247,16 @@ addition(2, 2)
 df <- read.csv("tabs/jSDM_tab.csv")
 colnames <- c("Sites","Sp1","Sp2","...","Sp_nsp","X1","X2","...","X_nvar")
 knitr::kable(df, col.names=colnames, booktabs=TRUE,align = 'c') %>%
-		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE) %>%
+  column_spec(2:5, color = "brown") %>%
+  column_spec(6:9, color = "blue")
 ```
 
 ## Définition du modèle
 
 ### Définition du modèle 
+
+On définit le modèle suivant à partir de celui utilisé dans l'article @Warton2015 :  
 
 $\blue{Y}=\{\blue{y_{ij}}\}^{i=1,\ldots,nsite}_{j=1,\ldots,nsp}$, avec:
 
@@ -244,52 +265,45 @@ $$\blue{y_{ij}}=\begin{cases}
     1 &  \text{ si l'espèce  $j$ est présente sur le site $i$}.
     \end{cases}$$
     
-On suppose que $\blue{y_{ij}} \ | \ \red{W_i}, \red{\alpha_i} \sim \mathcal{B}ernoulli(\theta_{ij})$, avec :  
-
+On suppose que $\blue{y_{ij}} \ | \ \red{W_i}, \red{\alpha_i} \sim \mathcal{B}ernoulli(\theta_{ij})$, avec :
 $$\text{probit}(\theta_{ij}) =\red{\alpha_i} + \red{\beta_{0j}} + \blue{X_i}\red{\beta_j} + \red{W_i\lambda_j}$$
 où $\text{probit} : p \rightarrow \Phi^{-1}(p)$ avec $\Phi$ la fonction de répartition d'une loi normale centrée réduite,  
 $\red{\alpha_i}$: effet site aléatoire tel que $\red{\alpha_i} \sim \mathcal{N}(0,\red{V_{\alpha}}) \ iid$,      
-$\blue{X_i}$: variables environnementales connue pour le site $i$,  
+$\blue{X_i}$: variables environnementales connues pour le site $i$,  
 $\red{W_i}$: variables latentes pour le site $i$ telles que $\red{W_i} \sim \mathcal{N}_{nlat}(0,I_{nlat}) \ iid$,  
 $\red{\beta_j, \lambda_j}$ : effets espèce fixes.  
 
 ### Complexité du modèle 
 
 \bcols
-\bcol{0.7\textwidth}
+\bcol{0.6\textwidth}
 \begin{itemize}
 \item Modèle linéaire généralisé de fonction de lien probit : variable réponse binaire.
-\vspace{0.15cm}
+\vspace{0.2cm}
 \item Multivarié : paramètres $\red{\alpha_i}$ pour les sites et $\red{\beta_j, \lambda_j}$ pour les espèces.
-\vspace{0.15cm}
+\vspace{0.2cm}
 \item Modèle mixte avec effets sites aléatoires et effets espèces fixes.
-\vspace{0.15cm}
-\item Variables latentes : $\red{W_i}$ prédicteurs non mesurés ou non mesurables $+$ principaux axes de covariation entre les taxons (cf @Warton2015).
-\vspace{0.15cm}
-\item Contrainte sur les $\red{\lambda_j}$ assurant l'identifiabilité du modèle d'après @Warton2015 :    
-$\begin{cases}
-\red{\lambda_{jl}}=0 & \text{si } l > j \\
-\red{\lambda_{jl}}>0  &  \text{si } l=j, \\
-\end{cases}$
-pour $j=1,\ldots,nsp$ et $l=1,\ldots,nlat$.
+\vspace{0.2cm}
+\item Variables latentes : $\red{W_i}$ prédicteurs non mesurés ou non mesurables $+$ principaux axes de covariation entre les taxons.
 \end{itemize}
 \ecol
-\bcol{0.3\textwidth}
+\bcol{0.4\textwidth}
 \includegraphics[width=\textwidth]{figs/complexity.jpg} 
 \ecol
 \ecols
 
-## Comparaison de deux packages permettant d'ajuster ce modèle 
+### Contraintes d'identifiabilité 
 
-### Package R `jSDM`
+La complexité du modèle nous oblige à introduire les contraintes suivantes (cf @Warton2015)  afin de le rendre identifiable :
+$$\begin{aligned}
+& \begin{cases}
+\red{\lambda_{jl}}=0 & \text{si } l > j \\
+\red{\lambda_{jl}}>0  &  \text{si } l=j, \\
+\end{cases} \\
+&\text{pour } j=1,\ldots,nsp \text{ et } l=1,\ldots,nlat.
+\end{aligned}$$  
 
-\includegraphics[width=\textwidth]{figs/jSDM-website.png}
-
-\vspace{0.1cm}
-
-- <https://ecology.ghislainv.fr/jSDM>
-
-- Construit à l'aide des packages `Rcpp`, `RcppGSL` et `RcppArmadillo`. 
+## Ajustement de ce modèle avec `boral` et `jSDM` 
 
 ### Package R `boral` 
 
@@ -310,10 +324,11 @@ datasets$dataset <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Cham
 datasets <- datasets %>%
 	dplyr::mutate(npar=nsite*(1+nlat)+1+nsp*(1+nX+nlat)-1, nobs=nsite*nsp) %>%
 	dplyr::select(dataset,nsite,nsp,nobs,nX,nlat,npar,nmcmc)
-colnames(datasets) <-c("données","nsite","nsp","nobs","nX","nlat","npar","ngibbs")
+colnames(datasets) <-c("données","nsite","nsp","nobs","nX","nlat","npar")
 
 knitr::kable(datasets, booktabs=TRUE,align = 'l') %>%
-		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE) %>%
+  row_spec(1, color = "blue", background = "white")
 ```
 
 \vspace{0.5cm}
@@ -328,7 +343,9 @@ knitr::kable(datasets, booktabs=TRUE,align = 'l') %>%
 \end{tabular}
 \end{center}
 
-### Comparaison des résultats 
+### Comparaison des résultats obtenus avec `boral` et `jSDM`
+
+Après 35000 itérations on obtient les résultats suivant avec chacun des packages :  
 
 #### Temps de calcul (en minutes)
 ```{r time, echo=FALSE}
@@ -348,11 +365,9 @@ min_ratio <- round(min(as.numeric(result[1,]/result[2,])))
 max_ratio <- round(max(as.numeric(result[1,]/result[2,])))
 knitr::kable(result, digits =1, booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE,font_size
-=8)
+=8) %>% column_spec(2, color = "blue")
 ```
-  
 \vspace{0.2cm}  
-
 jSDM est **`r min_ratio` à `r max_ratio`** fois plus rapide que boral.  
 
 \vspace{0.5cm}
@@ -368,11 +383,12 @@ colnames(result) <- c("boral","jSDM")
 result$boral <- RMSE_boral_sim
 result$jSDM <- RMSE_jSDM_block_sim
 knitr::kable(result, digits=1, booktabs=TRUE,align = 'c') %>%
-	kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
+	kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)%>%
+  row_spec(1, color = "blue")
 ```
 
-### Comparaison des résultats
-#### Deviance
+### Comparaison des résultats obtenus avec `boral` et `jSDM`
+#### Déviance
 ```{r deviance, echo=FALSE}
 library(knitr)
 result <- data.frame(matrix(NA,2,5),row.names=c("boral", "jSDM"))
@@ -381,15 +397,17 @@ result[1,] <- c(Deviance_boral_sim, Deviance_boral_Mosquito, Deviance_boral_Euca
 result[2,] <- c( mean(mod_jSDM_block_sim$mcmc.Deviance),  mean(mod_jSDM_block_Mosquito$mcmc.Deviance),  mean(mod_jSDM_block_Eucalypts$mcmc.Deviance),  mean(mod_jSDM_block_Frogs$mcmc.Deviance), mean(mod_jSDM_block_Fungi$mcmc.Deviance))
 knitr::kable(result, digits=0, booktabs=TRUE,align = 'c') %>%
 	kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE,font_size
-=8)
+=8)%>%
+  column_spec(2, color = "blue")
 ```
 
 \vspace{0.5cm}
 
 #### Conséquences   
 
-- Petits jeux de données **et** modèles simples : R, *BUGS, JAGS, Stan, INLA, MCMCglmm
-- Larges jeux de données **ou** modèles hierarchiques complexes : R $+$ Rcpp $+$ RcppGSL $+$ RcppArmadillo
+- Petits jeux de données **et** modèles simples : boral, R + JAGS.
+
+- Larges jeux de données **ou** modèles hiérarchiques complexes : jSDM, R $+$ Rcpp $+$ RcppGSL $+$ RcppArmadillo.
 
 # Application aux données collectées à Madagascar
 
@@ -399,7 +417,7 @@ knitr::kable(result, digits=0, booktabs=TRUE,align = 'c') %>%
 
 - Inventaires forestiers nationaux réalisés entre 1994 et 1996 et répertoriant la présence ou l'absence de $555$ espèces végétales sur $751$ placettes d'inventaire.
  
-- Données climatiques et environnementales  disponibles sur le site \url{https://madaclim.cirad.fr}, on choisit d'utiliser $5$ variables pour lesquelles on extrait les valeurs correspondant aux coordonnées des placettes d'inventaires. 
+- Données climatiques et environnementales  disponibles sur le site \url{https://madaclim.cirad.fr}, on choisit d'utiliser $5$ variables pour lesquelles on extrait les valeurs correspondant aux coordonnées des placettes d'inventaire. 
 
 ```{r site-data-clim, echo=F,include=F}
 library(raster)
@@ -452,19 +470,21 @@ colnames(data) <- c("site",colnames(sp),"temp","prec","sais.temp","sais.prec","c
 \begin{center}
 ```{r head-site-data-clim, echo=F}
 knitr::kable(head(data), row.names=F, digits=1,booktabs=TRUE,align = 'c') %>%
-		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE,font_size =5)
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE,font_size =5) %>%
+  column_spec(2:4, color = "brown")%>%
+  column_spec(5:9, color = "blue")
 ```
 \end{center}
 
-## Ajustement du JSDM défini précédemment sur ces données
+## Ajustement du JSDM sur ces données
 
-### Ajustement du JSDM défini précédemment sur ces données
+### Ajustement du JSDM sur ces données
 
 On ajuste un modèle joint de distribution des espèces de fonction de lien probit à l'aide de la fonction `jSDM_probit_block` du package `jSDM`.  
 
 \vspace{0.3cm}
 
-#### Temps de calcul nécessaire à l'ajustement du modèle et nombre de paramètres à estimer  
+#### Ajustement du modèle et nombre de paramètres à estimer  
 
 \begin{center}
 ```{r results-mada, echo=F, include=T}
@@ -481,33 +501,11 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 ```
 \end{center}
 
-## Représentation des réultats 
+## Représentation des résultats 
 
 ### Traces et densité *a posteriori* des paramètres estimés
 
-
-On met en évidence les \blue{moyennes} des échantillons de $N_{samp}=1000$ valeurs obtenus, que l'on utilisera comme estimateur pour les paramètres.     
-\vspace{0.5cm}
-
-- Effets sites aléatoires et variance associée  
-
-\vspace{0.2cm}
-\begin{center}
-\includegraphics[width=0.4\textwidth,height=0.3\textheight]{figs/mada_rand_site.jpeg}
-\includegraphics[width=0.4\textwidth,height=0.3\textheight]{figs/mada_Valpha.jpeg}
-\end{center}
-
-### Trace et densité *a posteriori* des paramètres estimés
-
-- Effets espèces fixes associés aux variables climatiques  
-
-\begin{center}
-\includegraphics[width=0.4\textwidth,height=0.45\textheight]{figs/mada_beta1_sp2.jpeg}  
-\includegraphics[width=0.4\textwidth,height=0.45\textheight]{figs/mada_beta2_sp2.jpeg} 
-\includegraphics[width=0.4\textwidth,height=0.45\textheight]{figs/mada_beta3_sp2.jpeg}  
-\end{center}
-
-### Trace et densité *a posteriori* des paramètres estimés
+On met en évidence les \blue{moyennes} des échantillons de $N_{samp}=1000$ valeurs obtenus, que l'on utilisera comme estimateur pour les paramètres.  
 
 \bcols
 \bcol{0.5\textwidth}
@@ -527,51 +525,59 @@ On met en évidence les \blue{moyennes} des échantillons de $N_{samp}=1000$ val
 \begin{center}
 \includegraphics[width=0.8\textwidth,height=0.3\textheight]{figs/mada_W.jpeg}
 \end{center}
-\item Déviance calculée à partir des paramètres estimés \\   
-\vspace{0.1cm}
+\item Variance des effets sites aléatoires 
+\vspace{0.2cm}
 \begin{center}
-\includegraphics[width=0.8\textwidth,height=0.3\textheight]{figs/mada_deviance.jpeg}
+\includegraphics[width=0.8\textwidth,height=0.3\textheight]{figs/mada_Valpha.jpeg}
 \end{center}
 \end{itemize}
 \ecol
 \ecols
 
-### Probabilitées de présence estimées comparées aux occurences observées pour une espèce
+### Matrice de corrélation résiduelle entre les espèces estimée 
+
+Matrice des corrélation résiduelle des probabilités d'occurence des $50$ espèces les plus présentes calculée comme dans l'article @Warton2015. 
+\begin{center}
+\includegraphics[width=1.0\textwidth,height=0.75\textheight]{figs/mada_mat_corr_50.png}
+\end{center}
+
+### Probabilités de présence estimées comparées aux occurences observées pour une espèce
 
 \bcols
-\bcol{0.5\textwidth}
-\includegraphics[width=1.0\textwidth,height=0.7\textheight]{figs/mada_proba_sp1.png}
-\ecol
 \bcol{0.6\textwidth}
 \vspace{0.5cm}
 \includegraphics[width=1.0\textwidth,height=0.8\textheight]{figs/mada_presence_sp1_obs.png}
 \ecol
+\bcol{0.5\textwidth}
+\includegraphics[width=1.0\textwidth,height=0.7\textheight]{figs/mada_proba_sp1.png}
+\ecol
+
 \ecols
 
 ### Richesse spécifique estimée comparée à celle observée
 
 \bcols
-\bcol{0.5\textwidth} 
-\vspace{0.1cm}
-Richesse spécifique estimée pour chaque site par $\widehat{R_i}=\sum\limits_ {j=1}^{555} \widehat{\theta_{ij}}$.  
-
+\vspace{0.2cm}
+\bcol{0.44\textwidth}
+Richesse spécifique observée pour chaque site : $R_i=\sum\limits_ {j=1}^{555} y_{ij}$.   
 \begin{center}
-\includegraphics[width=1.0\textwidth]{figs/mada_species_richness.png}
+\includegraphics[width=1.0\textwidth,height=0.65\textheight]{figs/mada_species_richness_obs.png}
 \end{center}
 \ecol
-\bcol{0.5\textwidth}
-\vspace{0.1cm}
-Richesse spécifique observée pour chaque site calculée par $R_i=\sum\limits_ {j=1}^{555} y_{ij}$.  
-
+\bcol{0.15\textwidth} 
+\includegraphics[width=1.0\textwidth,height=0.3\textheight]{figs/mada_species_richness_obs_fit.png}
+\ecol
+\bcol{0.44\textwidth} 
+\noindent Richesse spécifique estimée pour chaque site par $\widehat{R_i}=\sum\limits_ {j=1}^{555} \widehat{\theta_{ij}}$.    
 \begin{center}
-\includegraphics[width=1.0\textwidth]{figs/mada_species_richness_obs.png}
+\includegraphics[width=1.0\textwidth, height=0.65\textheight]{figs/mada_species_richness.png}
 \end{center}
 \ecol
 \ecols
 
 ## Obtention de cartes de biodiversité par interpolation spatiale 
 
-### Probabilités de présence interpolées par krigeage ordinaire pour quatre espèces
+### Probabilités de présence issues de l'interpolation par krigeage ordinaire
 
 \begin{center}
 \includegraphics[height=0.85\textheight]{figs/mada_proba_OK.png}
@@ -598,13 +604,6 @@ Couvert forestier issu de l'article @Vieilledent2018
 
 \bcols
 \bcol{0.5\textwidth}
-Différents types de forêt sur l'île d'après l'article @Vieilledent2018 :
-\vspace{0.2cm}
-\begin{center}
-\includegraphics[width=0.45\textwidth,height=0.55\textheight]{figs/mada_forest_type.jpg}
-\end{center}
-\ecol
-\bcol{0.5\textwidth}
 \vspace{0.2cm}
 Diversité $\beta$ estimée selon la méthode de l'article @Allnutt2008 : 
 \vspace{0.2cm}
@@ -612,16 +611,23 @@ Diversité $\beta$ estimée selon la méthode de l'article @Allnutt2008 :
 \includegraphics[width=1.0\textwidth,height=0.65\textheight]{figs/mada_div_beta_forest.png}
 \end{center}
 \ecol
+\bcol{0.5\textwidth}
+Différents types de forêt sur l'île d'après l'article @Vieilledent2018 :
+\vspace{0.2cm}
+\begin{center}
+\includegraphics[width=0.45\textwidth,height=0.55\textheight]{figs/mada_forest_type.jpg}
+\end{center}
+\ecol
 \ecols
 \vspace{0.2cm}
 Les couleurs identiques représentent des communautés d'espèces similaires.
 
-### Discussion
+### Conclusion
 
-- **Perspectives écologiques** : utiliser les paramètres estimés et les données climatiques prévisionnelles pour les années 2050 et 2080 afin de mettre en évidence des lieux refuges de la biodiversité. 
-
-- **Limitations du packages `jSDM`** : tirage en bloc des effets espèces fixes et prise en compte des contraintes, manière d'évaluer la convergence de l'algorithme, prédiction seulement sur les placettes d'inventaire
+- **Limitations du package `jSDM`** : tirage en bloc des effets espèces fixes et prise en compte des contraintes, manière d'évaluer la convergence de l'algorithme, prédiction seulement sur les placettes d'inventaire
 
 - **Perspectives de développement** : indice de Gelman-Rubin pour évaluer la convergence, ajustement de modèles avec traits spécifiques, prédiction sur l'ensemble du territoire considéré en intégrant une auto-corrélation spatiale (CAR ou 2D spline) au modèle. 
+
+- **Perspectives écologiques** : utiliser les paramètres estimés et les données climatiques prévisionnelles pour les années 2050 et 2080 afin de mettre en évidence des lieux refuges de la biodiversité. 
 
 ### Références

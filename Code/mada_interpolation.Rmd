@@ -18,14 +18,13 @@ knitr::opts_chunk$set(
 ## Comparison of three methods on sites random effect
 ### Ordinary kriging 
 ```{r OK_alpha}
-library(rspatial)
 library(raster)
 library(rgdal)
 library(readr)
 library(dplyr)
 
 # sites effect 
-params_sites <- read.csv("~/Code/Report/data/params_sites.csv")
+params_sites <- read.csv("~/Documents/projet_BioSceneMada/Report/data/params_sites.csv")
 alpha <- data.frame(alpha=params_sites[,"alphas"])
 longlat <- SpatialPoints(params_sites[,c("long","lat")])
 proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66 +units=m")
@@ -34,7 +33,7 @@ xy = spTransform(longlat, CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km 
 # alpha 
 alpha_sp <- SpatialPointsDataFrame(xy, alpha) 
 # Use of one climatic covariable to get Madagascar borders 
-s <- stack("~/Code/Report/data/current.tif")
+s <- stack("~/Documents/projet_BioSceneMada/Report/data/current.tif")
 names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
               paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
               paste("pet",1:12,sep=""),"pet","cwd","ndm")
@@ -169,7 +168,7 @@ s <- stack(idw, ok_alpha[[1]], tps)
 ensemble <- sum(s * weights)
 
 cv_alphas <- data.frame(RMSE_IDW=rmi,RMSE_OK=rmk,RMSE_TPS=rmt,RMSE_E=rme,N_folds=nfolds)
-write.csv(cv_alphas, file = "~/Code/Report/data/cv_alphas.csv", row.names = F)
+write.csv(cv_alphas, file = "~/Documents/projet_BioSceneMada/Report/data/cv_alphas.csv", row.names = F)
 
 # Compare maps
 par(mfrow=c(1,1),oma=c(1, 0, 1.4, 1))
@@ -240,7 +239,7 @@ plot(ok_W1[[1]],main="W1")
 plot(ok_W2[[1]],main="W2")
 title("Variables latentes interpolées par OK", outer = T)
 
-save(ok_alpha, ok_W1, ok_W2, file="~/Code/Report/data/OK.RData")
+save(ok_alpha, ok_W1, ok_W2, file="~/Documents/projet_BioSceneMada/Report/data/OK.RData")
 ```
 
 
@@ -249,10 +248,10 @@ save(ok_alpha, ok_W1, ok_W2, file="~/Code/Report/data/OK.RData")
 ```{r calcul-probit-theta, eval=F}
 remove(list = ls())
 # load  OK interpolation of sites parameters 
-load("~/Code/Report/data/OK.RData")
+load("~/Documents/projet_BioSceneMada/Report/data/OK.RData")
 
 # Covariables on Madagascar
-s <- stack("~/Code/Report/data/current.tif")
+s <- stack("~/Documents/projet_BioSceneMada/Report/data/current.tif")
 names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
               paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
               paste("pet",1:12,sep=""),"pet","cwd","ndm")
@@ -264,7 +263,7 @@ remove(s)
 clim_var2 <- stack(clim_var,clim_var^2)
 # Center and reduce climatic variables 
 # import climatic data
-trees <- read_csv("~/Code/Report/data/forest_inventory_Madagascar.csv")
+trees <- read_csv("~/Documents/projet_BioSceneMada/Report/data/forest_inventory_Madagascar.csv")
 longlat <- SpatialPoints(unique(cbind(trees$long,trees$lat)))
 proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66")
 xy <- spTransform(longlat, CRS("+init=epsg:32738"))
@@ -286,7 +285,7 @@ proj4string(scaled_clim_var2) <- proj4string(ok_alpha)
 remove(clim_var2)
 
 # Species parameters 
-params_species <- read.csv(file = "~/Code/Report/data/params_species.csv")
+params_species <- read.csv(file = "~/Documents/projet_BioSceneMada/Report/data/params_species.csv")
 lambda_1 <- as.matrix(params_species[,"lambda_1"])
 lambda_2 <- as.matrix( params_species[,"lambda_2"])
 beta <- as.matrix(params_species[,3:13])
@@ -304,8 +303,7 @@ for (p in 1:np) {
 }
 names(Xbeta_1) <- paste0("Xbeta_",1)
 ## Wlambda_1
-Wlambda_1 <- ok_W1$W1  * lambda_1[1] +
-  ok_W2$W2  * lambda_2[1]
+Wlambda_1 <- ok_W1$W1  * lambda_1[1] + ok_W2$W2  * lambda_2[1]
 ## probit_theta_1
 probit_theta_1 <- Xbeta_1 + Wlambda_1 + ok_alpha$alphas
 probit_theta <- probit_theta_1
@@ -326,7 +324,7 @@ for (j in 2:floor(nrow(beta)/2)) {
   probit_theta <- stack(probit_theta,probit_theta_j)
 }
 names(probit_theta) <- make.names(params_species$species[1:floor(nrow(beta)/2)])
-save(probit_theta,file="~/Code/Report/data/OK_probit_theta1.RData")
+save(probit_theta,file="~/Documents/projet_BioSceneMada/Report/data/OK_probit_theta1.RData")
 plot(probit_theta[[1]],main="Probit des probabilités de présence d'Ocotea laevis interpolées")
 remove(probit_theta)
 
@@ -362,7 +360,7 @@ for (j in (2+floor(nrow(beta)/2)):nrow(beta) ){
   probit_theta <- stack(probit_theta,probit_theta_j)
 }
 names(probit_theta) <- make.names(params_species$species[(1+floor(nrow(beta)/2)):nrow(beta)])
-save(probit_theta,file="~/Code/Report/data/OK_probit_theta2.RData")
+save(probit_theta,file="~/Documents/projet_BioSceneMada/Report/data/OK_probit_theta2.RData")
 remove(list=c("probit_theta","probit_theta_j","Xbeta_1","Xbeta_j","Wlambda_j"))
 ```
 
@@ -370,9 +368,9 @@ remove(list=c("probit_theta","probit_theta_j","Xbeta_1","Xbeta_j","Wlambda_j"))
 
 ```{r calcul-theta, eval=F}
 # First half
-params_species <- read.csv(file = "~/Code/Report/data/params_species.csv")
+params_species <- read.csv(file = "~/Documents/projet_BioSceneMada/Report/data/params_species.csv")
 nsp<-nrow(params_species)
-load("~/Code/Report/data/OK_probit_theta1.RData")
+load("~/Documents/projet_BioSceneMada/Report/data/OK_probit_theta1.RData")
 theta <- probit_theta
 remove(probit_theta)
 values(theta[[1]]) <- pnorm(as.vector(values(theta[[1]])))
@@ -380,13 +378,13 @@ for (j in 2:floor(nsp/2)){
 values(theta[[j]]) <- pnorm(as.vector(values(theta[[j]])))
 }
 names(theta) <- make.names(params_species$species[1:floor(nsp/2)])
-save(theta,file="~/Code/Report/data/OK_theta1.RData")
+save(theta,file="~/Documents/projet_BioSceneMada/Report/data/OK_theta1.RData")
 par(mfrow=c(1,2),oma=c(1, 0, 1.4,1))
 plot(theta[[c(1,175)]],cex.main=0.7)
 title(main="Probabilités de présence interpolées",outer=T,cex.main=0.9)
 # Second half
 remove(theta)
-load("~/Code/Report/data/OK_probit_theta2.RData")
+load("~/Documents/projet_BioSceneMada/Report/data/OK_probit_theta2.RData")
 theta <- probit_theta
 remove(probit_theta)
 values(theta[[1]]) <- pnorm(as.vector(values(theta[[1]])))
@@ -394,28 +392,28 @@ for (j in 2:(1+floor(nsp/2))){
 values(theta[[j]]) <- pnorm(as.vector(values(theta[[j]])))
 }
 names(theta) <- make.names(params_species$species[(1+floor(nsp/2)):nsp])
-save(theta,file="~/Code/Report/data/OK_theta2.RData")
+save(theta,file="~/Documents/projet_BioSceneMada/Report/data/OK_theta2.RData")
 remove(theta)
 ```
 
 ## Representation of species richness in Madagasar
 
 ```{r species-richness, eval=F}
-load("~/Code/Report/data/OK_theta1.RData")
+load("~/Documents/projet_BioSceneMada/Report/data/OK_theta1.RData")
 species_richness <- sum(theta)
 remove(theta)
-load("~/Code/Report/data/OK_theta2.RData")
+load("~/Documents/projet_BioSceneMada/Report/data/OK_theta2.RData")
 species_richness <- species_richness + sum(theta)
 remove(theta)
-save(species_richness,file="~/Code/Report/data/specific_richness.RData")
+save(species_richness,file="~/Documents/projet_BioSceneMada/Report/data/specific_richness.RData")
 plot(species_richness, main = "Richesse spécifique interpolée")
 ```
 
 ```{r specific_richness_forest}
-load(file="~/Code/Report/data/specific_richness.RData")
-load(file="~/Code/Report/data/forest_res.RData")
+load(file="~/Documents/projet_BioSceneMada/Report/data/specific_richness.RData")
+load(file="~/Documents/projet_BioSceneMada/Report/data/forest_res.RData")
 
-# forest <- raster("~/Code/Report/data/for2000.tif")
+# forest <- raster("~/Documents/projet_BioSceneMada/Report/data/for2000.tif")
 # # unit m to km
 # extent(forest) <- extent(c(xmin(forest), xmax(forest), ymin(forest), ymax(forest))/1000)
 # proj4string(forest) <- CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km +no_defs +ellps=WGS84 +towgs84=0,0,0")

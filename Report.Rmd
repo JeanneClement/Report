@@ -419,7 +419,7 @@ a' = a + \frac{I}{2} \text{ et } b' = b + \frac{1}{2}\sum\limits_{i=1}^I \alpha_
 
 ### Echantillonneur de Gibbs et priors conjugués
 
-L’algorithme utilisé pour estimer les paramètres du modèle logit est donc le suivant :
+L’algorithme utilisé pour estimer les paramètres du modèle probit est donc le suivant :
 \begin{itemize}
 \item Définir les constantes $N_{Gibbs}$, $N_{burn}$, $N_{thin}$ telles que $N_{Gibbs}$ correspond au nombre d’itérations effectuées par l’échantillonneur de Gibbs,  $N_{burn}$ au nombre d’itérations nécessaires pour le burn-in ou temps de chauffe et $N_{samp} = \dfrac{N_{Gibbs}-N_{burn}}{N_{thin}}$ au nombre de valeurs estimées retenues pour chaque paramètre. En effet on enregistre les paramètres estimés à certaines itérations, afin d’obtenir un échantillon de $N_{samp}$ valeurs distribuées selon la distribution $a \ posteriori$ pour chacun des paramètres.
 \vspace{0.2cm}
@@ -488,7 +488,7 @@ P \text{ tel que } \mathbb{P}(\lambda_{jl} = 0)=1  & \text{si } l>j
 
 ### Principe d'un algorithme de Metropolis adaptatif 
 
-Cet algorithme appartient aux méthode MCMC et permet d’obtenir une réalisation du paramètre $\theta=(\theta_),\ldots,\theta_m)$ selon leurs distributions conditionnelles *a posterirori* $\uppi(\theta_i \ | \ \theta_1,\dots,\theta_{i-1},\theta_{i+1},\ldots,\theta_m, x)$, pour $i =1,\ldots,m$ connues à une constante multiplicative près.  
+Cet algorithme appartient aux méthode MCMC et permet d’obtenir une réalisation du paramètre $\theta=(\theta_1,\ldots,\theta_m)$ selon leurs distributions conditionnelles *a posterirori* $\uppi(\theta_i \ | \ \theta_1,\dots,\theta_{i-1},\theta_{i+1},\ldots,\theta_m, x)$, pour $i =1,\ldots,m$ connues à une constante multiplicative près.  
 On le qualifie d'adaptatif car la variance de la densité instrumentale conditionnelle utilisée est adaptée en fonction du nombre d'acceptation lors des dernières itérations. 
 \begin{itemize}
 \item \textbf{Initialisation} : $\theta^{(0)}= (\theta_1^{(0)},\ldots,\theta_m^{(0)})$ fixés arbitrairement, les nombres d'acceptation $(n^A_{i})_{i=1,\ldots,m}$ sont intialisés à $0$ et les variances $(\sigma^2_i)_{i=1,\ldots,m}$ sont intialisées à $1$.
@@ -693,14 +693,15 @@ Dans l'article @Warton2015 l'ajustement de modèles joints de distributions des 
 
 Afin de comparer ces packages on utilise un jeu de donnée simulé de la même manière que précédemment selon le modèle probit ainsi que quatre jeux de données réels issus de l'article @Wilkinson2019 qui compare l'ajustement de différents modèle joints de distribution des espèces sur ces données et en particulier ceux implémentés par les packages gjam, HMSC et boral.
 \begin{table}[H]\caption[Dimensions des jeux de données utilisés et nombre de paramètres à estimer]{Dimensions des jeux de données utilisés et nombre de paramètres à estimer}
+
 ```{r data,echo=F,include=T}
 library(knitr)
 result <- data.frame(matrix(NA,4,5),row.names=c("Nombre d'espèces", "Nombre de sites","Nombre de covariables","Nombre de paramètres à estimer"))
 colnames(result) <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Champignons")
 result[1,]<- c(100,16,12,9,11)
-result[2,] <- c(300 ,167,458,104,800)
+result[2,] <- c(300 ,167,455,104,438)
 result[3,] <- c(2,13 ,7 ,3,12 )
-result[4,] <- c((2+1)*100+2*100+2*300+300, (13+1)*16+2*16+2*167+167, (7+1)*12+2*12+3*458, (3+1)*9+2*9+3*104, (12+1)*11+2*11+3*800)
+result[4,] <- c((2+1)*100+2*100+2*300+300, (13+1)*16+2*16+2*167+167, (7+1)*12+2*12+3*455, (3+1)*9+2*9+3*104, (12+1)*11+2*11+3*438)
 kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
 ```
@@ -708,20 +709,15 @@ kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
 
 ## Comparaison de la pertinence des résultas obtenus et des temps de calcul nécessaires avec chacun des packages 
 
-On ajuste le modèle joint de distribution des espèces défini précèdemment sur des données simulées selon le modèle probit ainsi que sur quatres jeux de données réels à l'aide du package jSDM d'une part et boral d'autre part. Puis puis on compare les résultats obtenus après $35000$ itérations dont $30000$ de burn-in ainsi que les temps de calculs nécessaires. 
+On ajuste le modèle joint de distribution des espèces défini précèdemment sur des données simulées selon le modèle probit ainsi que sur quatres jeux de données réels à l'aide du package jSDM d'une part et boral d'autre part. Puis puis on compare les résultats obtenus après $25000$ itérations dont $10000$ de burn-in ainsi que les temps de calculs nécessaires. 
 \begin{table}[H]\caption[Temps de calcul nécessaire à l'ajustement du modèle pour chacun des jeux de données en minutes]{Temps de calcul nécessaire à l'ajustement du modèle pour chacun des jeux de données en minutes}
-```{r time-jDM-boral,echo=F,include=T}
+```{r time-jSDM-boral,echo=F, include=T}
 library(dplyr)
-load("~/Code/Report/data/jSDM_boral_sim.RData")
-load("~/Code/Report/data/jSDM_boral_mosquito.RData")
-load("~/Code/Report/data/jSDM_boral_eucalypts.RData")
-load("~/Code/Report/data/jSDM_boral_frogs.RData")
-load("~/Code/Report/data/boral_fungi.RData")
-load("~/Code/Report/data/jSDM_fungi.RData")
+load("data/jSDM-boral-comparison.rda")
 result <- data.frame(matrix(NA,2,5),row.names=c("boral","jSDM "))
 colnames(result) <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Champignons")
-result[1,]=c(T_boral_sim, T_boral_Mosquito, T_boral_Eucalypts, T_boral_Frogs, T_boral_Fungi)
-result[2,]=c(T_jSDM_block_sim, T_jSDM_block_Mosquito, T_jSDM_block_Eucalypts, T_jSDM_block_Frogs, T_jSDM_block_Fungi)
+result[1,]=round(as.numeric(c(T_boral_sim, T_boral_Mosquitos, T_boral_Eucalypts, T_boral_Frogs, T_boral_Fungi),units="mins"),1)
+result[2,]=round(as.numeric(c(T_jSDM_sim, T_jSDM_Mosquitos, T_jSDM_Eucalypts, T_jSDM_Frogs, T_jSDM_Fungi),units="mins"),1)
 knitr::kable(result, row.names=T, digits=1,booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
 ```
@@ -733,19 +729,20 @@ On constate que les temps de calcul de jSDM sont largement inférieurs à ceux n
 result <- data.frame(matrix(NA,1,2),row.names=  c("RMSE"))
 colnames(result) <- c("boral","jSDM")
 result$boral <- RMSE_boral_sim
-result$jSDM <- RMSE_jSDM_block_sim
-kable(result, row.names=T, digits=2,booktabs=TRUE,align = 'c') %>%
+result$jSDM <- RMSE_jSDM_sim
+kable(result, row.names=T, digits=4,booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
 ```
 \end{table} 
-Le RMSE associé à jSDM est trois fois inférieur à celui de boral ce qui indique que les résultats obtenus avec jSDM sur le jeu de données simulé sont bien plus proches de ceux attendus que les paramètres estimés avec boral. On peut l'expliquer par une convergence plus rapide de l'algorithme utilisé par jSDM dûe à l'utilisation de priors conjugués et au tirage des paramètres par espèce selon une loi jointe. 
+Le RMSE associé à jSDM est équivalent à celui de boral ce qui indique que les résultats obtenus avec jSDM sur le jeu de données simulé sont aussi proches de ceux attendus que les paramètres estimés avec boral.
+
 \begin{table}[H]\caption[Déviances calculées à partir des paramètres estimés avec chacun des packages]{Déviances calculées à partir des paramètres estimés avec chacun des packages}
 ```{r deviance,echo=F,include=T}
 library(knitr)
 result <- data.frame(matrix(NA,2,5),row.names=c("boral", "jSDM"))
 colnames(result) <- c("Simulation","Moustiques","Eucalyptus","Grenouilles","Champignons")
-result[1,] <- c(Deviance_boral_sim, Deviance_boral_Mosquito, Deviance_boral_Eucalypts, Deviance_boral_Frogs, Deviance_boral_Fungi)
-result[2,] <- c( mean(mod_jSDM_block_sim$mcmc.Deviance),  mean(mod_jSDM_block_Mosquito$mcmc.Deviance),  mean(mod_jSDM_block_Eucalypts$mcmc.Deviance),  mean(mod_jSDM_block_Frogs$mcmc.Deviance),  mean(mod_jSDM_block_Fungi$mcmc.Deviance))
+result[1,] <- c(Deviance_boral_sim, Deviance_boral_Mosquitos, Deviance_boral_Eucalypts, Deviance_boral_Frogs, Deviance_boral_Fungi)
+result[2,] <-  c(Deviance_jSDM_sim, Deviance_jSDM_Mosquitos, Deviance_jSDM_Eucalypts, Deviance_jSDM_Frogs, Deviance_jSDM_Fungi)
 kable(result, row.names=T, digits=0,booktabs=TRUE,align = 'c') %>%
 		kableExtra::kable_styling(latex_options=c("HOLD_position","striped"), full_width=FALSE)
 ```
@@ -754,7 +751,7 @@ Les déviances obtenues avec jSDM sont bien inférieures à celles calculées av
 
 ## Représentation des paramètres estimés pour les différents jeux de données 
 
-\begin{figure}[H]
+\begin{figure}
 \caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les données simulées]{Représentation des résultats obtenus avec jSDM en fonction de ceux estimés avec  boral pour les données simulées}
 \centering
 \includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-simulation-1.pdf}
@@ -766,11 +763,11 @@ Les déviances obtenues avec jSDM sont bien inférieures à celles calculées av
 \begin{figure}[H]
 \caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les moustiques]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les moustiques}
 \centering
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-1.pdf} 
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-2.pdf}\\ 
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-3.pdf}  
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-4.pdf}\\ 
-\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-mosquito-5.pdf} 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Mosquitos-1.pdf} 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Mosquitos-2.pdf}\\ 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Mosquitos-3.pdf}  
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Mosquitos-4.pdf}\\ 
+\includegraphics[height=0.45\textheight, width=0.4\textwidth]{Illustrations/jSDM-boral-Mosquitos-5.pdf} 
 \end{figure} 
 \begin{figure}[H]
 \caption[Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les eucalyptus]{Représentation des réultats obtenus avec jSDM en fonctions de ceux estimés avec  boral pour les eucalyptus}
@@ -864,6 +861,7 @@ On ajuste un modèle joint de distribution des espèces de fonction de lien prob
 De plus on affiche une estimation de la densité des échantillons obtenus qui devrait correspondre aux distributions *a posteriori* définies et donc être de forme gaussienne.  
 On met en évidence les moyennes des $N_{samp}$-échantillons en bleu, que l'on utilisera comme estimateur pour les paramètres. 
 \begin{table}[H]\caption[Temps de calcul nécessaire à l'ajustement du modèle sur les données de Madagascar et nombre de paramètres à estimer]{Temps de calcul nécessaire à l'ajustement du modèle sur les données de Madagascar et nombre de paramètres à estimer}
+
 ```{r results-mada, echo=F, include=T}
 library(dplyr)
 load("data/mada_mod.RData")
@@ -895,7 +893,7 @@ knitr::kable(results, row.names=F, digits=0,booktabs=TRUE,align = 'c') %>%
 \includegraphics[width=10cm,height=10cm]{Illustrations/mada_lambda_sp1.jpeg}\\
 \includegraphics[width=10cm,height=10cm]{Illustrations/mada_lambda_sp2.jpeg}
 \end{figure}
-Dans l'ensemble les traces et les densités des paramètres indiquent la convergence de l'algorithme. En effet on observe sur les traces que les valeurs oscillent autour de moyennes sans présenter de tendance croissante ou décroissante et on consate que les densités sont assez lisses et pour la plupart de forme gaussienne mise a part celle de l'effet espèce $\lambda_{11}$ ce qui est certainement dû à la façon d'imposer des valeurs positives à ce paramètre.
+Dans l'ensemble les traces et les densités des paramètres indiquent la convergence de l'algorithme. En effet on observe sur les traces que les valeurs oscillent autour de moyennes sans présenter de tendance croissante ou décroissante et on constate que les densités sont assez lisses et pour la plupart de forme gaussienne mise a part celle de l'effet espèce $\lambda_{11}$ ce qui est certainement dû à la façon d'imposer des valeurs positives à ce paramètre.
 \begin{figure}[H]
  \caption[Traces et densités des variables latentes $W_1$ et $W_2$ estimées pour un site]{Trace et densité estimées des variables latentes $W_1$ et $W_2$ estimées pour un site}
   \centering
@@ -973,7 +971,7 @@ La présence d'une structure spatiale où les observations proches les unes des 
 On est ainsi en mesure d'interpoler les effets sites pour l'ensemble de l'île à partir de ceux estimés pour les placettes d'inventaire à l'aide du package gstat selon trois méthodes d'interpolation spatiales afin de choisir celle qui donne les meilleurs résultats en s'inspirant de l'article @Robinson2006. 
 D'une part on utilise la méthode déterministe de pondération par distance inverse, nommée **IDW** pour l'interpolation multivariée à partir de l'ensemble connu de points dispersés. Les valeurs attribuées à des points inconnus sont calculées avec une moyenne pondérée des valeurs disponibles aux sites connus qui fait appel à l'inverse de la distance par rapport à chaque point connu lors de l'attribution des poids.  
 
-D'autre part on procède par krigeage ordinaire (**OK**) ce qui consiste à considérer les valeurs des sites inconnus comme une combinaison linéaire des valeurs connues dont les coefficients $\lambda_i$ sont estimés en minimisant la variance $\sigma^2_e$ de l'erreur d'estimation théorique définie par $e=Z_v -Z_v^*$, avec $Z_v$ la variable aléatoire que l'on veut estimer et $Z_v^*=\sum_{i=1^n}\lambda_i Z_i$ son estimateur, où les $(Z_i)_{i=1}^n$ sont les valeurs des sites connus.  
+D'autre part on procède par krigeage ordinaire (**OK**) ce qui consiste à considérer les valeurs des sites inconnus comme une combinaison linéaire des valeurs connues dont les coefficients $\lambda_i$ sont estimés en minimisant la variance $\sigma^2_e$ de l'erreur d'estimation théorique définie par $e=Z_v -Z_v^*$, avec $Z_v$ la variable aléatoire que l'on veut estimer et $Z_v^*=\sum_{i=1}^n\lambda_i Z_i$ son estimateur, où les $(Z_i)_{i=1}^n$ sont les valeurs des sites connus.  
 La variance $\sigma^2_e$ dépend des coefficients ainsi que du variogramme experimental qui tient compte non seulement de la distance entre les données et les points d'estimation, mais également des distances entre les données deux-à-deux.
 En effet le variogramme expérimental mesure le degré moyen de dissimilitude entre des valeurs non échantillonnées et une valeur connue voisine et peut donc représenter l'auto-corrélation à différentes distances.  
 La valeur du variogramme expérimental pour une distance de séparation de $h$ est $\hat{\gamma}(h)= \frac{1}{2N(h)}\sum\limits_{i=1}^{N(h)}(z(x_i)-z(x_i+h))^2$ où $N(h)$ est le nombre de paires de données séparées de la distance $h$. Si les valeurs de $z(x_i)$ et $z(xi + h)$ sont auto-corrélées, le résultat sera faible par rapport à une paire de points non corrélés. A partir du variogramme expérimental un modèle approprié par exemple exponentiel est ensuite ajusté, habituellement par les moindres carrés pondérés dont les paramètres seront ensuite utilisés dans la procédure de krigeage.    
@@ -990,7 +988,7 @@ Chaque effet site calculé pour Ensemble est donc de la forme $\widetilde{\alpha
 La moyenne de $k$ RMSE obtenus pour chaque méthode est présentée dans le tableau.}
 ```{r results-cv, echo=F, include=T}
 library(dplyr)
-cv_alphas<-read.csv("~/Code/Report/data/cv_alphas.csv")
+cv_alphas<-read.csv("data/cv_alphas.csv")
 cv_alphas <- cv_alphas[,1:4]
 colnames(cv_alphas)<- c("IDW","OK","TPS","Ensemble")
 rownames(cv_alphas)<-c("RMSE")

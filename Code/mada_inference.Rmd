@@ -23,9 +23,9 @@ library(rgdal)
 library(readr)
 library(dplyr)
 
-# foresr inventory
-trees <- read_csv("~/Code/Report/data/forest_inventory_Madagascar.csv")
-trees <- trees[-which(is.na(trees$sp)),]
+# forest inventory
+trees <- read_csv("~/Documents/projet_BioSceneMada/Report/data/forest_inventory_Madagascar.csv")
+#trees <- trees[-which(is.na(trees$sp)),]
 nplot <- length(unique(trees$plot))
 species <- unique(trees$taxize)
 nsp <- length(species)
@@ -41,7 +41,7 @@ for (i in 1:nplot){
 }
 
 # climatic variables 
-s <- stack("~/Code/Report/data/current.tif")
+s <- stack("~/Documents/projet_BioSceneMada/Report/data/current.tif")
 names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
               paste("prec",1:12,sep=""),paste("bio",1:19,sep=""),
               paste("pet",1:12,sep=""),"pet","cwd","ndm")
@@ -76,7 +76,7 @@ scaled_data_clim2 <- as_tibble(cbind(scale(ord_data_clim2[1:nparam]),ord_data_cl
 ## Design matrix
 X <- data.frame(intercept=rep(1,nplot),select(as_tibble(scaled_data_clim2),-lat,-long, -site))
 np<-ncol(X)
-write.csv(X, "~/Code/Report/data/X.csv", row.names = F)
+write.csv(X, "~/Documents/projet_BioSceneMada/Report/data/X.csv", row.names = F)
 
 ```
 
@@ -91,19 +91,20 @@ n_latent <- 2
 library(jSDM)
 
 T1<- Sys.time()
-mod_all <- jSDM::jSDM_probit_block (
+mod_all <- jSDM::jSDM_binomial_probit_block (
   # Response variable 
-  presence_site_sp = as.matrix(PA), 
+  presence_site_sp = PA, 
   # Explanatory variables 
   site_suitability = ~.,   
   site_data =X[,-1], 
   n_latent=2,
+  site_effect="random", 
   # Chains
   burnin= 90000, mcmc=10000, thin=10,
   # Starting values
   alpha_start=0, beta_start=0,
   lambda_start=0, W_start=0,
-  V_alpha_start=1, 
+  V_alpha=1, 
   # Priors
   shape=0.5, rate=0.0005,
   mu_beta=0, V_beta=1.0E6,
@@ -126,7 +127,7 @@ params_sites <- data.frame(plot = scaled_data_clim2$site,
                            lat = scaled_data_clim2$lat,
                            long = scaled_data_clim2$long,
                            alphas, Valpha = rep(Valpha,nplot),W1,W2)
-write.csv(params_sites, file = "~/Code/Report/data/params_sites.csv",row.names = F)
+write.csv(params_sites, file = "~/Documents/projet_BioSceneMada/Report/data/params_sites.csv",row.names = F)
 
 ### fixed species effect lambdas and betas 
 lambdas <- matrix(0,nsp,n_latent)
@@ -143,17 +144,17 @@ for (j in 1:nsp){
 colnames(betas) <- c("beta_intercept",paste0("beta_",colnames(X[,-1])))
 params_species <- data.frame(species = colnames(PA), Id_species = c(1:nsp),
                              betas, lambda_1 = lambdas[,1], lambda_2 = lambdas[,2])
-write.csv(params_species, file ="~/Code/Report/data/params_species.csv",row.names = F)
+write.csv(params_species, file ="~/Documents/projet_BioSceneMada/Report/data/params_species.csv",row.names = F)
 
 ## probit_theta_pred
-write.csv(mod_all$probit_theta_pred, file = "~/Code/Report/data/probit_theta_pred.csv", row.names = F)
+write.csv(mod_all$probit_theta_pred, file = "~/Documents/projet_BioSceneMada/Report/data/probit_theta_pred.csv", row.names = F)
 
-save(mod_all,T_all,file="~/Code/Report/data/mada_mod.RData")
+save(mod_all,T_all,file="~/Documents/projet_BioSceneMada/Report/data/mada_mod.RData")
 ```
 
 # Representation des résultats 
 ```{r results-Mada, cache=T,echo=F,include=F,eval=F}
-load("~/Code/Report/data/mada_mod.RData")
+load("~/Documents/projet_BioSceneMada/Report/data/mada_mod.RData")
 ## alpha_i of the first site
 par(mfrow=c(1,2),oma=c(1, 0, 1.4, 0))
 coda::traceplot(mod_all$mcmc.alpha[,10],main="Trace alpha_10",cex.main=1.6)
@@ -216,8 +217,7 @@ hist(mod_all$probit_theta_pred, main = "probit(theta) estimé", xlab ="probit(th
 ## Effets aléatoires des sites  
 
 ```{r representation-alphas}
-library(rspatial)
-params_sites <- read.csv("~/Code/Report/data/params_sites.csv")
+params_sites <- read.csv("~/Documents/projet_BioSceneMada/Report/data/params_sites.csv")
 alpha <- data.frame(alpha=params_sites[,"alphas"])
 longlat <- SpatialPoints(params_sites[,c("long","lat")])
 proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66 +units=m")
@@ -227,7 +227,7 @@ xy = spTransform(longlat, CRS("+proj=utm +zone=38 +south +datum=WGS84 +units=km 
 alpha_sp <- SpatialPointsDataFrame(xy, alpha) 
 # Madagascar borders
 TA <- CRS("+init=epsg:32738 +units=km")
-MADA <- readRDS("~/Code/Report/data/MADA.rds")
+MADA <- readRDS("~/Documents/projet_BioSceneMada/Report/data/MADA.rds")
 MADA <- spTransform(MADA, TA)
 par(mfrow=c(1,1))
 # define groups for mapping
@@ -268,7 +268,7 @@ spplot(W2_sp, 'W2', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6,
 
 ## Probabilités de présence
 ```{r proba_representation}
-probit_theta_pred <- read.csv("~/Code/Report/data/probit_theta_pred.csv")
+probit_theta_pred <- read.csv("~/Documents/projet_BioSceneMada/Report/data/probit_theta_pred.csv")
 theta_pred <- apply(probit_theta_pred,c(1,2),pnorm)
 theta_pred <- data.frame(theta_pred=theta_pred)
 theta_pred_sp <- SpatialPointsDataFrame(xy, theta_pred)
@@ -294,6 +294,7 @@ legend("right",legend=c("presence","absence") ,pch=c(16,1))
 
 
 ## Estimation de la richesse spécifique et comparaison avec celle observée 
+
 ```{r species-richness-representation}
 species_richness <- data.frame(species_richness= apply(theta_pred,1,sum))
 species_richness_sp <- SpatialPointsDataFrame(xy, species_richness)
@@ -303,7 +304,7 @@ pols <- list("sp.polygons", MADA, fill = "lightgray")
 spplot(species_richness_sp, 'species_richness', cuts=cuts, col.regions=col, sp.layout=pols, pch=20, cex=1.6, key.space="right", main ="Richesse spécifique estimée")
 
 species_richness_obs <- data.frame(species_richness_obs=apply(PA,1,sum))
-plot( species_richness_obs[,1],species_richness$species_richness, main=
+plot(species_richness_obs$species_richness_obs,species_richness$species_richness, main=
 "Richesse spécifique esimée en fonction de celle observée", xlab=" observeé",ylab="estimée",cex.main=1.4,cex.lab=1.3)
 abline(a=0,b=1,col='red')
 species_richness_obs_sp <- SpatialPointsDataFrame(xy, species_richness_obs)
@@ -325,19 +326,20 @@ nthin <- 10
 ngibbs <- nsamp+nburn
 
 T1<- Sys.time()
-mod_50 <- jSDM::jSDM_probit_block (
+mod_50 <- jSDM::jSDM_binomial_probit_block (
   # Response variable 
-  presence_site_sp = as.matrix(PA_50), 
+  presence_site_sp = PA_50, 
   # Explanatory variables 
   site_suitability = ~.,   
   site_data =X[,-1], 
   n_latent=2,
+  site_effect="random",
   # Chains
   burnin= 90000, mcmc=10000, thin=10,
   # Starting values
   alpha_start=0, beta_start=0,
   lambda_start=0, W_start=0,
-  V_alpha_start=1, 
+  V_alpha=1, 
   # Priors
   shape=0.5, rate=0.0005,
   mu_beta=0, V_beta=1.0E6,
@@ -346,10 +348,11 @@ mod_50 <- jSDM::jSDM_probit_block (
   seed=1234, verbose=1)
 T2 <- Sys.time()
 T_50 <- difftime(T2,T1)
-save(mod_50, file="~/Code/Report/data/mada_mod_50.RData")
+save(mod_50, file="~/Documents/projet_BioSceneMada/Report/data/mada_mod_50.RData")
 ```
 
 ```{r matrice de corrélation}
+load("~/Documents/projet_BioSceneMada/Report/data/mada_mod_50.RData")
 lv2.cor <- jSDM::get_residual_cor(mod_50)
 lv2.cor$reorder.cor.mean <- corrplot::corrMatOrder(lv2.cor$cor.mean, order = "FPC", hclust.method = "average")
 rownames(lv2.cor$cor.mean) <- colnames(lv2.cor$cor.mean) <- rownames(lv2.cor$cor.mean) <- colnames(lv2.cor$cor.mean) <- colnames(mod_50$model_spec$presences)

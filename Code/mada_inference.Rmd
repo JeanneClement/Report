@@ -24,7 +24,7 @@ library(readr)
 library(dplyr)
 
 # forest inventory
-trees <- read_csv("~/Documents/projet_BioSceneMada/Report/data/forest_inventory_Madagascar.csv")
+trees <- read_csv("~/Documents/projet_BioSceneMada/forest_inventory_Madagascar.csv")
 #trees <- trees[-which(is.na(trees$sp)),]
 nplot <- length(unique(trees$plot))
 species <- unique(trees$taxize)

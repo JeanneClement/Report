@@ -29,7 +29,7 @@ library(readr)
 library(dplyr)
 library(sp)
 
-trees <- read_csv("~/Code/Report/data/forest_inventory_Madagascar.csv")
+trees <- read_csv("~/Documents/projet_BioSceneMada/forest_inventory_Madagascar.csv")
 trees <- trees[-which(is.na(trees$sp)),]
 # climatic variables 
 s <- stack("~/Code/Report/data/current.tif")

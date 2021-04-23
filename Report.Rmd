@@ -826,7 +826,7 @@ names(s) <- c(paste("tmin",1:12,sep=""),paste("tmax",1:12,sep=""),
 clim_var <- dropLayer(s, c(1:36,38,39,41:47,49,50,52:68,70))
 names(clim_var) <- c("temp","prec","sais_temp","sais_prec","cwd")
 # foresr inventory
-trees <- read_csv("data/forest_inventory_Madagascar.csv")
+trees <- read_csv("~/Documents/projet_BioSceneMada/forest_inventory_Madagascar.csv")
 # spatial points of each plot
 longlat <- SpatialPoints(unique(cbind(trees$long,trees$lat)))
 proj4string(longlat) <- CRS("+proj=longlat +ellps=clrk66")

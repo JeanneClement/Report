@@ -1,0 +1,829 @@
+---
+title: "Rapport détaillé"
+subtitle: "Comité de suivi de thèse : 2ème année"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: "Jeanne Clément"
+output:
+  bookdown::pdf_document2:
+    extra_dependencies: "subfig"
+    latex_engine : xelatex
+    fig_caption : yes
+    pandoc_args: ["--number-sections"]
+header-includes: 
+  - \usepackage{xassoccnt}
+  - \usepackage{upgreek}
+  - \usepackage{easybmat}
+  - \usepackage{float}
+  - \usepackage{fancyhdr}
+  - \usepackage{csquotes}
+  - \usepackage{hyperref}
+  - \usepackage{gensymb}
+    \hypersetup{
+      hidelinks,
+      colorlinks=true,
+      urlcolor=blue,
+      linkcolor=black,
+      breaklinks=true,
+    }
+  - \usepackage[french]{babel}
+  - \usepackage{amsmath,amssymb,amsthm}
+  - \usepackage{graphicx}
+  - \usepackage[labelfont=bf,textfont=sl,tableposition=top,small]{caption}
+  - \usepackage{enumitem}
+  - \usepackage{dsfont}
+  - \usepackage{bbm}
+  - \usepackage{answers}
+  - \usepackage[margin = 8pt]{subfig}
+bibliography: ref_CSI.bib
+---
+
+\renewcommand\UrlFont{\color{blue}\rmfamily\itshape}
+\newtheorem{prop}{Proposition}
+\RemoveFromReset{prop}{section}
+\AddToReset{prop}{subsubsection}
+\renewcommand{\theprop}{\thesubsubsection .\arabic{prop}}
+\theoremstyle{definition}
+\newtheorem{defn}{Définition}
+\renewcommand{\thedefn}{\thesubsubsection .\arabic{dfn} }
+\newtheorem{dem}{Preuve}
+\RemoveFromReset{dem}{section}
+\AddToReset{dem}{subsubsection}
+\renewcommand{\thedem}{\thesubsubsection.\arabic{dem}}
+\newtheorem{thm}{Théorème}
+\renewcommand{\thethm}{\thesubsubsection.\arabic{thm}}
+\renewcommand{\contentsname}{Sommaire}
+\renewcommand{\baselinestretch}{1.5}
+\fancypagestyle{simple}{\rhead{} \chead{} \lhead{} \cfoot{\thepage} }
+\renewcommand{\headrulewidth}{0pt}
+
+\thispagestyle{empty}
+
+```{r options, echo=FALSE,include=F}
+library(Rcpp)
+library(RcppArmadillo)
+library(RcppGSL)
+library(knitr)
+library(kableExtra)
+knit_engines$get("Rcpp")
+knit_engines$set("Rcpp")
+opts_chunk$set(echo=TRUE, cache=FALSE,
+               #results="hide", 
+               eval=FALSE,
+               warning=FALSE,
+               message=FALSE, highlight=TRUE,
+               fig.show="hide", size="small",
+               fig.align="center",
+               tidy=FALSE)
+options(knitr.kable.NA="-")
+```
+\newpage
+\thispagestyle{empty}
+\thispagestyle{simple}
+
+\newpage
+\setcounter{page}{1} 
+\pagestyle{simple}
+
+# Contexte scientifique et objectifs de la thèse
+
+Les changements climatiques risquent d’impacter fortement les forêts
+tropicales par des changements d’aire de distribution des espèces et de composition des
+communautés [@Bunker2005; @Vieilledent2016]. Les modèles de distribution d’espèces
+(SDMs) sont couramment utilisés en écologie afin de prédire la niche écologique d’une espèce et sa
+vulnérabilité aux changements climatiques [@Elith2009]. Les principales limitations
+des SDMs sont qu’ils ne prennent pas en compte les interactions entre espèces et qu’ils ne
+considèrent très souvent qu’un filtrage environnemental pour prédire l’occurrence des espèces
+(abondance ou probabilité de présence). Ce sont des modèles corrélatifs qui ne permettent pas
+toujours d’expliquer les différences de vulnérabilité entre espèces (via les traits fonctionnels par
+exemple).  
+
+Les modèles joints de distribution des espèces (JSDMs), qui sont apparus récemment en écologie
+[@Warton2015], permettent de prendre en compte les interactions entre espèces pour prédire
+leur occurrence. Cette approche est particulièrement intéressante pour les espèces rares
+(nombreuses en forêt tropicale) qui peuvent ainsi emprunter de l’information aux autres espèces
+plus abondantes. 
+De plus, ces modèles fournissent un cadre conceptuel permettant d’intégrer la phylogénie ou les traits fonctionnels pour expliquer les différences d’occurrence entre espèces [@Warton2015; @Ovaskainen2017] afin d'être en mesure d’interpréter les différences de vulnérabilité des espèces face au changement climatique en fonction de leurs traits spécifiques ou corrélations phylogénétiques. Ceci permettrait d’identifier des traits fonctionnels significatifs pour expliquer les caractéristiques de résistance à la sécheresse de certaines espèces par exemple. Cette approche d'écologie fonctionnelle peut également s'avérer particulièrement utile pour les espèces rares qui représentent une grande majorité des espèces en forêt tropicale et pour lesquelles on dispose de peu de données d’occurrence afin d’ajuster les modèles mais dont les traits spécifiques peuvent être mesurés même à partir de peu d’individus.
+
+Les JSDMs ont connu une expansion rapide ces dernières années avec le développement de plusieurs librairies permettant d’ajuster ce type de modèles suivant différentes approches statistiques comme les packages R `Hmsc` [@Ovaskainen2017], `gjam` [@Clark2017], `BayesComm` [@Golding2015], `boral` [@Warton2015] ou `s-jSDM` [@Pichler2020]. 
+Cependant, ces librairies peuvent présenter certaines limitations. Elles ne permettent pas toutes (i) le traitement de jeux de données conséquents en un temps raisonnable (ii) l’extrapolation entre les sites d’observation pour l’obtention de cartes prédictives, (iii) la gestion de données de présences seules (typique des données d’herbier par exemple) ou de données manquantes.
+
+Mon projet de thèse s'appuie donc sur le développement du package `jSDM` [@CRANjsdm2019] afin de lever les limitations propres aux librairies et modèles de distribution d’espèces actuels.
+Pour ensuite utiliser ce package afin d'ajuster des modèles joints de distribution des espèces d’arbres pour la Guyane en combinant les données d’inventaires forestiers disponibles, les données sur les traits fonctionnels, la phylogénie et les données environnementales, dans l'objectif d'obtenir des cartes de communautés dans le présent et dans le futur sous l’effet des changements climatiques.
+
+\newpage
+
+# Fonctionnalités et contenu actuels du package `jSDM`
+
+Le package `jSDM` comme les autres librairies mentionnées précédemment, permet l’ajustement de modèles joints de distribution des espèces prenant en compte les interactions entre espèces (\url{https://ecology.ghislainv.fr/jSDM}). 
+J'ai développé ce package en grande partie, il fait appel à des routines en C++ qui utilisent des librairies C/C++ dédiées aux tirages aléatoires (GSL) et aux calculs matriciels (Armadillo). Le code est optimisé et permet l’estimation de paramètres pour de gros jeux de données en un temps limité. Pour chaque fonction du package j'ai rédigée une documentation détaillées accompagnée d'exemples et de vignettes afin de faciliter leur utilisation. 
+
+\vspace{-0.2cm}
+
+## Définition des modèles joints de distribution des espèces envisagés
+
+On s'est inspiré des articles @Warton2015 et @Ovaskainen2017 pour développer les approches hiérarchiques utilisées à la spécification des modèle joint de distribution des espèces dans le package `jSDM`.
+
+\vspace{-0.2cm}
+
+### Données utilisées 
+
+Les données dont on dispose pour ajuster ce type de modèle sont les réalisations d'une variable réponse, $Y=(y_{ij})^{i=1,\ldots,I}_{j=1,\ldots,J}$ correspondant à des données de présence/absence ou d'abondance des espèces, ainsi que les variables explicatives $X=(X_i)_{i=1,\ldots,I}$ avec $X_i=(x_{i0},x_{i1},\ldots,x_{ip})\in \mathbb{R}^{p+1}$ où $p$ est le nombre de variables bioclimatiques considérées pour chaque site et $\forall i, x_{i0}=1$.
+
+On peut également prendre en compte les caractéristiques des espèces : $T=(T_j)_{j=1,\ldots,J}$ avec $T_j=(t_{j0},t_{j1},\ldots,t_{jn})\in \mathbb{R}^n$ où $n$ est le nombre de traits spécifiques considérés et $\forall j, t_{j0}=1$.
+
+\vspace{-0.3cm}
+\begin{figure}[H]
+\caption[Données utilisées pour ajuster un JSDM]{Les données de présence/absence ou d'abondance des espèces ($Y$), les données bio-climatiques sur chaque site d'inventaire ($X$) et les mesures de traits pour pour chaque espèce considérées ($T$).}
+\vspace{-0.4cm}
+  \centering
+\includegraphics[height=0.35\textheight]{Illustrations/datasets2.pdf}
+\end{figure}
+
+\vspace{-3cm}
+
+### Modèle linéaire mixte généralisé multivarié (GLMM) 
+
+D'une part on pourrait utiliser un modèle linéaire mixte généralisé multivarié **(GLMM)** de la forme : 
+$$g(\theta_{ij}) = \alpha_i + X_i\beta_j + u_{ij},$$
+$$y_{ij} \sim \mathcal{B}inomial(n_i,\theta_{ij}), \text{pour des données de présence/absence}$$
+$$ \text{ou } y_{ij} \sim \mathcal{P}oisson(\theta_{ij}), \text{pour des données d'abondances}$$
+
+$$u_i \sim \mathcal{N}_J(0_{\mathbb{R}^J},\Sigma) \ iid,$$
+
+$$\alpha_i \sim \mathcal{N}(0, V_{\alpha}) \ iid \text{ et indépendant de } u_i.$$
+où
+
+- $n_i$  correspond au nombre de visites du site $i$ et $\theta_{ij}$ à la probabilité de présence de l'espèce $j$ sur le site $i$ pour les données de présence/absence ou à l'abondance moyenne de l'espèce $j$ sur le site $i$.
+
+- $g : \ ]0,1[ \ \rightarrow \ ]-\infty, +\infty[$ est une fonction de lien (probit, logit ou log).
+
+- $\alpha_i$ représente l'effet aléatoire ou fixe du site $i$ et $V_{\alpha} \sim \mathcal {IG}(\text{shape}, \text{rate})$ dans le cas où l'effet site est aléatoire. 
+
+- $\beta_j=(\beta_{j0}, \beta_{j1},\ldots,\beta_{jp})'$ sont l'intercept et les coefficients de régression correspondants aux variables bioclimatiques pour l'espèce $j$ supposés être des effets fixes.
+  - En l'absence de données sur les traits spécifiques, les effets espèces : $\beta_j$; suivent la même distribution gaussienne *a priori* pour chaque espèce $j$ telle que: 
+ $\beta_j \sim \mathcal{N}_{p+1}(\mu_{\beta},V_{\beta})$. 
+  - Si des données sur les traits spécifiques sont fournies, l'effet de l'espèce $j$: $\beta_j$; suit une distribution gaussienne *a priori* telle que : 
+$\beta_j \sim \mathcal{N}_{p+1}(\mu_{\beta_j},V_{\beta})$, où $\mu_{\beta_{jk}} = \sum_{r=0}^{n} t_{jr}.\gamma_{rk}$ pour $k=0,\ldots,p$, prend différentes valeurs pour chaque espèce.
+Dans ce cas on suppose que $\gamma_{rk} \sim \mathcal{N}(\mu_{\gamma_{rk}},V_{\gamma_{rk}})$ en tant que distribution *a priori*
+
+- $u_i=(u_{i1},\ldots,u_{iJ})$ est un effet aléatoire multivarié corrélé dont la matrice de variance covariance $\Sigma$ contrôle la corrélation entre les espèces et est supposée être complètement non structurée.    
+Cette dernière partie du modèle est problématique lorsque le nombre d'espèces $J$ est important car le nombre de paramètres dans $\Sigma$ augmente quadratiquement avec $J$.
+
+### Modèle à variable latente (LVM)
+
+D'autre part en posant $u_{ij} = W_i\lambda_j$, avec $W_i=(W_{i1},\ldots,W_{iq})$ les $q$ variables latentes (ou "prédicteurs non mesurés") considérés et $\lambda_j=(\lambda_{j1},\ldots, \lambda_{jq})'$ les coefficients associés, on obtient le modèle à variables latentes **(LVM)** suivant : 
+$$g(\theta_{ij}) =\alpha_i + X_i\beta_j + W_i\lambda_j$$
+$$W_i \sim \mathcal{N}(0,I_q) \ iid $$
+$$\alpha_i \sim \mathcal{N}(0,V_{\alpha}) \ iid \text{ et indépendant de } W_i$$ 
+
+Ce qui revient à un cas particulier de GLMM auquel on impose la contrainte $\Sigma = \Lambda\Lambda'$ avec $\Lambda := (\lambda_{jl})_{j=1,\ldots,J}^{l=1,\ldots,q}$.
+
+On préférera ce dernier modèle pour estimer la matrice de corrélation entre les espèces, en effet il comporte potentiellement beaucoup moins de paramètres que le GLMM précédent car $\Lambda$ a autant de colonne qu’il y a de variables latentes ($q$) tandis que $\Sigma$ présente autant de colonnes de paramètres qu’il y a d’espèces ($J$). 
+
+De plus, pour assurer l’identifiabilité du modèle, les valeurs de $\Lambda$ sont contraintes à des valeurs strictement positives sur la diagonale et nulles au dessus de celle-ci d’après l’article @Warton2015, $\Lambda$ est ainsi supposée être triangulaire inférieure. En effet la distribution *a priori* des facteurs latents est définie comme suit : 
+
+$$\lambda_{jl} \sim
+\begin{cases}
+\mathcal{N}(\mu_{\lambda},V_{\lambda}) & \text{si } l < j \\
+\mathcal{N}(\mu_{\lambda},V_{\lambda}) \text{ tronquée à gauche par } 0 & \text{si } l=j \\
+\delta(\lambda_{jl}) \text{ (Dirac distribution) } & \text{si } l>j
+\end{cases}$$
+
+Dans la suite on fixera $q=2$, en effet comme @Warton2015 on considérera des modèles à deux variables latentes par analogie avec une analyse par composante principale (ACP) sur les résidus pour lesquels on utilise souvent les deux ou trois premiers axes car l'intégration de variables latentes aux modèles s'apparente à une forme d'ordination.
+
+\begin{figure}[H]
+\caption[Un résumé graphique du modèle hiérarchique bayésien. Dans ce graphe acyclique dirigé (DAG), les cases orange font référence aux données, les cercles bleus aux paramètres à estimer, et les flèches aux relations fonctionnelles décrites à l'aide de distributions statistiques]{Un résumé graphique du modèle hiérarchique bayésien. Dans ce graphe acyclique dirigé (DAG), les cases orange font référence aux données, les cercles bleus aux paramètres à estimer, et les flèches aux relations fonctionnelles décrites à l'aide de distributions statistiques}
+  \centering
+\includegraphics[height=0.3\textheight]{Illustrations/DAG-jSDM-rand.png}
+\end{figure}
+
+## Méthodes d’inférence bayésienne selon la fonction de lien choisie
+
+Les méthodes d'inférence bayésiennes utilisées par le package pour estimer les paramètres des JSDMs sont résumées dans cette partie pour en savoir plus vous trouverez une présentation détaillée accompagnée de démonstrations dans la vignette \href{https://ecology.ghislainv.fr/jSDM/articles/proof.html}{Bayesian inference methods}.  
+
+Afin d’utiliser une méthode d’inférence bayesienne on a déterminé une distribution *a priori* pour chacun des paramètres du modèle, dont les hyperparamètres par défaut sont spécifiés dans le package. 
+
+### Principe d’un échantillonneur de Gibbs
+
+Dans le cadre bayésien, l’algorithme de Gibbs permet d’obtenir une réalisation du paramètre $\theta=(\theta_1,\ldots,\theta_m)$ suivant la loi *a posteriori* $\uppi(\theta \ | \ x)$ dès que l’on est capable d’exprimer les lois conditionnelles : $\uppi(\theta_i \ | \ \theta_1,\dots,\theta_{i-1},\theta_{i+1},\ldots,\theta_m, x)$ pour $i =1,\ldots,m$.
+
+<!-- \vspace{0.2cm} -->
+
+<!-- L’**échantillonnage de Gibbs** consiste à :  -->
+<!-- \begin{itemize} -->
+<!-- \item \textbf{Initialisation} : choix arbitraire de $\theta^{(0)}= (\theta_1^{(0)},\dots,\theta_m^{(0)})$. -->
+<!-- \vspace{0.2cm} -->
+<!-- \item \textbf{Itération $t$} : Générer $\theta^{(t)}$ de la manière suivante : -->
+<!-- \vspace{0.2cm} -->
+<!--   \begin{itemize} -->
+<!--   \item[$\bullet$] $\theta_1^{(t)} \sim \uppi\left(\theta_1 \ | \theta_2^{(t-1)},\dots, \theta_m^{(t-1)}, x \right)$ -->
+<!-- \vspace{0.1cm} -->
+<!--   \item[$\bullet$] $\theta_2^{(t)} \sim \uppi\left((\theta_2 \ | \ (\theta_1^{(t)}, \theta_3^{(t-1)},\ldots,\theta_m^{(t-1)},x\right)$ -->
+<!--   \item[$\bullet$] $\theta_m^{(t)} \sim \uppi\left(\theta_m \ | \ \theta_1^{(t)}, \ldots, \theta_{m-1}^{(t)},x\right)$ -->
+<!-- \end{itemize} -->
+<!-- \end{itemize} -->
+
+<!-- Les itérations successives de cet algorithme génèrent les états d’une chaîne de -->
+<!-- Markov $\{\theta^{(t)}, t > 0\}$ à valeurs dans $\mathbb{R}^{m}$, on montre que cette chaîne admet une mesure invariante qui est la *loi a posteriori*.   -->
+<!-- Pour un nombre d’itérations suffisamment grand, le vecteur $\theta$ obtenu peut donc être considéré comme étant une réalisation de la loi *a posteriori* jointe $\uppi(\theta \ | \ x)$.  -->
+<!-- \vspace{0.2cm}  -->
+
+Par conséquent l'implémentation d'un échantillonneur de Gibbs nécessite la connaissance des distributions *a posteriori* de chacun des paramètres conditionnellement aux autres paramètres du modèle, qui se déduisent des formules de priors conjugués dans le cas du modèle probit mais ne sont pas explicitement exprimables dans le cas où on utilise une fonction de lien logit ou log.
+
+<!-- ### Priors utilisés  -->
+
+<!-- Afin d’utiliser une méthode d’inférence bayesienne on détermine une distribution *a priori* pour chacun des paramètres du modèle par défaut dans le package : -->
+<!-- $$\begin{array}{lll} -->
+<!-- V_{\alpha} & \sim & \mathcal {IG}(\text{shape}=0.5, \text{rate}=0.005) \text{ avec } \mathrm{rate}=\frac{1}{\mathrm{scale}}, \\ -->
+<!-- \beta_{j} & \sim & \mathcal{N}_{p+1}(\mu_{\beta_j},V_\beta)  \text{ pour } j=1,\ldots,J \text{ où } V_\beta=diag(10)\\  -->
+<!-- & & \text{ et } \mu_{\beta_{jk}} = \sum_{r=0}^{n} t_{jr}.\gamma_{rk} \text{ pour }  k=0,\ldots,p, \\ -->
+<!-- \gamma_{rk} & \sim & \mathcal{N}(0,10) \text{ pour }  k=0,\ldots,p \text{ et }  r=0,\ldots,n,\\ -->
+<!-- \lambda_{jl} & \sim & \begin{cases} -->
+<!-- \mathcal{N}(0,10) & \text{si } l < j \\ -->
+<!-- \mathcal{N}(0,10) \text{ tronquée à gauche par } 0 & \text{si } l=j \\ -->
+<!-- P \text{ tel que } \mathbb{P}(\lambda_{jl} = 0)=1  & \text{si } l>j -->
+<!-- \end{cases} \\ -->
+<!-- \quad & \quad & \text{ pour } j=1,\ldots,J \text{ et } l=1,\ldots,q. -->
+<!-- \end{array}$$ -->
+<!-- En effet pour assurer l’identifiabilité du modèle les valeurs de $\Lambda$ sont contraintes à des valeurs strictement positives sur la diagonale et nulles au dessus de celle-ci, $\Lambda$ est ainsi supposée être triangulaire inférieure d’après l’article @Warton2015.  -->
+
+### Modèle probit : échantillonneur de Gibbs et priors conjugués 
+
+D’une part, on peut utiliser un fonction de lien $\mathrm{probit} : p \rightarrow \Phi^{-1}(p)$ où $\Phi$ correspond à la fonction de répartition d’une loi normale centrée réduite. 
+
+D’après l’article @Albert1993, une modélisation possible est de supposer l’existence d’une variable latente sous-jacente liée à notre variable binaire observée en utilisant la proposition suivante :
+
+\begin{prop}[Modèle probit par l'intermédiaire d'une variable latente]  \qquad \qquad \qquad \qquad \qquad \qquad \qquad \qquad  \qquad \qquad \qquad  \qquad \qquad \qquad \qquad   
+
+Si $Z_{ij} = \alpha_i + \beta_{j0}+X_i\beta_j+ W_i\lambda_j + \epsilon_{ij}, \ \forall i,j \text{ avec }  \epsilon_{ij} \sim \mathcal{N}(0,1) \ iid $ et tel que :
+$$y_{ij}=
+\begin{cases}
+1 & \text{ si } Z_{ij} > 0 \\
+0 &  \text{sinon.}
+\end{cases}$$
+Alors on a $y_{ij} \ |\ Z_{ij} \sim \mathcal{B}ernoulli(\theta_{ij})$ avec
+$\mathrm{probit( \theta_{ij})} = \alpha_i + X_i\beta_j+ W_i\lambda_j$.
+\end{prop}
+
+On définit le modèle probit à l’aide d’une variable latente afin d’être en mesure d’utiliser les propositions sur les priors conjugués explicitées et démontrées dans la vignette \href{https://ecology.ghislainv.fr/jSDM/articles/proof.html}{Bayesian inference methods} pour échantillonner les paramètres du modèle selon leurs distributions conditionnelles *a posteriori*. 
+
+### Modèles logit et log : échantillonneur de Gibbs et algorithme de Metropolis adaptatif
+
+De la même façon que pour le modèle probit, on peut définir les modèle logit et log par l’intermédiaire d’une variable latente mais dans ce cas les distributions *a priori* de la variable latente et des paramètres n’étant pas conjuguées, on n’est pas en mesure d’utiliser les propriétés des priors conjugués donc la modélisation à l’aide d’une variable latente ne présente pas d’intérêt. 
+Par conséquent on échantillonnera les paramètres de ces modèles selon une estimation de leurs distributions conditionnelles *a posteriori* à l’aide d’un algorithme de Metropolis adaptatif. 
+   
+* Dans le cas du modèle logit on suppose que $y_{ij} \ | \theta_{ij} \sim \mathcal{B}inomial(n_i,\theta_{ij})$, avec
+$\mathrm{logit}(\theta_{ij}) = \alpha_i + X_i\beta_j+ W_i\lambda_j$ et $n_i$ le nombre de visites du site $i$.  
+
+* Dans le cas du modèle log, utilisé pour ajuster des JSDM à partir de données d'abondance des espèces, on suppose que $y_{ij} \ | \theta_{ij} \sim \mathcal{P}(\theta_{ij})$, avec $\mathrm{log}(\theta_{ij}) = \alpha_i + X_i\beta_j+ W_i\lambda_j$. 
+
+<!--  \newpage -->
+
+<!-- **Principe d'un algorithme de Metropolis adaptatif: ** -->
+
+<!-- Cet algorithme appartient aux méthode MCMC (Markov Chain Monte Carlo) et permet d’obtenir une réalisation du paramètre $\theta=(\theta_1,\ldots,\theta_m)$ selon leurs distributions conditionnelles *a posterirori* $\uppi(\theta_i \ | \ \theta_1,\dots,\theta_{i-1},\theta_{i+1},\ldots,\theta_m, x)$, pour $i =1,\ldots,m$ connues à une constante multiplicative près.   -->
+<!-- On le qualifie d'adaptatif car la variance de la densité instrumentale conditionnelle utilisée est adaptée en fonction du nombre d'acceptation lors des dernières itérations.  -->
+<!-- \begin{itemize} -->
+<!-- \item \textbf{Initialisation} : $\theta^{(0)}= (\theta_1^{(0)},\ldots,\theta_m^{(0)})$ fixés arbitrairement, les nombres d'acceptation $(n^A_{i})_{i=1,\ldots,m}$ sont initialisés à $0$ et les variances $(\sigma^2_i)_{i=1,\ldots,m}$ sont initialisées à $1$. -->
+<!-- \item \textbf{Itération t} : pour $i=1,\ldots,m$ -->
+<!--   \begin{itemize} -->
+
+<!--   \item[$\bullet$] Générer $\theta_i^\star \sim q(\theta_i^{(t-1)},.)$, avec une densité instrumentale conditionnelle $q(\theta_i^{(t-1)},\theta_i^\star)$ symétrique, on choisira une loi $\mathcal{N}(\theta_i^{(t-1)},{\sigma^2_{i}})$ par exemple. -->
+
+<!--   \item[$\bullet$] Calculer la probabilité d'acceptation :  -->
+<!--   $$\gamma=  min\left(1,\dfrac{\uppi\left(\theta_i^\star \ | \ \theta_1^{(t-1)},\dots,\theta_{i-1}^{(t-1)},\theta_{i+1}^{(t-1)},\ldots,\theta_m^{(t-1)}, x \right)}{\uppi\left(\theta_i^{(t-1)} \ | \ \theta_1^{(t-1)},\dots,\theta_{i-1}^{ (t-1)},\theta_{i+1}^{(t-1)},\ldots,\theta_m^{(t-1)},x\right)}\right)$$. -->
+
+<!--   \item[$\bullet$] Retenir $$\theta_i^{(t)} =   -->
+<!--   \begin{cases}  -->
+<!--   \theta_i^\star & \text{ avec probabilité } \gamma \\ -->
+<!--   &\text{ si on est dans ce cas le nombre d'acceptation devient : } n^A_{i} \leftarrow n^A_{i} +1 \\ -->
+<!--   \theta_i^{(t-1)} & \text{ avec probabilité } 1-\gamma. \\ -->
+<!--   \end{cases}$$ -->
+<!--   \end{itemize} -->
+
+<!-- \item \textbf{Durant le burn-in}, toutes les $\mathrm{DIV}$ itérations, avec  -->
+<!-- $$\mathrm{DIV} =  \begin{cases}  -->
+<!-- 100 & \text{ si } N_{Gibbs} \geq 1000 \\ -->
+<!-- \dfrac{N_{Gibbs}}{10}& \text{sinon }  \\ -->
+<!-- \end{cases}$$ -->
+<!-- , où $N_{Gibbs}$ est le nombre total d'itérations effectuées.    -->
+<!-- On modifie les variances en fonction des nombres d'acceptation de la manière suivante pour $i=1,\ldots,m$ :  -->
+<!-- \begin{itemize} -->
+<!--   \item[$\bullet$] On calcule le taux d'acceptation : $r^A_{i} = \dfrac{ n^A_i}{\mathrm{DIV}}$. -->
+<!--   \item[$\bullet$] On adapte les variances selon le taux d'acceptation et une constante fixée $R_{opt}$ : $$\sigma_i \leftarrow \begin{cases}   -->
+<!-- \sigma_i\left(2-\dfrac{1-r^A_i}{1-R_{opt}}\right) & \text{ si } r^A_{i} \geq R_{opt} \\ \\ -->
+<!-- \dfrac{\sigma_i}{2-\dfrac{1-r^A_i}{1-R_{opt}}} & \text{ sinon } -->
+<!-- \end{cases}$$   -->
+<!--   \item[$\bullet$] On réinitialise les nombres d'acceptation : $n^A_i \leftarrow 0$.   -->
+<!--   \end{itemize}  -->
+<!-- \item Toutes les $\dfrac{N_{Gibbs}}{10}$ itérations, on calcule et affiche les taux d'acceptation moyen $m^A = \dfrac{1}{m}\sum\limits_{i=1,\ldots,m}r^A_i$. -->
+<!-- \end{itemize} -->
+
+<!-- \newpage -->
+
+## Comparaison des résultats obtenus avec ceux des packages `boral` et `Hmsc`
+
+D'une part, nous avons utilisé le package R `Hmsc` 3.0-11, pour "Hierarchical Modelling of Species Communities", qui est une approche basée sur un modèle pour analyser les données écologiques des communautés ([@Ovaskainen2017]). D'autre part, nous avons utilisé le package R `boral` 2.0 [@Hui2016], pour "Bayesian Ordination and Regression Analysis", qui fonctionne avec `JAGS` ("Just Another Gibbs Sampler") un programme de simulation de modèles bayésiens hiérarchiques utilisant des méthodes MCMC, implémenté en C++. Ces packages et le package `jSDM` 0.2.1 permettent d'ajuster différents JSDMs, nous avons donc pu comparer la pertinence des résultats obtenus par chacun d'eux, leurs performances de calcul et l'efficacité des échantillonneurs sur différents jeux de données. Avec chacun de ces trois packages, nous avons effectué des régressions binomiales probit à partir d'un jeu de données simulé ainsi que quatre jeux de données de présence-absence, utilisés dans une étude comparative de JSDM récente par @Wilkinson2019. Nous avons également effectué des régressions log-linéaires de Poisson à partir de deux jeux de données d'abondance [@Choler2005 ; @Borcard1994]. L'ajustement des modèles a été effectué sur le même ordinateur de bureau avec les spécifications suivantes : Ubuntu 20.04.4 OS, i5-1145G7 CPU @ 2.60GHz × 8, 15.4GB RAM) afin de comparer les performances de calcul.
+
+
+## Comparaison de la pertinence des résultats obtenus et des temps de calcul nécessaires avec chacun des packages
+
+\begin{table}[H]
+\caption{Dimensions des ensembles de données utilisés (n.sites et n.espèces), nombre d'observations (n.obs=n.site $\\times$ n.espèces), nombre de covariables, traits spécifiques et axes latents considérés (n.col.X, n.traits et n.latent), nombre de paramètres à estimer (n. param) en effectuant n.mcmc itérations, le temps de calcul en secondes nécessaire pour ajuster le modèle à partir de chacun des ensembles de données et la déviance calculée à partir des paramètres estimés avec chacun des packages comme suit : $D=-2\sum\limits_{i=1}^I\sum\limits_{j=1}^J\log(\mathbb {P}(y_{ij}|\beta_j,\lambda_j, W_i))$. L'erreur quadratique moyenne (RMSE) est calculée pour les probabilités de présence $\theta_{ij}$ sur l'ensemble des données simulées. La sensibilité, la spécificité et la "True Skill Statistic" ($TSS= sensibilité + spécificité -1$) ont été calculées pour chaque ensemble de données, en tenant compte de la matrice de présence-absence prédite : $\hat{Y}$ telle que $\hat{y}_{ij}=1$ si la probabilité d'occurrence estimée correspondante $ \hat{\theta}_{ij} \geq \tau_i$ et $\hat{y}_{ij}=0$ sinon, où $ \tau_i$ représente le seuil de présence pour le site $i$, défini par la valeur de probabilité d'occurrence estimée la plus faible parmi les $n_i$ probabilités de présence d'espèces les plus élevées, où $n_i$ correspond au nombre d'espèces observées sur le site $i$.} 
+\label{tab:comparison-time-accuracy}
+\centering
+\includegraphics[width=15cm, height=30cm]{Illustrations/comparison.pdf}
+\end{table}
+
+```{r comparison-time-accuracy-table, echo=FALSE, include=FALSE, eval=TRUE}
+## Data-sets overview and model fitting with each package
+load("~/Documents/Articles/jSDM_functionalities/Application/jSDM_boral_Hmsc_files/jSDM-boral-Hmsc-comparison.rda")
+
+T_boral=as.numeric(c(T_boral_sim, T_boral_Mosquitos, T_boral_Eucalypts, T_boral_Frogs, T_boral_Fungi, T_boral_Aravo, T_boral_Mites))
+T_Hmsc=as.numeric(c(T_Hmsc_sim, T_Hmsc_Mosquitos, T_Hmsc_Eucalypts, T_Hmsc_Frogs, T_Hmsc_Fungi,
+             T_Hmsc_Aravo, T_Hmsc_Mites))
+T_jSDM=as.numeric(c(T_jSDM_sim, T_jSDM_Mosquitos, T_jSDM_Eucalypts, T_jSDM_Frogs,T_jSDM_Fungi,
+             T_jSDM_Aravo, T_jSDM_Mites))
+min_ratio_jSDM_Hmsc <- round(min(T_Hmsc/T_jSDM),1)
+max_ratio_jSDM_Hmsc <- round(max(T_Hmsc/T_jSDM),1)
+min_ratio_jSDM_boral <- round(min(T_boral/T_jSDM),1)
+max_ratio_jSDM_boral <- round(max(T_boral/T_jSDM),1)
+min_ratio_boral_Hmsc <- round(min(T_boral/T_Hmsc),1)
+max_ratio_boral_Hmsc <- round(max(T_boral/T_Hmsc),1)
+```
+
+
+On constate que `jSDM` est **`r min_ratio_jSDM_boral` à `r max_ratio_jSDM_boral`** fois plus rapide que `boral` (`JAGS`)
+et **`r min_ratio_jSDM_Hmsc` à `r max_ratio_jSDM_Hmsc`**  fois plus rapide que `Hmsc`.
+
+Les temps de calcul de `jSDM` sont largement inférieurs à ceux nécessaires à `boral` et `Hmsc` ce qui est dû à l'utilisation du package `Rcpp` pour la construction de `jSDM`, qui permet l'intégration de routines en C++ au sein du package alors que `Hmsc` utilise uniquement du code R ainsi qu'aux méthodes d'inférence utilisées qui diffèrent entre les packages. En effet le tirage selon des lois normales multivariées de certains paramètres par `jSDM` présente un gain de temps considérable par rapport à la méthode MCMC estimant chaque paramètre séparément utilisée par `boral`.
+De plus le temps de calcul nécessaire à `jSDM` pour ajuster un modèle à partir des données d'abondance est plus important que pour les jeux de données de présence-absence, car la méthode d'inférence dépend de la fonction de lien choisie. En effet l'utilisation de l'algorithme de Metropolis Hastings au sein de l'échantilloneur de Gibbs dans le cas d'une fonction de lien log pour des données d'abondance, est moins efficace que les formules des priors conjugués utilisées avec une fonction de lien probit pour des données de présence absence. 
+
+De plus, les déviances obtenues avec `jSDM` sont inférieures ou équivalentes à celles calculées avec les résultats de `boral` et `Hmsc` ce qui suggère que les modèles ajustés par `jSDM` correspondent mieux aux données.  
+Les spécificitées, sensitivités et TSS obtenus avec `jSDM` sont aussi proches de 1 que ceux calculés avec `boral` et `Hmsc` ce qui suggère que la pertinence des résultats de `jSDM` est équivalente voire supérieure à celle des résultats obtenus avec les autres packages. 
+
+Enfin les RMSE associés à `jSDM` sont équivalents à ceux de `boral` et `Hmsc` ce qui indique que les résultats obtenus avec `jSDM` sur les jeux de données simulés sont aussi proches de ceux attendus que les paramètres estimés avec `boral` et `Hmsc`.
+
+## Comparaison de l'efficacité d'échantillonnage 
+
+D'autre part on compare l'efficacité des échantillonneurs utilisés dans les différents packages.
+Pour ce faire on calcule le nombre de valeurs efficaces échantillonnées par seconde par chacun des packages et pour chacun des paramètres du modèle, afin d'évaluer leur efficacité d'échantillonnage pas seulement en fonction du temps de calcul nécessaire à l'ajustement des modèles mais aussi en prenant en compte l'auto-corrélation dans les chaînes MCMCs de paramètres renvoyées. 
+
+La taille d'échantillon effective (ESS) est calculée pour chaque paramètre à l'aide de la fonction \href{https://www.rdocumentation.org/packages/coda/versions/0.19-4/topics/effectiveSize}{`effectiveSize`} du package `coda`.
+
+\begin{table}[H]
+\caption{Le nombre de valeurs efficaces échantillonnées par seconde, par chaque package. Nous supposons que le temps d'échantillonnage (T.sample) correspond à la moitié du temps de calcul (voir Tableau ~\ref{tab:comparison-time-accuracy}) car le même nombre d'itérations d'échantillonnage (n.sample) et de burn-in (n.burnin) ont été effectuées pour ajuster les modèles. Pour réduire l'auto-corrélation des MCMCs, seule une itération d'échantillonnage sur n.thin a été retenue et un échantillon de taille : sample.size, est retourné pour chaque paramètre. Pour obtenir le nombre de valeurs efficaces échantillonnées par seconde, au total ou pour l'intercept espèce $\beta_0$, l'effet espèce $\beta$, les charges factorielles $\lambda$ et les variables latentes $W$, la somme des ESS calculées pour tous les paramètres, ou la moyenne des ESS pour chaque type de paramètres, est divisée par le temps d'échantillonnage en secondes.}
+\centering
+\includegraphics[height=0.8\textheight]{Illustrations/neff.pdf}
+\label{tab:neff}
+\end{table}
+
+On constate que le nombre total de valeurs efficaces échantillonnées par seconde par `jSDM` est supérieur à celui de `Hmsc` pour chacun des jeux de données, l'échantillonneur de `jSDM` est donc plus efficace. Néanmoins si on s'intéresse uniquement aux facteurs latents $\lambda$,  les nombres de valeurs efficaces échantillonnées par seconde par `Hmsc` et plus important que ceux de `jSDM`, ce qui peut s'expliquer par les méthodes d'inférences qui diffèrent entre les deux packages pour ces paramètres.   
+
+De plus `jSDM` présente un nombre total de valeurs efficaces échantillonnées par seconde plus élevé que `boral` concernant les jeux de données de présence-absence. En ce qui concerne les jeux de données d'abondance, l'échantillonneur de `boral` est légérement plus efficace que celui de `jSDM`, mais c'est le cas car il s'agit de petits jeux de données, sur des jeux de données d'abondance plus conséquents, `jSDM` deviendrait vite plus performant que `boral`. 
+
+# Amélioration de la convergence pour l'estimation des axes latents
+
+On rencontre des difficultés à estimer les axes latents ($W$) et les facteurs associés ($\Lambda$) liées aux contraintes imposées à la matrice  $\Lambda$ supposée être triangulaire inférieure et strictement positives sur la diagonale pour assurer l’identifiabilité du modèle. 
+
+- Problème "symétrique" de convergence des facteurs latents et des axes latents
+
+\begin{figure}[H]
+ \caption[Illustration des problèmes de convergence "symétrique" des facteurs latents et des axes latents en représentant les traces et les densités de 4 chaînes MCMC ajustées à partir de différentes valeurs initiales sur un jeux de données simulé ainsi que les paramètres estimés en fonction des valeurs attendues.]{Illustration des problèmes de convergence "symétrique" des facteurs latents et des axes latents en représentant les traces et les densités de 4 chaînes MCMC ajustées à partir de différentes valeurs initiales sur un jeux de données simulé ainsi que les paramètres estimés en fonction des valeurs attendues.}
+  \centering
+\includegraphics[width=0.47\textwidth,height=0.6\textheight]{figure-html/results-pres-9.png}
+\includegraphics[width=0.47\textwidth,height=0.6\textheight]{figure-html/results-pres-11.png}
+\includegraphics[width=0.47\textwidth,height=0.6\textheight]{figure-html/obs-fitted-2.png}
+\includegraphics[width=0.47\textwidth,height=0.6\textheight]{figure-html/obs-fitted-3.png}
+\end{figure} 
+
+- Associés à des problèmes non symétriques pour les espèces "références"
+de l'axe latent, c'est à dire les espèces $j$ correspondants aux facteurs latents diagonaux contraints à la positivité : $\lambda_{jl}$ tels que $j=l$.
+
+\begin{figure}[H]
+ \caption[Illustration des problèmes de convergence des facteurs latents sur la diagonale en représentant les traces et les densités de 4 chaînes MCMC ajustées à partir de différentes valeurs initiales sur un jeux de données simulé.]{Illustration des problèmes de convergence des facteurs latents sur la diagonale en représentant les traces et les densités de 4 chaînes MCMC ajustées à partir de différentes valeurs initiales sur un jeux de données simulé.}
+  \centering
+\includegraphics[width=0.6\textwidth,height=0.6\textheight]{figure-html/results-pres-6.png}
+\end{figure} 
+
+On observe sur la figure 14 une inversions des signes d'une partie des facteurs latents et des variables latentes par rapport au valeurs attendues, qui ne faussent pas les prédictions mais rendent plus difficile la convergence de l'algorithme. 
+
+On constate sur la figure 15 que l'un des facteurs latents contraint à la positivité oscille autour de valeurs très proches de 0 sur l'une des chaîne MCMC considérée ce qui peut signifier que l'espèce associée n'est pas la plus indiquée pour structurer les axes latents. 
+
+On travaille sur ce sujet en collaboration avec Frédéric Gosselin, chercheur INRAE qui s'intéresse à cette problématique. Il a développé les méthodes suivantes pour améliorer la convergence des axes latents et des facteurs associés.  
+
+- Évaluer la convergence des paramètres associés aux axes latents et diagnostiquer l'espèce ($j$) qui se structure le plus clairement sur chaque axe ($l$) en essayant différents critères:
+  - Maximise les moyennes de la valeur absolue des $\lambda$ calculées sur chaque chaîne MCMC : $\overline{| \lambda_{jl} |}.$
+  - Maximise les coefficients de variation calculées sur chaque chaîne MCMC: $\frac{\overline{| \lambda_{jl} |}}{\sqrt{\mathrm{Var}(\lvert \lambda_{jl} \rvert})}.$
+  - Maximise les diagnostiques de Gelman–Rubin ($\hat{R_{jl}}$) calculé entre toutes les chaînes MCMC obtenues pour chaque $\lambda$, qui évalue la convergence en comparant les varainces intra-chaînes et inter-chaînes estimées pour chaque paramètre. 
+  
+- En déduire sur quelles espèces imposer les contraintes de positivité sur la diagonale et réordonner les espèces avant d'ajuster un nouveau JSDM.
+
+On a intégré cette méthode dans package `jSDM` en implémentant la fonction `jSDM_binomial_probit_sp_constrained`, pour laquelle on a choisi de considérer  les diagnostiques de Gelman–Rubin ($\hat{R}$) comme critère pour le choix de l'espèce de référence pour chaque axe et dont un exemple d'utilisation est présenté dans la vignette : <https://ecology.ghislainv.fr/jSDM/articles/jSDM_binomial_probit_sp_constrained.html>.
+
+\newpage 
+
+# Développement du package `gecevar` pour faciliter la récupération des données explicatives nécessaires à l'ajustement des JSDMs 
+
+## Objectifs 
+
+On a commencé le développement du package R, nommé `guyaclim` initialement, avec Ghislain Vieilledent, lors de notre mission en Guyane en octobre 2021 durant laquelle on a pu échangé avec les personnes travaillant sur place sur les bases de données disponibles sur la Guyane française et la manière d'accéder à ces données. 
+On a décidé d'implémenter ce package, afin de faciliter et automatiser l'extraction et le formatage des donnnées environnementales et climatiques nécessaires à l'ajustement de JSDMs en Guyane française.
+Il est amené a être renommé (`gecevar` pour "GEtting Climatic and Environmental VARiables from open and free online datasets for a specific region" par exemple), car ce package doit permettre, à terme, d’extraire un ensemble de données climatiques et environnementales, sur n’importe quelle zone géographique, pas seulement la Guyane, ainsi que de les re-projeter dans le système de coordonnées souhaité (EPSG), et de les ré-échantillonner à la résolution voulue (250m, 500m, 1km, 2km ou 5km). Il a pour vocation de faciliter la récupération des données utilisées comme variables explicatives pour l’ajustement de modèles de distribution des espèces. 
+
+De plus, j’ai participé activement à l’encadrement de Pierre Guillaumont qui a effectué son stage de M2 MIND au sein de l’UMR AMAP, sur le sujet : “Classification des communautés d’arbres en Nouvelle-Calédonie à l’aide de modèle joint de distribution des espèces”. Dans le cadre de son stage, Pierre a particpé au développement du package R `gecevar`, en généralisant les codes qui avaient été implémentés pour la Guyane à l'extraction de données en Nouvelle Calédonie et en important des variables supplémentaires. 
+
+Pour finaliser le package, il me reste donc juste à organiser les différents scripts déjà implémentés pour la Guyane et la Nouvelle Calédonie sous forme de fonction et à structurer et à documenter le package. 
+
+## Fonctionnalités
+
+### Spécification de la zone géographique d'intérêt 
+
+La zone géographique sur laquelle les données seront extraites peut être spécifiée par l'utilsateur au moyen d'un shapefile indiquant les frontières du territoire, de l'étendue de la zone définie selon le système de coordonnées spécifié pour reprojeter les données extraites, ou du code ISO 3166 correspondant s'il s'agit d'un pays. 
+
+### Extractions de données climatiques actuelles et futures
+
+Les données climatiques actuelles sont extraites du site  [chelsa-climate.org](https://chelsa-climate.org/) (moyennes sur la période de 1981 à 2010).
+<!-- ou de [worldclim.org](https://worldclim.org/) (moyennes sur la période de 1970 à 2000). -->
+Le téléchargement des données se fait uniquement à l’échelle mondiale, ce qui est un avantage pour généraliser l’acquisition à n'importe quelle zone géographique mais qui nécessite un temps de téléchargement et un espace de stockage relativement importants. 
+
+En ce qui concerne les données climatiques futures, on laisse à l'utilisateur du package la possibilité de spécifier pour quels modèles climatiques globaux (GCMs) et pour quels scénarios socio-économiques partagés (SSPs pour "Shared Socio-economic Pathways"), il souhaite importer ces données. 
+Le choix de l'utilisateur est cependant limité par la disponibilité des données climatiques futures estimées selon le GCM et le SSP choisis, sur le site [chelsa-climate.org](https://chelsa-climate.org/). Les scénarios CMIP6 pour lesquels les données sont disponibles sur le sites source correspondent aux différentes combinaisons possibles de trois SSPs (SSP1-RCP2.6, SSP3-RCP7, SSP5-RCP8.5) et de cinq GCMs proposés par les laboratoires ci dessous: 
+
+- GFDL-ESM4, Princeton University Forrestal Campus, New Jersey, Etats
+Unis d’Amérique
+
+- IPSL-CM6A-LR, Institut Pierre Simon Laplace, Paris, France
+
+- MPI-ESM1-2-HR, Max Planck Institute, Göttingen, Allemagne
+
+- MRI-ESM2-0, Meteorological Research Institute, Nagamine, Japon
+
+-  UKESM1-0-LL, Met Office Hadley Centre, Exeter, Royaume Uni
+
+De plus les valeurs mensuelles pour les données climatiques futures, disponibles sur  [chelsa-climate.org](https://chelsa-climate.org/), sont des moyennes sur sur des périodes de 30 ans (2011-2040, 241-2070, 2071-2100).
+<!-- des périodes de 20 ans (2021-2040, 241-2060, 2061-2080, 2081-2100) concernant les données de [worldclim.org](https://worldclim.org/) -->
+\begin{table}[H]
+\caption{Données climatiques téléchargées par la fonction \texttt{get\_chelsa\_current} and \texttt{get\_chelsa\_future}.}
+\begin{tabular}{l|l|l}
+\rowcolor{gray!50}
+\textbf{Variable} &  \textbf{Unité} & \textbf{Source} \\
+Températures mensuelles minimales & $ \celsius \times 10 $ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\ 
+Températures mensuelles maximales &  $ \celsius \times 10 $ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\ 
+Températures mensuelles moyennes &  $ \celsius \times 10 $ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Précipitations mensuelles & $kg.m^{-2}.mois^-1$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Couverture nuageuse &  \%  & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\ 
+Déficit hydrique climatique (Thornthwaite) &  $kg.m^{-2}$ & calculé à partir des données de \\
+& & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Evapotranspiration potentielle (Thornthwaite) & $kg.m^{-2}.mois^-1$ & calculée à partir des données de \\ 
+& &\href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Nombre de mois secs (Thornthwaite) & mois & calculés à partir des données de \\ 
+& & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Déficit hydrique climatique (Penman-Monteith) & $kg.m^{-2}$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Evapotranspiration potentielle (Penman-Monteith) & $kg.m^{-2}.mois^-1$ &  \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Nombre de mois secs (Penman-Monteith) & mois & calculés à partir des données de \\ 
+& &\href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Température moyenne annuelle & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Température moyenne annuelle (bio1) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Amplitude des températures diurnes (bio2) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Isothermalité (bio3=bio2/bio7) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Saisonnalité des températures (bio4) & $\celsius / 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Température maximale du mois le plus chaud (bio5) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Température minimale du mois le plus froid (bio6) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Amplitude annuelle des températures (bio7=bio5-bio6) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Température moyenne du trimestre le plus humide (bio8) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Température moyenne du trimestre le plus sec (bio9) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Température moyenne du trimestre le plus chaud (bio10) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Température moyenne du trimestre le plus froid (bio11) & $\celsius \times 10$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Cumul annuel des précipitations (bio12) &  $kg.m^{-2}.an^{-1}$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Cumul des précipitations du mois le plus humide (bio13) &  $kg.m^{-2}.mois^{-1}$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Cumul des précipitations du mois le plus sec (bio14) &  $kg.m^{-2}.mois^{-1}$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Saisonnalité des précipitations (bio15) &  $kg.m^{-2}$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Précipitations du trimestre le plus humide (bio16) &  $kg.m^{-2}.mois^{-1}$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Précipitations du trimestre le plus sec (bio17) &  $kg.m^{-2}.mois^{-1}$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Précipitations du trimestre le plus chaud (bio18) &  $kg.m^{-2}.mois^{-1}$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+Précipitations du trimestre le plus froid (bio19) &  $kg.m^{-2}.mois^{-1}$ & \href{https://chelsa-climate.org/}{chelsa-climate.org} \\
+\end{tabular}
+\end{table}
+
+
+
+### Extraction de données environnementales  
+
+Les données environnementales proviennent de sources multiples. Il s'est avéré plus compliqué pour les données environnementales que pour les données climatiques de trouver des sites disposant de données précises et disponibles pour un maximum de localisations. 
+
+\begin{table}[H]
+\caption{Données environnementales téléchargées par la fonction \texttt{get\_env\_variables}.}
+\begin{tabular}{l|l|l}
+\rowcolor{gray!50}
+\textbf{Variable} &  \textbf{Unité} & \textbf{Source} \\
+Couvert forestier & \% & calculé à partir des données de \url{https://forestatrisk.cirad.fr} \\
+Altitude & m & \url{https://srtm.csi.cgiar.org/} \\ 
+Pente & degrès & calculée à partir des données de \url{https://srtm.csi.cgiar.org/} \\  
+Orientation du sol (aspect) & degrès & calculé à partir des données de \url{https://srtm.csi.cgiar.org/} \\  
+Rugosité & m & calculée à partir des données de \url{https://srtm.csi.cgiar.org/} \\  
+Ensoleillement & $Wh.m^{-2}.jour^{-1}$ & calculé à partir des données  \url{https://srtm.csi.cgiar.org/} \\  
+Distance à la forêt & m  & calculée à partir des données de \url{https://www.openstreetmap.org/} \\  
+Distance à la mer & m & calculée à partir des données de \url{https://www.openstreetmap.org/} \\  
+Distance aux routes & m & calculée à partir des données de \url{https://www.openstreetmap.org/} \\  
+Distance aux villes/villages & m & calculée à partir des données de\url{https://www.openstreetmap.org/} \\  
+Distance aux points d’eau & m & calculée à partir des données de \url{https://www.openstreetmap.org/} \\  
+Zones protégées (WDPA) & catégories & \url{https://www.protectedplanet.net/en} \\ 
+Densité de population & habitants/km$^2$ & \href{https://data.worldpop.org/GIS/Population/Global_2000_2020_Constrained/2020/}{https://data.worldpop.org/GIS/Population} \\
+Données pédologiques & catégories & \url{https://soilgrids.org} \\
+(type de sol et leur propriétés & & \\ 
+chimiques et physique)  & & \\ 
+\end{tabular}
+\end{table}
+
+### Efficacité de l'extraction et du formatage des données 
+
+Pour implémenter le package R `gecevar`, on a utilisé les packages `stars` et `terra` permettent de réaliser des opérations basiques sur les fichiers, comme redimensionner ou afficher le fichier dans R. Tandis que les package `rgdal` ou `rgrass7` permettent de réaliser des opérations plus complexes comme, re-projeter les données spatiales dans le système de coordonnées souhaité, les ré-échantillonner à la résolution voulue et calculer la pente ou les radiations solaires à partir de données d’altitude. Ces packages sont des interfaces entre R et C pour `rgrass7` et Python pour `rgdal`. Ils sont attractifs par leurs fonctionnalités variées mais aussi leur vitesse de calcul induite par les langages utilisés.
+
+# Obtention de cartes de communauté à l'échelle du territoire à partir de données d'inventaire forestier 
+
+On veut utiliser le package `jSDM` pour ajuster des JSDMs à partir des inventaires forestiers et des données bioclimatiques dont on dispose sur Madagascar et la Guyane française afin d'obtenir de cartes de communauté à l'échelle du territoire et d'être en mesure d'estimer l'évolution de la biodiversité sur ces territoires sous l'effet des changements climatiques dans un second temps. 
+
+## Éstimation de la biodiversité à Madagascar 
+
+### Description des données
+
+On dispose des inventaires forestiers nationaux réalisés sur $751$ sites de l'île de Madagascar et répertoriant la présence ou l'absence de $483$ espèces végétales sur chacun de ces sites entre 1994 et 1996.  
+ 
+Parmi les données climatiques et environnementales  disponibles sur le site \url{https://madaclim.cirad.fr} concernant l'ensemble de l'île de Madagascar à l'heure actuelle (interpolations de données observées représentatives des années 1950-2000), on choisit d'utiliser les variables suivantes car elles ont un sens écologique qui les rend facilement interprétables et sont peu corrélées entre elles d'après l'article @Vieilledent2013.  
+
+- Les températures (`temp`) moyennes annuelles qui sont exprimées en $^\circ C\times 10$.
+
+-  Les précipitations (`prec`) moyennes annuelles exprimées en millimètres.
+
+- La saisonnalité des températures (`sais_temp`) qui correspond à l'écart type des températures mensuelles multiplié par $100$.
+
+- La saisonnalité des précipitations (`sais_prec`) sous la forme d'un coefficient de variation.
+
+- Le déficit hydrique climatique (`cwd`) annuel exprimé en millimètres qui est calculé en fonction des précipitations et des évapotranspirations potentielles mensuelles (`pet`), définies comme la quantité d'évaporation qui se produirait en un mois si une source d'eau suffisante était disponible : $\mathrm{cwd}= \sum_{m=1}^{12}\min(0, \ \mathrm{prec}_m-\ \mathrm{pet}_m)$.
+
+On extrait les valeurs de ces variables climatiques correspondant aux coordonnées des placettes d'inventaires et on considère également les carrés de ces variables climatiques afin d'effectuer un régression quadratique, plus adaptée pour ajuster un modèle de niche qu'une régression linéaire.  
+
+On centre et on réduit ces variables afin de former une matrice de design $X$ telle que pour $i=1,\ldots,751$: $$X_i=(1,\mathrm{temp}_i, \mathrm{prec}_i,\mathrm{sais\_temp}_i, \mathrm{sais\_prec}_i,  \mathrm{cwd}_i,\mathrm{temp}_i^2, \mathrm{prec}_i^2,\mathrm{sais\_temp}_i^2, \mathrm{sais\_prec}_i^2, \mathrm{cwd}_i^2)$$.  
+Les coordonnées des sites seront utilisées par la suite dans le cadre de l'interpolation spatiale et pour représenter spatialement les résultats. 
+
+<!-- De plus, on utilisera les données climatiques future obtenues à partir du portail de données climatiques du [CGIAR CCAFS](http://www.ccafs-climate.org/data/) et qui sont disponibles sur \url{https://madaclim.cirad.fr/future-climate/}. -->
+<!-- Les conditions futures sont des données de modèle climatique global à [échelle réduite](http://www.ccafs-climate.org/statistical_downscaling_delta_cmip5/) provenant de CMIP5 (cinquième évaluation de la IPPC), à une résolution de 30 secondes d'arc (~1km).  -->
+<!-- Nous considérons les conditions futures pour la période des années 2080, avec les scénarios d'émission de CO2 RCP 8.5, caractérisés par une augmentation des émissions de gaz à effet de serre dans le temps, représentatifs des scénarios conduisant à des niveaux élevés de concentration de gaz à effet de serre dans la littérature. Les paramètres sous-jacents du scénario et la trajectoire de développement qui en résulte sont basés sur le scénario A2r détaillé dans l'article @Riahi2007.  -->
+<!-- Nous considérerons ensuite la moyenne des probabilités de présence prédites à partir des données climatiques future obtenues avec trois modèles climatiques globaux (GISS-E2-R, HadGEM2-ES et NorESM1-M) afin d'estimer l'évolution de la biodiversité à Madagascar sous l'effet du changement climatique et d'identifier des zones refuges de la biodiversité.  -->
+
+### Ajustement d'un JSDM à partir de ces données  
+
+ On ajuste un modèle joint de distribution des espèces de fonction de lien probit en considérant deux variables latentes et un effet site aléatoire à partir des données décrites précédemment, à l'aide de la fonction [jSDM_binomial_probit](https://ecology.ghislainv.fr/jSDM/reference/jSDM_binomial_probit.html) du package `jSDM`.
+<!--en effectuant $80 000$ itérations dont $40 000$ de burn-in et on retient $N_{samp}=1 000$ valeurs pour chaque paramètre du modèle que l'on va représenter en fonction du nombre d'itérations effectuées afin d'évaluer la convergence de l'algorithme de Gibbs.   -->
+<!-- De plus, on affiche une estimation de la densité des échantillons obtenus qui devrait correspondre aux distributions *a posteriori* définies et donc être de forme gaussienne.   -->
+<!-- On met en évidence les moyennes des $N_{samp}$-échantillons en bleu, que l'on utilisera comme estimateur pour les paramètres.  -->
+
+\begin{table}[H]
+\caption[Dimensions des jeux de données utilisés (n.site et n.species), nombre de covariables et axes latents considérés (n.X.coefs et n.latent) et nombre de paramètres à estimer (n.param) en effectuant n.mcmc itérations ainsi que le temps de calcul nécessaire à l'ajustement du modèle sur les données de Madagascar et la déviance obtenue.]{Dimensions des jeux de données utilisés (n.site et n.species), nombre de covariables et axes latents considérés (n.X.coefs et n.latent) et nombre de paramètres à estimer (n.param) en effectuant n.mcmc itérations ainsi que le temps de calcul nécessaire à l'ajustement du modèle sur les données de Madagascar et la déviance obtenue.}
+
+```{r results-mada, eval=TRUE, echo=FALSE, include=TRUE}
+library(dplyr)
+load("~/Documents/projet_BioSceneMada/Internship_Report/data/mada_mod.RData")
+nsp<-ncol(mod_all$model_spec$presence_data)
+nplot<-nrow(mod_all$model_spec$presence_data)
+p <- ncol(mod_all$model_spec$beta_start)
+nl <- mod_all$model_spec$n_latent
+T_all <- as.numeric(T_all,units="hours")
+results <- data.frame(nplot, nsp, nl, p, n_param=(p+1)*nsp+nl*nsp-1+nl*nplot+nplot+1, ngibbs="80000","Time"= T_all, dev=mean(mod_all$mcmc.Deviance))
+colnames(results)<- c("n.sites", "n.species", "n.latent", "n.X.coefs", "n.param" , "n.mcmc","Temps de calcul (heures)", "Déviance")
+knitr::kable(results, row.names=F, digits=1,booktabs=TRUE, align = 'c') %>%
+		kableExtra::kable_styling(latex_options=c("HOLD_position","striped",fontsize=0.2), full_width=FALSE)
+```
+\end{table} 
+
+### Corrélation résiduelle entre les espèces estimée 
+
+Après avoir ajusté le JSDM, d'après les articles  @Warton2015 et @Tobler2019, la  **matrice de corrélation résiduelle** $R=(R_{ij})^{i=1,\ldots, J}_{j=1,\ldots, J}$ peut être obtenue de la manière suivante : 
+ $$\Sigma_{gj} = \begin{cases}
+ \lambda_g'.\lambda_j & \text{ if } g \neq j \\
+  \lambda_g'.\lambda_j^T & \text{ if } g=j
+ \end{cases}$$, on calcule ensuite les corrélation à partir des covariances :
+  $$R_{g,j} = \frac{\Sigma_{gj}}{\sqrt{\Sigma _{gg}\Sigma _{jj}}}$$.
+
+Le nombre d'espèces considérées étant élevé, une représentation de la matrice de corrélation résiduelle à l'aide de la fonction [plot_residual_corr](https://ecology.ghislainv.fr/jSDM/reference/plot_residual_cor.html) serait illisible, on choisi donc de représenter les associations prépondérantes à l'aide de la fonction [plot_associations](https://ecology.ghislainv.fr/jSDM/reference/plot_associations.html).
+
+\begin{figure}[H]
+ \caption[Représentation des corrélations résiduelles estimées des espèces et leur préférences environnementales. La figure de gauche montre les corrélations entres espèces, avec les 483 espèces triées selon le nombre de sites où elles sont présentes sur les 751 inventoriés et la figure de droite montre la même structure de covariance mais avec les espèces triées selon leurs coefficients environnementaux ($\beta_j$) les plus importants (l'anneau extérieur montre la distribution de l'effet environnemental pour les espèces au sein de l'échantillon).]{Représentation des corrélations résiduelles estimées des espèces et leur préférences environnementales. La figure de gauche montre les corrélations entres espèces, avec les 483 espèces triées selon le nombre de sites où elles sont présentes sur les 751 inventoriés et la figure de droite montre la même structure de covariance mais avec les espèces triées selon leurs coefficients environnementaux ($\beta$) les plus importants (l'anneau extérieur montre la distribution de l'effet environnemental pour les espèces au sein de l'échantillon).}
+  \centering
+\includegraphics[width=0.47\textwidth]{figure-html/plot-associations-1.png"}
+\includegraphics[width=0.47\textwidth]{figure-html/plot-associations-2.png"}
+\label{fig:res_corr}
+\end{figure}  
+
+Cette représentation des associations entres espèces permet d'observer les corrélations positives ou négatives entre les espèces qui sont interprétables en terme d'influence positive ou négative de la présence d'un espèce sur la probabilité d'occurrence d'une autre. On constate sur la figure de gauche que les corrélations résiduelles prépondérantes sont plus nombreuses entre les espèces les plus abondantes, c'est à dire celles observées sur un grand nombre de sites. 
+De plus on peut voir sur la de droite que les espèces dont la distribution est influencée principalement par le déficit hydrique (cwd) et celles dont l'effet environnemental principal et la saisonnalité des précipitations (sais_prec) sont fortement corrélées. 
+
+### Estimation de la richesse spécifique pour les placettes d'inventaire et comparaison à celle observée
+
+La richesse spécifique aussi appelée diversité $\alpha$ reflète le nombre d'espèces coexistant dans un milieu donné, on l'estime en additionnant les probabilités de présence estimée [@Scherrer2020].  
+\begin{minipage}[l]{0.47\textwidth}
+\begin{figure}[H] \caption[Représentation spatiale de la richesse spécifique estimée pour chaque site]{Représentation spatiale de la richesse spécifique estimée pour chaque site par $\widehat{R_i}=\sum\limits_ {j=1}^{483} \widehat{\theta_{ij}}$.}
+  \centering
+\includegraphics[width=1\textwidth,height=1\textheight]{figure-html/species-richness-representation-1.png}
+\end{figure} 
+\end{minipage}
+\begin{minipage}[r]{0.47\textwidth}
+\begin{figure}[H] \caption[Représentation spatiale de la richesse spécifique observée pour chaque site]{Représentation spatiale de la richesse spécifique observée pour chaque site calculée par $R_i=\sum\limits_ {j=1}^{483} y_{ij}$}
+  \centering
+\includegraphics[width=1\textwidth,height=1\textheight]{figure-html/species-richness-representation-2.png}
+\end{figure} 
+\end{minipage}
+\begin{figure}[H]\caption[Représentation de la richesse spécifique estimée en fonction de celle observée]{Représentation de la richesse spécifique estimée en fonction de celle observée}
+  \centering
+\includegraphics[width=0.4\textwidth]{figure-html/species-richness-representation-3.png}
+\end{figure}
+
+On constate que la richesse spécifique observée sur les sites d'inventaire correspond assez bien à celle estimée. De plus on peut voir que la richesse spécifique observée est plus importante dans la forêt humide du nord-est de l'île, notamment dans la péninsule de Masoala.
+
+### Interpolation spatiale des paramètres associés aux sites d'inventaire 
+
+La présence d'une structure spatiale où les observations proches les unes des autres sont plus semblables que celles qui sont éloignées (auto-corrélation spatiale) est une condition préalable à l'application de la géostatistique, elle semble être remplie dans notre cas. 
+Ainsi, il devrait être possible d'interpoler les paramètres des sites pour l'ensemble de l'île à partir de ceux estimés sur les placettes d'inventaire. On utilise maintenant la méthode d'interpolation spatiale appelée Regularized Spline with Tension (**RST**) du logiciel [`GRASS GIS`](https://grass.osgeo.org/) via le package R `rgrass7`. Cette méthode est décrite dans l'article [@Mitasova1993].
+
+Nous avons rencontré quelques difficultés pour effectuer cette étape d'interpolation. Avant d'utiliser la méthode **RST**, nous avons essayé trois méthodes d'interpolation spatiales disponibles dans le package `gstat` afin de choisir celle qui donne les meilleurs résultats en s'inspirant de l'article @Robinson2006. 
+
+D'une part, nous avons utilisé la méthode déterministe de pondération par distance inverse, nommée **IDW** pour l'interpolation multivariée à partir de l'ensemble connu de points dispersés. Les valeurs attribuées à des points inconnus sont calculées avec une moyenne pondérée des valeurs disponibles aux sites connus qui fait appel à l'inverse de la distance par rapport à chaque point connu lors de l'attribution des poids.  
+
+D'autre part, nous avons procédé par krigeage ordinaire (**OK**) ce qui consiste à considérer les valeurs des sites inconnus comme une combinaison linéaire des valeurs connues dont les coefficients sont estimés en minimisant la variance de l'erreur d'estimation théorique qui dépend des coefficients ainsi que du variogramme expérimental tenant compte non seulement de la distance entre les données et les points d'estimation, mais également des distances entre les données deux-à-deux.
+
+Enfin nous avons appliqué la méthode **TPS** pour thin plate spline pour laquelle une fonction thin plate spline en deux dimensions est ajustée sur les coordonnées et les valeurs des points connus afin d'interpoler les valeurs non observées en fonction de leurs positions.
+
+Nous avions choisi d'interpoler les variables latentes et les effets sites estimés pour les placettes d'inventaires par krigeage ordinaire (OK) car cette méthode présentait un RMSE, calculé par validation croisée entre les effets sites estimés et ceux prédits par interpolation, inférieur à ceux obtenus avec les méthodes TPS et IDW. Cependant, nous avons constaté que l'interpolation ne conservait pas les valeurs des paramètres estimées par le JSDM sur les sites d'inventaire, ce qui biaisait largement les prédictions. La méthode RST devrait résoudre ce problème mais d'après les figures suivantes ce n'est pas le cas. 
+
+\begin{figure}[H]\caption[Représentation des paramètres estimées par le JSDM sur les sites d'inventaire en fonction de ceux interpolés.]{Représentation des paramètres estimées par le JSDM sur les sites d'inventaire en fonction de ceux interpolés par RST.}
+  \centering
+\includegraphics[width=0.49\textwidth,height=0.55\textheight]{figure-html/RST-W1-2.png}
+\includegraphics[width=0.49\textwidth,height=0.55\textheight]{figure-html/RST-W2-2.png}
+\includegraphics[width=0.49\textwidth,height=0.55\textheight]{figure-html/RST_alpha-2.png}
+\includegraphics[width=0.45\textwidth,height=0.45\textheight]{figure-html/RST_theta.png}
+\end{figure}
+
+Nous avons tout de même poursuivi la démarche avec l'intention d'améliorer la méthode d'interpolation plus tard. Nous avons utilisé les paramètres interpolés par RST pour calculer les probabilités de présence sur l'île de chacune des espèces en fonction des variables climatiques présentes définies précédemment dont les valeurs sont connues pour l'ensemble de l'île et sont centrées et réduites pour le calcul.
+
+### Estimation de la richesse spécifique à Madagascar
+
+J'ai représenté les cartes suivantes de biodiversité $\alpha$ et $\beta$ afin d'illustrer la méthode mise en oeuvre pour les obtenir mais elles peuvent présenter des incohérences car elles sont basées sur les résultats de l'interpolation par RST qui nécessite d'être améliorée.
+
+Nous avons additionné les probabilités de présence interpolées pour chacune des espèces afin d'estimer la richesse spécifique.
+Cependant, le modèle utilisé ne prend pas en compte la présence humaine qui se manifeste en particulier par la déforestation de l'île, on utilise donc les données sur le couvert forestier restant en 2000 provenant de l'article @Vieilledent2018 afin de remplacer par des valeurs nulles les richesses spécifiques interpolées à des endroits où on sait qu'il n'y a pas de forêt.  
+
+\begin{figure}[H]
+ \caption[Richesse spécifique interpolée sur l'ensemble de l'île et restreinte au couvert forestier]{Richesse spécifique interpolée sur l'ensemble de l'île et restreinte au couvert forestier}
+  \centering
+\includegraphics[width=0.6\textwidth,height=0.6\textheight]{figure-html/plot-species-richness-deforest-2.png}
+\label{fig:plot-species-richness-deforest}
+\end{figure} 
+
+Nous pouvons voir sur la figure \@ref(fig:plot-species-richness-deforest) que la richesse spécifique, calculée à partir des probabilités d'occurrence interpolées, est plus importante dans la forêt humide du nord-est de l'île, en particulier dans la péninsule de Masoala, comme attendu étant donné la richesse spécifique observée sur les sites d'inventaire. Cela peut s'expliquer par le fait que cette zone est située près de l'équateur et reçoit le plus haut niveau de précipitations à Madagascar. En conséquence, cette zone bénéficie de niveaux élevés de ressources (lumière et eau) et est caractérisée par un faible stress environnemental et une longue saison de croissance [@Vieilledent2013]. Notez que la richesse spécifique estimée ne représente pas nécessairement le nombre " réel " d'espèces présentes, mais plutôt une richesse spécifique relative entre les sites (un site est plus riche en espèces qu'un autre).
+
+\newpage 
+
+### Estimation de la diversité $\beta$ à Madagascar
+
+La diversité $\beta$ est une mesure de la biodiversité qui consiste à comparer la diversité des espèces entre écosystèmes ou le long de gradients environnementaux, en utilisant le nombre de taxons qui sont uniques à chacun des écosystèmes.  
+
+Afin d'estimer cet indicateur, on procède de la même façon que dans l'article @Allnutt2008 en effectuant une ACP normée sur les probabilités de présence des espèces interpolées pour chaque pixel de l'image affichée. On utilise les coordonnées obtenues pour les trois premiers axes de l'ACP qui reflètent la composition de la communauté d'espèces occupant probablement le pixel correspondant. Ces coordonnées sont mises à l'échelle $[0,255]$ afin d'être représentables par des niveaux de couleur rouge pour le premier axe, verte pour le deuxième et bleue pour le troisième, l'association de ces trois niveaux de couleur détermine la coloration de chaque pixel de la carte de diversité $\beta$ affichée. Par conséquent une différence de couleur entre deux pixels indique que les espèces présentes ne sont pas les mêmes tandis que des pixels de couleur identiques hébergent des communautés d'espèces similaires.  
+
+De la même manière que précédemment, on restreint les valeurs obtenues pour la diversité $\beta$ au couvert forestier restant en 2000. 
+
+(ref:cap-forest-type) Types de forêts à Madagascar de l'article issus de l'article @Vieilledent2018.
+
+(ref:cap-div-beta) Turnover estimé des espèces à l'échelle de Madagascar (gauche) et turnover des espèces à Madagascar estimé restreint à la couverture forestière restante en 2000 de l'article @Vieilledent2018, pour tenir compte de la déforestation sur l'île (droite).
+
+```{r diversity-beta, echo=FALSE, fig.show = "hold", fig.pos = "H", out.height=c("30%","27%"), fig.col=1, fig.align = "center",  eval=TRUE, fig.cap="Diversité $\\beta$ interpolée sur l'ensemble de l'île et restreinte au couvert forestier connu en 2000 et types de forêts à Madagascar.", fig.subcap=c("(ref:cap-div-beta)","(ref:cap-forest-type)")}
+knitr::include_graphics("figure-html/plot-diversity-beta-1.png") 
+knitr::include_graphics("figure-html/mada_forest_type.jpg")
+```
+
+Nous pouvons constater que la carte estimée de la diversité $\beta$ sur la figure \@ref(fig:diversity-beta).a concorde avec la carte des types de forêts de Madagascar de l'article @Vieilledent2018 sur la figure \@ref(fig:diversity-beta).b. En effet, les communautés d'espèces représentées par des nuances de bleu et de vert correspondent à la forêt humide de l'est, les communautés représentées par des nuances de rouge correspondent à la forêt sèche de l'ouest et les communautés en magenta correspondent à la forêt épineuse du sud. De plus, la carte de la diversité $\beta$ que nous obtenons permet d'identifier des communautés d'espèces sensiblement différentes au sein de ces trois types de forêts. Par exemple, nous pouvons clairement identifier trois communautés d'arbres différentes (en bleu, vert et noir) au sein de la forêt humide orientale.
+
+\newpage
+\pagestyle{simple}
+
+\newpage
+
+## Classification des communautés d’arbres en Nouvelle-Calédonie 
+
+ J’ai participé activement à l’encadrement de Pierre Guillaumont qui a effectué son stage de M2 MIND au sein de l’UMR AMAP, sur le sujet : “Classification des communautés d’arbres en Nouvelle-Calédonie à l’aide de modèle joint de distribution des espèces”.   
+ 
+### Ajustement d'un JSDM en Nouvelle Calédonie
+
+Dans le cadre de son stage, Pierre a particpé au développement du package R `gecevar`, Pierre a utilisé le package R `jSDM`, que j’ai développé, afin d’ajuster un modèle joint de distribution des espèces en Nouvelle Calédonie, à partir des données climatiques et environnementales obtenues à l’aide du package `gecevar`, ainsi que de données d’inventaire forestier répertoriant un très grand nombre d’espèces sur de nombreux sites d’inventaires. 
+
+
+\begin{figure}[H]
+\caption{Variables explicatives du modèle et les ordres considérés.}
+  \centering
+\includegraphics[height=0.15\textheight]{Illustrations/X_NC.png}
+\end{figure}
+
+\begin{figure}[H]
+\caption{Ajustement d'un JSDM à partir des données disponibles en Nouvelle Calédonie.}
+  \centering
+\includegraphics[height=0.13\textheight]{Illustrations/JSDM_NC.png}
+\end{figure}
+
+On peut voir que malgré les jeux de données très conséquents considérés, l'ajustement du JSDM n'a pris qu'une heure en utilisant le package `jSDM` alors qu'avec d'autres packages l'ajustement du modèle aurait pris bien plus longtemps voire n'aurait pas été possible. 
+
+### Obtention de cartes de biodiveristé en Nouvelle Calédonie 
+
+En utilisant le JSDM ajusté, il a pu obtenir des cartes de biodiversité en Nouvelle Calédonie en suivant les mêmes méthode que celle présentée pour Madagascar. 
+
+\begin{figure}[H]
+\caption{Richesse spécifique estimée en Nouvelle Calédonie, restreinte au couvert forestier restant en 2000}
+  \centering
+\includegraphics[height=0.25\textheight]{Illustrations/sp_rich.png}
+\end{figure}
+\begin{figure}[H]
+\caption{Diversité $\beta$ estimée en Nouvelle Calédonie, restreinte au couvert forestier restant en 2000}
+  \centering
+\includegraphics[height=0.25\textheight]{Illustrations/div_beta_NC.png}
+\end{figure}
+
+## Obtention de cartes de communauté en Guyane française 
+
+### Données utilisées 
+
+Une fois qu'on aura réussi à obtenir des résultats satisfaisants pour Madagascar, on suivra la même méthode pour obtenir des cartes de communauté en Guyane française en utilisant les inventaires forestiers et les données climatiques et environnementales rassemblées à l'aide du package `gecevar` mais aussi les bases de données de traits fonctionnels uniques dont dispose la communauté scientifique du CEBA.
+
+En effet pour la Guyane on ajustera un JSDM prenant en compte des traits spécifiques comme variables explicatives du modèles. On considérera des traits fonctionnels classiques comme la densité du bois ou la surface foliaire spécifique mais les études récentes ne montrent pas de lien évident entre ces traits et la résistance à la sécheresse [@Marechaux2020]. Par conséquent on utilisera également des traits plus mécanistes et écophysiologique (soft traits) comme le point de perte de la turgescence des feuilles (ou leaf turgor loss point) qui présentent un lien plus direct avec la résistance à la sécheresse [@Marechaux2018]. 
+
+J'ai d'ailleurs participé en octobre 2021 à une mission en forêt guyanaise, de mesure de traits foliaires liés à la gestion de l'eau, dans le cadre du projet stratégique du CEBA nommé METRADICA qui vise à prédire l’évolution de l’abondance et de la distribution des espèces d’arbres en Amazonie sous l’effet du changement climatique en fonction des interactions entre traits mécanistes et environnement. 
+Il me paraît important de participer à l’effort de récolte de ces données sans lesquelles ma thèse ne serait pas faisable mais aussi d’apprendre la façon dont les données sont mesurées et organisées afin d’être en mesure de les analyser et de les interpréter au mieux.
+
+### Enjeux 
+
+Ce projet de thèse contribuera à apporter des éléments de réponse à  une question fondamentale au centre de nombreux projets de recherche en écologie actuellement qui est de savoir si la forêt amazonienne sera capable de résister au changement climatiques à venir.  
+Dans un premier temps on utilisera le package `jSDM` afin d’ajuster des modèle joints de distribution des espèces à partir des données (bio-climatiques, d’inventaire forestier et de traits fonctionnels) disponibles sur la forêt Guyanaise pour ensuite être en mesure de prédire l’évolution des aires de distribution des espèces sous l’effet du changements climatique.
+
+D’une part les résultats obtenus pourraient laisser supposer que la forêt amazonienne montera une certaine résilience face au changement climatique qui correspondrait à un changement des aires de répartition des espèces et donc de la composition de la forêt tropicale mais avec conservation du couvert forestier et de la capacité des forêts à absorber et stocker le dioxyde de carbone (CO2) et à diffuser fraîcheur et humidité sur les continents.  
+
+D’autre part les prédictions pourraient au contraire mettre en évidence la vulnérabilité de la forêt amazonienne face au changement climatiques qui se manifesterait par une contraction généralisée des aires de répartition des espèces associée à un phénomène de mortalité en masse. Si ce scénario s’avère le plus probable il est important d’être en mesure d’anticiper un emballement soudain du réchauffement climatique engendré par les effets de rétroaction sur le climat de l’effondrement des écosystèmes forestiers qui amplifierait les bouleversements climatiques. 
+
+# Perspectives de développement du package `jSDM`
+
+## Fonctionnalités en cours de développement
+
+### Ajuster un modèle avec des effets espèces aléatoires
+
+Dans le cas où on considère que les effets espèces $\beta$ sont aléatoire, leur distribution *a priori* est de la forme : $\beta_j \sim  \mathcal{N}_{p+1}(\mu_{\beta},V_{\beta})$ et on suppose que $V_{\beta} \sim \mathcal{W}ishart^{-1}(M,\nu)$.  
+
+Pour ajuster un modèle avec effet espèce aléatoire, on utilise les mêmes méthodes d'inférence que précédemment. De plus le choix de cette distribution *a priori* inverse Wishart pour la matrice de variance-covariance des effets espèces, nous permet d'utiliser les formules de priors conjugués pour l'estimation de ces paramètres. 
+
+### Ajuster un JSDM à partir d'une variable réponse continue 
+
+Afin de permettre au package d'ajuster un JSDM à partir d'une variable réponse continue, on a développé la fonction `jSDM_gaussian`.  
+
+Dans ce cas on suppose que $y_{ij} \sim \mathcal{N}(\mu_{ij},\sigma^2)$, pour des données continues et on considère le modèle linéaire à variables latentes suivant : $$\mu_{ij}=\alpha_i + X_i\beta_j + W_i\lambda_j + \epsilon_{ij}$$
+où $\epsilon_{ij} \sim \mathcal{N}(0,\sigma^2)$ et  $\sigma$ est un paramètre de dispersion à estimer. 
+
+Pour ajuster ce modèle, on utilise un échantilloneur de Gibbs associé aux formules des priors conjugués, de la même façon que pour le modèle probit. 
+
+### Intégrer la phylogénie des espèces comme variable explicative des modèles
+
+D'après l'article @Ovaskainen2017, pour tenir compte des relations phylogénétiques (résumées par la
+matrice C), on peut modéliser la structure de la covariance de la
+distribution normale multivariée des effets espèces $\beta$ de la façon suivante :
+
+$$\beta \sim \mathcal{N}\left(\mu, V \otimes \left[ \rho C + (1-\rho)I\right]\right)$$
+
+où le symbole $\otimes$ représente le produit de Kronecker et $0 \leq \rho \leq 1$ mesure la force du signal phylogénétique.
+Par conséquent pour $\rho=0$, la variance résiduelle est indépendante entre les espèces (comme décrit par la matrice d'identité $I$), ce qui implique que les espèces étroitement liées n'ont pas des niches environnementales plus similaires que les espèces éloignées. Lorsque $\rho$ s'approche de $\rho= 1$, les niches environnementales des espèces sont entièrement structurées par leur phylogénie, ce qui implique que les espèces apparentées auront des niches plus similaires. 
+
+On va reproduire cette approche dans le package `jSDM`. 
+
+## Perspectives de développement
+
+## Estimation du nombre d'axes latents à prendre en compte
+
+Plutôt que de fixer arbitrairement un nombre d'axe latents à considérer ($q$) dans le modèle, il serait préférable d'estimer $q$ en ajoutant une variable dans le modèle hiérarchique Bayésien qui va estimer ce nombre, en s'inspirant du package `Hmsc` qui propose déjà cette fonctionnalité. 
+
+## Ajuster des JSDMs spatialement explicites
+
+Il est essentiel de développer le package pour lui permettre d'ajuster des JSDMs spatialement explicites afin d'être en mesure de prédire les probabilités de présence des espèces au-delà des sites d'inventaires, sans passer par une interpolation des paramètres dont les résultats ne sont pas satisfaisants comme expliqué précédemment. 
+
+Pour ce faire j'ai envisagé deux méthodes explicitées dans les articles @Guelat2018 @Latimer2006 afin d'intégrer une auto-corrélation spatiale dans le modèle :
+
+D'une part j'ai développé une fonction ajustant un modèle gaussien auto-régressif conditionnel (CAR) intrinsèque en utilisant une grille sur l'ensemble du territoire considéré dont chacune des cellules possède au plus huit voisines. On estimera ainsi les valeurs des effets sites et des variables latentes pour chacune des cellules en fonction de ceux estimés pour les cellules voisines.  
+En effet dans le contexte des modèles de répartition des espèces, on suppose que la présence ou l'absence d'une espèce à un endroit est associée à sa présence ou son absence dans le voisinage. Afin de prendre en compte les voisinages, les distributions *a priori* des paramètres liés aux sites sont centrées sur la moyenne des valeurs prises par ces paramètres dans les cellules voisines et leurs variances dépendent du nombre de cellules partageant des frontières avec la cellule considérée. Cependant cette méthode induit un temps de calcul important et présente des difficultés à converger car les paramètres à estimer sont très nombreux en raison du nombre conséquent de cellules constituant la grille utilisée.   
+
+D'autre part j'ai essayé d'intégrer un 2D splines dans le modèle en redéfinissant les effets sites par le produit d'une matrice calculée en fonction de la distance du site par rapport à des noeuds répartis uniformément sur le territoire étudié, et de paramètres à estimer qui sont aussi nombreux que les noeuds choisis. On ajoute également les coordonnées des sites parmi les variables explicatives du modèle ce qui induit deux paramètres supplémentaires à estimer.  
+
+Cependant ces fonctions intégrant une auto-corrélation spatiale dans le modèle, qui rendraient possible la prédiction sur des sites non observés sont implémentées mais ne sont pas abouties, en effet les résultats obtenus ne sont pas satisfaisants pour l'instant.
+
+## Ajuster des JSDMs à partir de données de présence seule 
+
+On voudrait être en mesure d'ajuster des JSDMs à partir de jeux de données d'occurrence qui ne répertorient pas les absences des espèces, comme les données d’herbier ou l'immense base de donnée GBIF qui rassemble des milliers de jeux de données concernant de nombreuses espèces. Pour ce faire, le plus simple serait de générer des pseudo-absences en suivant une méthode adaptée comme celle développée dans l'article @Barbet2012, afin de prendre en charge les données de présence seule en utilisant les mêmes algorithmes que pour les données de présence-absence. Cependant cette idée n'a pas encore été développée et s'avérera peut être difficile à mettre en oeuvre.
+
+\newpage
+
+\newpage
+\section*{Bibliographie}
+\addcontentsline{toc}{section}{Bibliographie}
+<div id="refs"></div>
